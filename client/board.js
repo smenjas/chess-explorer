@@ -25,9 +25,7 @@ export default class Board {
             for (const file of files) {
                 const square = `${file}${rank}`;
                 const piece = this.squares[square];
-                const symbol = Piece.draw(piece);
-                const title = Piece.name(piece);
-                html += `<td class="${square} ${piece} ${shade}" title="${title}">${symbol}</td>`;
+                html += this.drawSquare(square, shade, piece);
                 shade = (shade === 'light') ? 'dark' : 'light';
             }
             html += '</tr>';
@@ -35,5 +33,11 @@ export default class Board {
         html += '</tr></tbody></table>';
 
         return html;
+    }
+
+    drawSquare(square, shade, piece) {
+        const symbol = Piece.draw(piece);
+        const title = Piece.name(piece);
+        return `<td class="${square} ${piece} ${shade}" title="${title}">${symbol}</td>`;
     }
 }
