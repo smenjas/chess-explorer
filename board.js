@@ -2,7 +2,7 @@ import Piece from './piece.js';
 
 export default class Board {
     constructor() {
-        this.positions = {
+        this.squares = {
             a1: 'wr', b1: 'wn', c1: 'wb', d1: 'wq', e1: 'wk', f1: 'wb', g1: 'wn', h1: 'wr',
             a2: 'wp', b2: 'wp', c2: 'wp', d2: 'wp', e2: 'wp', f2: 'wp', g2: 'wp', h2: 'wp',
             a3: '', b3: '', c3: '', d3: '', e3: '', f3: '', g3: '', h3: '',
@@ -23,11 +23,11 @@ export default class Board {
             let shade = (rank % 2 === 0) ? 'light' : 'dark';
             html += `<tr class="rank-${rank}">`;
             for (const file of files) {
-                const position = `${file}${rank}`;
-                const piece = this.positions[position];
+                const square = `${file}${rank}`;
+                const piece = this.squares[square];
                 const symbol = Piece.draw(piece);
                 const title = Piece.name(piece);
-                html += `<td class="${position} ${piece} ${shade}" title="${title}">${symbol}</td>`;
+                html += `<td class="${square} ${piece} ${shade}" title="${title}">${symbol}</td>`;
                 shade = (shade === 'light') ? 'dark' : 'light';
             }
             html += '</tr>';
