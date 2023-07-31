@@ -16,7 +16,7 @@ h1 {
 }
 
 table {
-    border: none;
+    outline: 2px solid black;
     border-collapse: collapse;
     margin: auto;
 }
@@ -51,9 +51,6 @@ td {
     }
     a:visited {
         color: #faf;
-    }
-    td {
-        border-color: white;
     }
     a span.link:hover {
         outline-color: white;
