@@ -1,4 +1,4 @@
-'use strict';
+import Piece from './piece.js';
 
 function drawBoard(positions) {
     const ranks = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -11,8 +11,8 @@ function drawBoard(positions) {
         for (const file of files) {
             const position = `${file}${rank}`;
             const piece = positions[position];
-            const symbol = drawPiece(piece);
-            const title = namePiece(piece);
+            const symbol = Piece.draw(piece);
+            const title = Piece.name(piece);
             html += `<td class="${position} ${piece} ${square}" title="${title}">${symbol}</td>`;
             square = (square === 'light') ? 'dark' : 'light';
         }
@@ -21,48 +21,6 @@ function drawBoard(positions) {
     html += '</tr></tbody></table>';
 
     return html;
-}
-
-function drawPiece(abbr) {
-    if (abbr.length !== 2) {
-        return '';
-    }
-    const symbols = {
-        bb: '&#9821;',
-        bk: '&#9818;',
-        bn: '&#9822;',
-        bp: '&#9823;',
-        bq: '&#9819;',
-        br: '&#9820;',
-        wb: '&#9815;',
-        wk: '&#9812;',
-        wn: '&#9816;',
-        wp: '&#9817;',
-        wq: '&#9813;',
-        wr: '&#9814;',
-    };
-    return symbols[abbr];
-}
-
-function namePiece(abbr) {
-    if (abbr.length !== 2) {
-        return '';
-    }
-    const colors = {
-        b: 'Black',
-        w: 'White',
-    };
-    const pieces = {
-        b: 'Bishop',
-        k: 'King',
-        n: 'Knight',
-        p: 'Pawn',
-        q: 'Queen',
-        r: 'Rook',
-    };
-    const color = colors[abbr[0]];
-    const piece = pieces[abbr[1]];
-    return `${color} ${piece}`;
 }
 
 const positions = {
