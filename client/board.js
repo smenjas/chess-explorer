@@ -38,7 +38,7 @@ export default class Board {
     drawSquare(square, shade, piece) {
         const symbol = Piece.draw(piece);
         const title = Board.titleSquare(square, piece);
-        return `<td class="${square} ${piece} ${shade}" title="${title}">${symbol}</td>`;
+        return `<td id="${square}" class="${piece} ${shade}" title="${title}">${symbol}</td>`;
     }
 
     static titleSquare(square, piece) {
