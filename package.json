@@ -1,0 +1,27 @@
+{
+  "name": "chess-explorer",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Explore the game of chess.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node_modules/nodemon/bin/nodemon.js src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smenjas/chess-explorer.git"
+  },
+  "keywords": [
+    "chess"
+  ],
+  "author": "Benjamin Thornton",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/smenjas/chess-explorer/issues"
+  },
+  "homepage": "https://github.com/smenjas/chess-explorer#readme",
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
