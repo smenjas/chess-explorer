@@ -2,7 +2,7 @@ import Board from './board.js';
 import Piece from './piece.js';
 
 function addEventHandlers() {
-    const squares = document.querySelectorAll('.chess-board td');
+    const squares = document.querySelectorAll('.chess-board td.can-move');
     for (const square of squares) {
         square.addEventListener('click', handleSelection);
     }

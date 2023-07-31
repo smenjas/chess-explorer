@@ -1,4 +1,5 @@
 import Piece from './piece.js';
+import Square from './square.js';
 
 export default class Board {
     constructor() {
@@ -26,7 +27,8 @@ export default class Board {
             for (const file of files) {
                 const square = `${file}${rank}`;
                 const piece = this.squares[square];
-                html += this.drawSquare(square, shade, piece);
+                const moves = this.findMoves(square, piece);
+                html += Square.draw(square, shade, piece, !!moves.length);
                 shade = (shade === 'light') ? 'dark' : 'light';
             }
             html += '</tr>';
@@ -36,32 +38,112 @@ export default class Board {
         return html;
     }
 
-    drawSquare(square, shade, piece) {
-        const symbol = Piece.draw(piece);
-        const title = Board.titleSquare(square, piece);
-        const classes = [piece, shade];
-        const canMove = this.pieceCanMove(square, piece);
-        if (canMove) {
-            classes.push('can-move');
+    findMoves(square, abbr) {
+        if (!Piece.exists(abbr)) {
+            return [];
         }
-        return `<td id="${square}" class="${classes.join(' ')}" title="${title}">${symbol}</td>`;
+        const piece = Piece.list[abbr];
+        if (piece.color !== this.turn) {
+            return [];
+        }
+
+        switch (piece.type) {
+        case 'Bishop':
+            break;
+        case 'King':
+            break;
+        case 'Knight':
+            break;
+        case 'Pawn':
+            return this.findPawnMoves(square, piece.color);
+        case 'Queen':
+            break;
+        case 'Rook':
+            break;
+        }
+
+        return [];
     }
 
-    pieceCanMove(square, piece) {
+    addJump(square, color, moves) {
+        if (this.squareOccupiedByOpponent(square, color)) {
+            moves.push(square);
+        }
+    }
+
+    findPawnJumps(file, rank, color) {
+        if ((color === 'White' && rank === 8) || (color === 'Black' && rank === 1)) {
+            return [];
+        }
+
+        const moves = [];
+        const r = (color === 'White') ? rank + 1 : rank - 1;
+        const left = Square.fileLeft(color, file);
+        const right = Square.fileRight(color, file);
+
+        if (left) {
+            this.addJump(`${left}${r}`, color, moves);
+        }
+
+        if (right) {
+            this.addJump(`${right}${r}`, color, moves);
+        }
+
+        return moves;
+    }
+
+    findPawnMoves(square, color) {
+        // Pawns can:
+        // - move forward one square;
+        // - move forward two squares, for the first move only;
+        // - jump one square diagonally.
+        // TODO: Implement en passant.
+        const [file, rank] = Square.parse(square);
+        const moves = (color === 'White') ?
+            this.findWhitePawnMoves(file, rank) :
+            this.findBlackPawnMoves(file, rank);
+        const jumps = this.findPawnJumps(file, rank, color);
+        for (const jump of jumps) {
+            moves.push(jump);
+        }
+        return moves;
+    }
+
+    findBlackPawnMoves(file, rank) {
+        const moves = [];
+        const min = (rank === 7) ? 5 : (rank > 1) ? rank - 1 : rank;
+        for (let r = rank - 1; r >= min; r--) {
+            const square = `${file}${r}`;
+            if (this.squareOccupied(square)) {
+                break;
+            }
+            moves.push(square);
+        }
+        return moves;
+    }
+
+    findWhitePawnMoves(file, rank) {
+        const moves = [];
+        const max = (rank === 2) ? 4 : (rank < 8) ? rank + 1 : rank;
+        for (let r = rank + 1; r <= max; r++) {
+            const square = `${file}${r}`;
+            if (this.squareOccupied(square)) {
+                break;
+            }
+            moves.push(square);
+        }
+        return moves;
+    }
+
+    squareOccupied(square) {
+        return this.squares[square] !== '';
+    }
+
+    squareOccupiedByOpponent(square, color) {
+        const piece = this.squares[square];
         if (piece === '') {
             return false;
         }
-        if (Piece.list[piece].color !== this.turn) {
-            return false;
-        }
-        return true;
-    }
-
-    static titleSquare(square, piece) {
-        let title = square;
-        if (Piece.exists(piece)) {
-            title += `: ${Piece.name(piece)}`;
-        }
-        return title;
+        return Piece.list[piece].color !== color;
     }
 }
