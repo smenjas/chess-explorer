@@ -20,15 +20,15 @@ export default class Board {
 
         let html = '<table class="chess-board"><tbody>';
         for (const rank of ranks.reverse()) {
-            let square = (rank % 2 === 0) ? 'light' : 'dark';
+            let shade = (rank % 2 === 0) ? 'light' : 'dark';
             html += `<tr class="rank-${rank}">`;
             for (const file of files) {
                 const position = `${file}${rank}`;
                 const piece = this.positions[position];
                 const symbol = Piece.draw(piece);
                 const title = Piece.name(piece);
-                html += `<td class="${position} ${piece} ${square}" title="${title}">${symbol}</td>`;
-                square = (square === 'light') ? 'dark' : 'light';
+                html += `<td class="${position} ${piece} ${shade}" title="${title}">${symbol}</td>`;
+                shade = (shade === 'light') ? 'dark' : 'light';
             }
             html += '</tr>';
         }
