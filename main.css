@@ -25,18 +25,20 @@ th {
     padding: 0.2rem;
 }
 td {
+    cursor: default;
     font-size: 3rem;
     border: none;
     height: 4rem;
     width: 4rem;
     text-align: center;
 }
-td:hover {
+td.can-move:hover {
     cursor: pointer;
     outline: 5px solid #808080;
     border-radius: 1px;
 }
-td.selected {
+td.selected,
+td.selected:hover {
     outline: 5px solid black;
     border-radius: 1px;
 }

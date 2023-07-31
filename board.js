@@ -12,6 +12,7 @@ export default class Board {
             a7: 'bp', b7: 'bp', c7: 'bp', d7: 'bp', e7: 'bp', f7: 'bp', g7: 'bp', h7: 'bp',
             a8: 'br', b8: 'bn', c8: 'bb', d8: 'bq', e8: 'bk', f8: 'bb', g8: 'bn', h8: 'br',
         };
+        this.turn = 'White';
     }
 
     draw() {
@@ -38,7 +39,22 @@ export default class Board {
     drawSquare(square, shade, piece) {
         const symbol = Piece.draw(piece);
         const title = Board.titleSquare(square, piece);
-        return `<td id="${square}" class="${piece} ${shade}" title="${title}">${symbol}</td>`;
+        const classes = [piece, shade];
+        const canMove = this.pieceCanMove(square, piece);
+        if (canMove) {
+            classes.push('can-move');
+        }
+        return `<td id="${square}" class="${classes.join(' ')}" title="${title}">${symbol}</td>`;
+    }
+
+    pieceCanMove(square, piece) {
+        if (piece === '') {
+            return false;
+        }
+        if (Piece.list[piece].color !== this.turn) {
+            return false;
+        }
+        return true;
     }
 
     static titleSquare(square, piece) {
