@@ -57,7 +57,7 @@ export default class Board {
         case 'Pawn':
             return this.findPawnMoves(square, piece.color);
         case 'Queen':
-            break;
+            return this.findQueenMoves(square, piece.color);
         case 'Rook':
             return this.findRookMoves(square, piece.color);
         }
@@ -217,6 +217,17 @@ export default class Board {
                 break;
             }
             moves.push(square);
+        }
+        return moves;
+    }
+
+    findQueenMoves(square, color) {
+        // Queens can move orthogonally (like a rook) or diagonally (like a
+        // bishop) until blocked by their own color or the edge of the board.
+        const moves = this.findRookMoves(square, color);
+        const bishopMoves = this.findBishopMoves(square, color);
+        for (const move of bishopMoves) {
+            moves.push(move);
         }
         return moves;
     }
