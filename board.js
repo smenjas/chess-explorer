@@ -186,10 +186,7 @@ export default class Board {
             this.findWhitePawnMoves(file, rank) :
             this.findBlackPawnMoves(file, rank);
         const jumps = this.findPawnJumps(file, rank, color);
-        for (const jump of jumps) {
-            moves.push(jump);
-        }
-        return moves;
+        return moves.concat(jumps);
     }
 
     findBlackPawnMoves(file, rank) {
