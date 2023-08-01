@@ -33,7 +33,14 @@ function selectSquare(square) {
 const board = new Board();
 
 document.title = 'Chess Explorer';
-let html = `<h1>${document.title}</h1>`;
+let html = '<header>';
+html += `<h1>${document.title}</h1>`;
+html += '</header>';
+html += '<main>';
 html += board.draw();
+html += '</main>';
+html += '<section>';
+html += board.describe();
+html += '</section>';
 document.body.insertAdjacentHTML('beforeend', html);
 addEventHandlers();

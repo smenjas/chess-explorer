@@ -16,6 +16,11 @@ export default class Board {
         this.turn = 'White';
     }
 
+    describe() {
+        let html = `<p>${this.turn}'s move.</p>`;
+        return html;
+    }
+
     draw() {
         const ranks = [1, 2, 3, 4, 5, 6, 7, 8];
         const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
