@@ -83,31 +83,6 @@ export default class Board {
         return occupied;
     }
 
-    findAdjacentSquares(file, rank) {
-        const squares = [];
-        const min = (rank === 1) ? 1 : rank - 1;
-        const max = (rank === 8) ? 8 : rank + 1;
-        const fileDown = Square.fileDown(file);
-        if (fileDown) {
-            for (let r = min; r <= max; r++) {
-                squares.push(`${fileDown}${r}`);
-            }
-        }
-        if (min !== rank) {
-            squares.push(`${file}${min}`);
-        }
-        if (max !== rank) {
-            squares.push(`${file}${max}`);
-        }
-        const fileUp = Square.fileUp(file);
-        if (fileUp) {
-            for (let r = min; r <= max; r++) {
-                squares.push(`${fileUp}${r}`);
-            }
-        }
-        return squares;
-    }
-
     findBishopMoves(square, color) {
         // Bishops can move diagonally until blocked by their own color or the
         // edge of the board. They always stay on the same shade of squares.
@@ -149,7 +124,7 @@ export default class Board {
         // Kings can move one square in any direction.
         // TODO: Disallow moving a king into danger.
         const [file, rank] = Square.parse(square);
-        const squares = this.findAdjacentSquares(file, rank);
+        const squares = Square.findAdjacent(file, rank);
         const moves = [];
         for (const s of squares) {
             this.addMove(s, color, moves);
@@ -241,12 +216,9 @@ export default class Board {
     findQueenMoves(square, color) {
         // Queens can move orthogonally (like a rook) or diagonally (like a
         // bishop) until blocked by their own color or the edge of the board.
-        const moves = this.findRookMoves(square, color);
+        const rookMoves = this.findRookMoves(square, color);
         const bishopMoves = this.findBishopMoves(square, color);
-        for (const move of bishopMoves) {
-            moves.push(move);
-        }
-        return moves;
+        return rookMoves.concat(bishopMoves);
     }
 
     findRookMoves(square, color) {

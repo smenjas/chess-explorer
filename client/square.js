@@ -57,6 +57,31 @@ export default class Square {
         }
     }
 
+    static findAdjacent(file, rank) {
+        const squares = [];
+        const min = (rank === 1) ? 1 : rank - 1;
+        const max = (rank === 8) ? 8 : rank + 1;
+        const fileDown = Square.fileDown(file);
+        if (fileDown) {
+            for (let r = min; r <= max; r++) {
+                squares.push(`${fileDown}${r}`);
+            }
+        }
+        if (min !== rank) {
+            squares.push(`${file}${min}`);
+        }
+        if (max !== rank) {
+            squares.push(`${file}${max}`);
+        }
+        const fileUp = Square.fileUp(file);
+        if (fileUp) {
+            for (let r = min; r <= max; r++) {
+                squares.push(`${fileUp}${r}`);
+            }
+        }
+        return squares;
+    }
+
     static parse(square) {
         const file = square[0];
         const rank = parseInt(square[1]);
