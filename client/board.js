@@ -241,12 +241,9 @@ export default class Board {
     findQueenMoves(square, color) {
         // Queens can move orthogonally (like a rook) or diagonally (like a
         // bishop) until blocked by their own color or the edge of the board.
-        const moves = this.findRookMoves(square, color);
+        const rookMoves = this.findRookMoves(square, color);
         const bishopMoves = this.findBishopMoves(square, color);
-        for (const move of bishopMoves) {
-            moves.push(move);
-        }
-        return moves;
+        return rookMoves.concat(bishopMoves);
     }
 
     findRookMoves(square, color) {
