@@ -24,7 +24,6 @@ export default class Board {
     draw() {
         const ranks = [1, 2, 3, 4, 5, 6, 7, 8];
         const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-
         let html = '<table class="chess-board"><tbody>';
         for (const rank of ranks.reverse()) {
             let shade = (rank % 2 === 0) ? 'light' : 'dark';
@@ -39,7 +38,6 @@ export default class Board {
             html += '</tr>';
         }
         html += '</tr></tbody></table>';
-
         return html;
     }
 
@@ -51,7 +49,6 @@ export default class Board {
         if (piece.color !== this.turn) {
             return [];
         }
-
         switch (piece.type) {
         case 'Bishop':
             return this.findBishopMoves(square, piece.color);
@@ -66,7 +63,6 @@ export default class Board {
         case 'Rook':
             return this.findRookMoves(square, piece.color);
         }
-
         return [];
     }
 
@@ -160,20 +156,16 @@ export default class Board {
         if ((color === 'White' && rank === 8) || (color === 'Black' && rank === 1)) {
             return [];
         }
-
         const moves = [];
         const r = (color === 'White') ? rank + 1 : rank - 1;
         const left = Square.fileLeft(color, file);
         const right = Square.fileRight(color, file);
-
         if (left) {
             this.addJump(moves, `${left}${r}`, color);
         }
-
         if (right) {
             this.addJump(moves, `${right}${r}`, color);
         }
-
         return moves;
     }
 
