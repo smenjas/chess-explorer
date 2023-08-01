@@ -53,7 +53,7 @@ export default class Board {
         case 'King':
             return this.findKingMoves(square, piece.color);
         case 'Knight':
-            break;
+            return this.findKnightMoves(square, piece.color);
         case 'Pawn':
             return this.findPawnMoves(square, piece.color);
         case 'Queen':
@@ -154,6 +154,23 @@ export default class Board {
         for (const s of squares) {
             this.addMove(s, color, moves);
         }
+        return moves;
+    }
+
+    findKnightMoves(square, color) {
+        // Knights can move in an L shape, two spaces one direction and one
+        // space perpindicular. Other pieces do not block their path.
+        const [file, rank] = Square.parse(square);
+        const n = Square.fileToNumber(file);
+        const moves = [];
+        this.addMove(`${Square.numberToFile(n + 1)}${rank + 2}`, color, moves);
+        this.addMove(`${Square.numberToFile(n + 2)}${rank + 1}`, color, moves);
+        this.addMove(`${Square.numberToFile(n - 1)}${rank + 2}`, color, moves);
+        this.addMove(`${Square.numberToFile(n - 2)}${rank + 1}`, color, moves);
+        this.addMove(`${Square.numberToFile(n + 1)}${rank - 2}`, color, moves);
+        this.addMove(`${Square.numberToFile(n + 2)}${rank - 1}`, color, moves);
+        this.addMove(`${Square.numberToFile(n - 1)}${rank - 2}`, color, moves);
+        this.addMove(`${Square.numberToFile(n - 2)}${rank - 1}`, color, moves);
         return moves;
     }
 
@@ -273,7 +290,7 @@ export default class Board {
 
     squareOccupiedByOpponent(square, color) {
         const piece = this.squares[square];
-        if (piece === '') {
+        if (!piece) {
             return false;
         }
         return Piece.list[piece].color !== color;
