@@ -49,7 +49,7 @@ export default class Board {
 
         switch (piece.type) {
         case 'Bishop':
-            break;
+            return this.findBishopMoves(square, piece.color);
         case 'King':
             return this.findKingMoves(square, piece.color);
         case 'Knight':
@@ -106,6 +106,43 @@ export default class Board {
             }
         }
         return squares;
+    }
+
+    findBishopMoves(square, color) {
+        // Bishops can move diagonally until blocked by their own color or the
+        // edge of the board. They always stay on the same shade of squares.
+        const [file, rank] = Square.parse(square);
+        const fileNumber = Square.fileToNumber(file);
+        const moves = [];
+        for (let n = fileNumber + 1, r = rank + 1; n <= 8 && r <= 8; n++, r++) {
+            const f = Square.numberToFile(n);
+            const occupied = this.addMove(`${f}${r}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        for (let n = fileNumber - 1, r = rank - 1; n >= 1 && r >= 1; n--, r--) {
+            const f = Square.numberToFile(n);
+            const occupied = this.addMove(`${f}${r}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        for (let n = fileNumber + 1, r = rank - 1; n <= 8 && r >= 1; n++, r--) {
+            const f = Square.numberToFile(n);
+            const occupied = this.addMove(`${f}${r}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        for (let n = fileNumber - 1, r = rank + 1; n >= 1 && r <= 8; n--, r++) {
+            const f = Square.numberToFile(n);
+            const occupied = this.addMove(`${f}${r}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        return moves;
     }
 
     findKingMoves(square, color) {
