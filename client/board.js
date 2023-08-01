@@ -1,8 +1,9 @@
 import Piece from './piece.js';
+import Square from './square.js';
 
 export default class Board {
     constructor() {
-        this.positions = {
+        this.squares = {
             a1: 'wr', b1: 'wn', c1: 'wb', d1: 'wq', e1: 'wk', f1: 'wb', g1: 'wn', h1: 'wr',
             a2: 'wp', b2: 'wp', c2: 'wp', d2: 'wp', e2: 'wp', f2: 'wp', g2: 'wp', h2: 'wp',
             a3: '', b3: '', c3: '', d3: '', e3: '', f3: '', g3: '', h3: '',
@@ -12,6 +13,7 @@ export default class Board {
             a7: 'bp', b7: 'bp', c7: 'bp', d7: 'bp', e7: 'bp', f7: 'bp', g7: 'bp', h7: 'bp',
             a8: 'br', b8: 'bn', c8: 'bb', d8: 'bq', e8: 'bk', f8: 'bb', g8: 'bn', h8: 'br',
         };
+        this.turn = 'White';
     }
 
     draw() {
@@ -20,20 +22,277 @@ export default class Board {
 
         let html = '<table class="chess-board"><tbody>';
         for (const rank of ranks.reverse()) {
-            let square = (rank % 2 === 0) ? 'light' : 'dark';
+            let shade = (rank % 2 === 0) ? 'light' : 'dark';
             html += `<tr class="rank-${rank}">`;
             for (const file of files) {
-                const position = `${file}${rank}`;
-                const piece = this.positions[position];
-                const symbol = Piece.draw(piece);
-                const title = Piece.name(piece);
-                html += `<td class="${position} ${piece} ${square}" title="${title}">${symbol}</td>`;
-                square = (square === 'light') ? 'dark' : 'light';
+                const square = `${file}${rank}`;
+                const piece = this.squares[square];
+                const moves = this.findMoves(square, piece);
+                html += Square.draw(square, shade, piece, !!moves.length);
+                shade = (shade === 'light') ? 'dark' : 'light';
             }
             html += '</tr>';
         }
         html += '</tr></tbody></table>';
 
         return html;
+    }
+
+    findMoves(square, abbr) {
+        if (!Piece.exists(abbr)) {
+            return [];
+        }
+        const piece = Piece.list[abbr];
+        if (piece.color !== this.turn) {
+            return [];
+        }
+
+        switch (piece.type) {
+        case 'Bishop':
+            return this.findBishopMoves(square, piece.color);
+        case 'King':
+            return this.findKingMoves(square, piece.color);
+        case 'Knight':
+            return this.findKnightMoves(square, piece.color);
+        case 'Pawn':
+            return this.findPawnMoves(square, piece.color);
+        case 'Queen':
+            return this.findQueenMoves(square, piece.color);
+        case 'Rook':
+            return this.findRookMoves(square, piece.color);
+        }
+
+        return [];
+    }
+
+    addJump(square, color, moves) {
+        if (this.squareOccupiedByOpponent(square, color)) {
+            moves.push(square);
+        }
+    }
+
+    addMove(square, color, moves) {
+        // Pawns should not call this, since they jump weird.
+        const occupied = this.squareOccupied(square);
+        if (!occupied) {
+            moves.push(square);
+        }
+        else if (this.squareOccupiedByOpponent(square, color)) {
+            moves.push(square);
+        }
+        return occupied;
+    }
+
+    findAdjacentSquares(file, rank) {
+        const squares = [];
+        const min = (rank === 1) ? 1 : rank - 1;
+        const max = (rank === 8) ? 8 : rank + 1;
+        const fileDown = Square.fileDown(file);
+        if (fileDown) {
+            for (let r = min; r <= max; r++) {
+                squares.push(`${fileDown}${r}`);
+            }
+        }
+        if (min !== rank) {
+            squares.push(`${file}${min}`);
+        }
+        if (max !== rank) {
+            squares.push(`${file}${max}`);
+        }
+        const fileUp = Square.fileUp(file);
+        if (fileUp) {
+            for (let r = min; r <= max; r++) {
+                squares.push(`${fileUp}${r}`);
+            }
+        }
+        return squares;
+    }
+
+    findBishopMoves(square, color) {
+        // Bishops can move diagonally until blocked by their own color or the
+        // edge of the board. They always stay on the same shade of squares.
+        const [file, rank] = Square.parse(square);
+        const fileNumber = Square.fileToNumber(file);
+        const moves = [];
+        for (let n = fileNumber + 1, r = rank + 1; n <= 8 && r <= 8; n++, r++) {
+            const f = Square.numberToFile(n);
+            const occupied = this.addMove(`${f}${r}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        for (let n = fileNumber - 1, r = rank - 1; n >= 1 && r >= 1; n--, r--) {
+            const f = Square.numberToFile(n);
+            const occupied = this.addMove(`${f}${r}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        for (let n = fileNumber + 1, r = rank - 1; n <= 8 && r >= 1; n++, r--) {
+            const f = Square.numberToFile(n);
+            const occupied = this.addMove(`${f}${r}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        for (let n = fileNumber - 1, r = rank + 1; n >= 1 && r <= 8; n--, r++) {
+            const f = Square.numberToFile(n);
+            const occupied = this.addMove(`${f}${r}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        return moves;
+    }
+
+    findKingMoves(square, color) {
+        // Kings can move one square in any direction.
+        // TODO: Disallow moving a king into danger.
+        const [file, rank] = Square.parse(square);
+        const squares = this.findAdjacentSquares(file, rank);
+        const moves = [];
+        for (const s of squares) {
+            this.addMove(s, color, moves);
+        }
+        return moves;
+    }
+
+    findKnightMoves(square, color) {
+        // Knights can move in an L shape, two spaces one direction and one
+        // space perpindicular. Other pieces do not block their path.
+        const [file, rank] = Square.parse(square);
+        const n = Square.fileToNumber(file);
+        const moves = [];
+        this.addMove(`${Square.numberToFile(n + 1)}${rank + 2}`, color, moves);
+        this.addMove(`${Square.numberToFile(n + 2)}${rank + 1}`, color, moves);
+        this.addMove(`${Square.numberToFile(n - 1)}${rank + 2}`, color, moves);
+        this.addMove(`${Square.numberToFile(n - 2)}${rank + 1}`, color, moves);
+        this.addMove(`${Square.numberToFile(n + 1)}${rank - 2}`, color, moves);
+        this.addMove(`${Square.numberToFile(n + 2)}${rank - 1}`, color, moves);
+        this.addMove(`${Square.numberToFile(n - 1)}${rank - 2}`, color, moves);
+        this.addMove(`${Square.numberToFile(n - 2)}${rank - 1}`, color, moves);
+        return moves;
+    }
+
+    findPawnJumps(file, rank, color) {
+        if ((color === 'White' && rank === 8) || (color === 'Black' && rank === 1)) {
+            return [];
+        }
+
+        const moves = [];
+        const r = (color === 'White') ? rank + 1 : rank - 1;
+        const left = Square.fileLeft(color, file);
+        const right = Square.fileRight(color, file);
+
+        if (left) {
+            this.addJump(`${left}${r}`, color, moves);
+        }
+
+        if (right) {
+            this.addJump(`${right}${r}`, color, moves);
+        }
+
+        return moves;
+    }
+
+    findPawnMoves(square, color) {
+        // Pawns can:
+        // - move forward one square;
+        // - move forward two squares, for the first move only;
+        // - jump one square diagonally.
+        // TODO: Implement en passant.
+        const [file, rank] = Square.parse(square);
+        const moves = (color === 'White') ?
+            this.findWhitePawnMoves(file, rank) :
+            this.findBlackPawnMoves(file, rank);
+        const jumps = this.findPawnJumps(file, rank, color);
+        for (const jump of jumps) {
+            moves.push(jump);
+        }
+        return moves;
+    }
+
+    findBlackPawnMoves(file, rank) {
+        const moves = [];
+        const min = (rank === 7) ? 5 : (rank > 1) ? rank - 1 : rank;
+        for (let r = rank - 1; r >= min; r--) {
+            const square = `${file}${r}`;
+            if (this.squareOccupied(square)) {
+                break;
+            }
+            moves.push(square);
+        }
+        return moves;
+    }
+
+    findWhitePawnMoves(file, rank) {
+        const moves = [];
+        const max = (rank === 2) ? 4 : (rank < 8) ? rank + 1 : rank;
+        for (let r = rank + 1; r <= max; r++) {
+            const square = `${file}${r}`;
+            if (this.squareOccupied(square)) {
+                break;
+            }
+            moves.push(square);
+        }
+        return moves;
+    }
+
+    findQueenMoves(square, color) {
+        // Queens can move orthogonally (like a rook) or diagonally (like a
+        // bishop) until blocked by their own color or the edge of the board.
+        const moves = this.findRookMoves(square, color);
+        const bishopMoves = this.findBishopMoves(square, color);
+        for (const move of bishopMoves) {
+            moves.push(move);
+        }
+        return moves;
+    }
+
+    findRookMoves(square, color) {
+        // Rooks can move orthogonally until blocked by their own color or the
+        // edge of the board. They move along either the rank or the file.
+        const [file, rank] = Square.parse(square);
+        const fileNumber = Square.fileToNumber(file);
+        const moves = [];
+        for (let n = fileNumber + 1; n <= 8; n++) {
+            const f = Square.numberToFile(n);
+            const occupied = this.addMove(`${f}${rank}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        for (let n = fileNumber - 1; n >= 1; n--) {
+            const f = Square.numberToFile(n);
+            const occupied = this.addMove(`${f}${rank}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        for (let r = rank + 1; r <= 8; r++) {
+            const occupied = this.addMove(`${file}${r}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        for (let r = rank - 1; r >= 1; r--) {
+            const occupied = this.addMove(`${file}${r}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        return moves;
+    }
+
+    squareOccupied(square) {
+        return this.squares[square] !== '';
+    }
+
+    squareOccupiedByOpponent(square, color) {
+        const piece = this.squares[square];
+        if (!piece) {
+            return false;
+        }
+        return Piece.list[piece].color !== color;
     }
 }
