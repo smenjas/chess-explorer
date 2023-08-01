@@ -51,7 +51,7 @@ export default class Board {
         case 'Bishop':
             break;
         case 'King':
-            break;
+            return this.findKingMoves(square, piece.color);
         case 'Knight':
             break;
         case 'Pawn':
@@ -69,6 +69,55 @@ export default class Board {
         if (this.squareOccupiedByOpponent(square, color)) {
             moves.push(square);
         }
+    }
+
+    addMove(square, color, moves) {
+        // Pawns should not call this, since they jump weird.
+        const occupied = this.squareOccupied(square);
+        if (!occupied) {
+            moves.push(square);
+        }
+        else if (this.squareOccupiedByOpponent(square, color)) {
+            moves.push(square);
+        }
+        return occupied;
+    }
+
+    findAdjacentSquares(file, rank) {
+        const squares = [];
+        const min = (rank === 1) ? 1 : rank - 1;
+        const max = (rank === 8) ? 8 : rank + 1;
+        const fileDown = Square.fileDown(file);
+        if (fileDown) {
+            for (let r = min; r <= max; r++) {
+                squares.push(`${fileDown}${r}`);
+            }
+        }
+        if (min !== rank) {
+            squares.push(`${file}${min}`);
+        }
+        if (max !== rank) {
+            squares.push(`${file}${max}`);
+        }
+        const fileUp = Square.fileUp(file);
+        if (fileUp) {
+            for (let r = min; r <= max; r++) {
+                squares.push(`${fileUp}${r}`);
+            }
+        }
+        return squares;
+    }
+
+    findKingMoves(square, color) {
+        // Kings can move one square in any direction.
+        // TODO: Disallow moving a king into danger.
+        const [file, rank] = Square.parse(square);
+        const squares = this.findAdjacentSquares(file, rank);
+        const moves = [];
+        for (const s of squares) {
+            this.addMove(s, color, moves);
+        }
+        return moves;
     }
 
     findPawnJumps(file, rank, color) {
