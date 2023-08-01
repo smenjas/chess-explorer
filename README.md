@@ -1,7 +1,7 @@
 # Chess Explorer
 
 This is a chess app built with vanilla JavaScript. It's an exercise to learn
-web development fundamentals and chess strategry, using HTML, CSS, & JS.
+web development fundamentals and chess strategy, using HTML, CSS, & JS.
 
 ## Exercise Constraints
 - No libraries, frameworks, templates, or preprocessors outside Node.js
