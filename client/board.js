@@ -137,7 +137,7 @@ export default class Board {
 
     findKnightMoves(square, color) {
         // Knights can move in an L shape, two spaces one direction and one
-        // space perpindicular. Other pieces do not block their path.
+        // space perpendicular. Other pieces do not block their path.
         const [file, rank] = Square.parse(square);
         const n = Square.fileToNumber(file);
         const moves = [];
