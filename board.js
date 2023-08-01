@@ -59,7 +59,7 @@ export default class Board {
         case 'Queen':
             break;
         case 'Rook':
-            break;
+            return this.findRookMoves(square, piece.color);
         }
 
         return [];
@@ -180,6 +180,41 @@ export default class Board {
                 break;
             }
             moves.push(square);
+        }
+        return moves;
+    }
+
+    findRookMoves(square, color) {
+        // Rooks can move orthogonally until blocked by their own color or the
+        // edge of the board. They move along either the rank or the file.
+        const [file, rank] = Square.parse(square);
+        const fileNumber = Square.fileToNumber(file);
+        const moves = [];
+        for (let n = fileNumber + 1; n <= 8; n++) {
+            const f = Square.numberToFile(n);
+            const occupied = this.addMove(`${f}${rank}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        for (let n = fileNumber - 1; n >= 1; n--) {
+            const f = Square.numberToFile(n);
+            const occupied = this.addMove(`${f}${rank}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        for (let r = rank + 1; r <= 8; r++) {
+            const occupied = this.addMove(`${file}${r}`, color, moves);
+            if (occupied) {
+                break;
+            }
+        }
+        for (let r = rank - 1; r >= 1; r--) {
+            const occupied = this.addMove(`${file}${r}`, color, moves);
+            if (occupied) {
+                break;
+            }
         }
         return moves;
     }
