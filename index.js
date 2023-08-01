@@ -25,10 +25,7 @@ function selectSquare(square) {
     for (const square of squares) {
         square.classList.remove('selected');
     }
-    if (alreadySelected) {
-        square.classList.remove('selected');
-    }
-    else {
+    if (!alreadySelected) {
         square.classList.add('selected');
     }
 }
