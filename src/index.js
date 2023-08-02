@@ -34,7 +34,6 @@ const server = http.createServer((request, response) => {
         response.setHeader('Content-Type', 'image/jpeg');
         content = fs.readFileSync(`client${path}`);
         break;
-    case '/img/apple-touch-icon.png':
     case '/img/icons8-pawn-ios-16-16.png':
     case '/img/icons8-pawn-ios-16-32.png':
     case '/img/icons8-pawn-ios-16-57.png':
@@ -46,6 +45,11 @@ const server = http.createServer((request, response) => {
         response.statusCode = 200;
         response.setHeader('Content-Type', 'image/png');
         content = fs.readFileSync(`client${path}`);
+        break;
+    case '/apple-touch-icon.png':
+        response.statusCode = 200;
+        response.setHeader('Content-Type', 'image/png');
+        content = fs.readFileSync(`client/img${path}`);
         break;
     default:
         response.statusCode = 404;
