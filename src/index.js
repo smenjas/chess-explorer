@@ -34,6 +34,7 @@ const server = http.createServer((request, response) => {
         response.setHeader('Content-Type', 'image/jpeg');
         content = fs.readFileSync(`client${path}`);
         break;
+    case '/img/apple-touch-icon.png':
     case '/img/icons8-pawn-ios-16-16.png':
     case '/img/icons8-pawn-ios-16-32.png':
     case '/img/icons8-pawn-ios-16-57.png':
