@@ -23,3 +23,5 @@ Start the node server with:
 ```sh
 npm run dev
 ```
+
+[Pawn](https://icons8.com/icon/1009/pawn) icon by [Icons8](https://icons8.com)
