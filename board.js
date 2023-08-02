@@ -48,8 +48,7 @@ export default class Board {
         for (const rank of ranks) {
             for (const file of files) {
                 const square = `${file}${rank}`;
-                const piece = this.squares[square];
-                from[square] = this.findMoves(square, piece);
+                from[square] = this.findMoves(square);
             }
         }
         return from;
@@ -68,7 +67,8 @@ export default class Board {
         return to;
     }
 
-    findMoves(square, abbr) {
+    findMoves(square) {
+        const abbr = this.squares[square];
         if (!Piece.exists(abbr)) {
             return [];
         }
@@ -275,6 +275,12 @@ export default class Board {
             }
         }
         return moves;
+    }
+
+    move(from, to) {
+        this.squares[to] = this.squares[from];
+        this.squares[from] = '';
+        this.turn = (this.turn === 'Black') ? 'White' : 'Black';
     }
 
     squareOccupied(square) {

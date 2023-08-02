@@ -13,7 +13,7 @@ function handleSelection(event) {
     let piece = '';
     for (const className of event.target.classList) {
         if (Piece.exists(className)) {
-            selectSquare(square);
+            selectPiece(square);
             break;
         }
     }
@@ -27,11 +27,24 @@ function highlightMoves(square, remove = false) {
         }
         else {
             s.classList.add('possible');
+            s.addEventListener('click', handleMove);
         }
     }
 }
 
-function selectSquare(square) {
+function handleMove(event) {
+    const square = event.target;
+    const squares = document.querySelectorAll('.chess-board td.selected');
+    const selected = squares[0];
+    board.move(selected.id, square.id);
+    selected.classList.remove('selected');
+    highlightMoves(selected.id, true);
+    document.getElementById('board').innerHTML = board.draw();
+    document.getElementById('description').innerHTML = board.describe();
+    addEventHandlers();
+}
+
+function selectPiece(square) {
     const alreadySelected = square.classList.contains('selected');
     const squares = document.querySelectorAll('.chess-board td.selected');
     for (const s of squares) {
@@ -50,10 +63,10 @@ document.title = 'Chess Explorer';
 let html = '<header>';
 html += `<h1>${document.title}</h1>`;
 html += '</header>';
-html += '<main>';
+html += '<main id="board">';
 html += board.draw();
 html += '</main>';
-html += '<section>';
+html += '<section id="description">';
 html += board.describe();
 html += '</section>';
 document.body.insertAdjacentHTML('beforeend', html);
