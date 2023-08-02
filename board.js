@@ -24,6 +24,8 @@ export default class Board {
     draw() {
         const ranks = [1, 2, 3, 4, 5, 6, 7, 8];
         const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+        const from = this.findAllMoves(ranks, files);
+        const to = Board.findAllTargets(from);
         let html = '<table class="chess-board"><tbody>';
         for (const rank of ranks.reverse()) {
             let shade = (rank % 2 === 0) ? 'light' : 'dark';
@@ -31,14 +33,39 @@ export default class Board {
             for (const file of files) {
                 const square = `${file}${rank}`;
                 const piece = this.squares[square];
-                const moves = this.findMoves(square, piece);
-                html += Square.draw(square, shade, piece, !!moves.length);
+                const moves = from[square];
+                html += Square.draw(square, shade, piece, !!moves.length, to[square]);
                 shade = (shade === 'light') ? 'dark' : 'light';
             }
             html += '</tr>';
         }
         html += '</tr></tbody></table>';
         return html;
+    }
+
+    findAllMoves(ranks, files) {
+        const from = {};
+        for (const rank of ranks) {
+            for (const file of files) {
+                const square = `${file}${rank}`;
+                const piece = this.squares[square];
+                from[square] = this.findMoves(square, piece);
+            }
+        }
+        return from;
+    }
+
+    static findAllTargets(from) {
+        const to = {};
+        for (const [square, moves] of Object.entries(from)) {
+            for (const move of moves) {
+                if (!(move in to)) {
+                    to[move] = [];
+                }
+                to[move].push(square);
+            }
+        }
+        return to;
     }
 
     findMoves(square, abbr) {
