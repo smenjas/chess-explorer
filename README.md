@@ -11,8 +11,10 @@ web development fundamentals and chess strategy, using HTML, CSS, & JS.
 
 ## Goals
 - [ ] Play as white or black
-- [ ] Play against an artificial opponent
 - [ ] Provide commentary on the game
+- [ ] Play against an artificial opponent
+
+![Chess board](screenshots/board.png)
 
 ## Development
 Install the dependencies by running:
