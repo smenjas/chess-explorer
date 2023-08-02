@@ -29,10 +29,10 @@ const server = http.createServer((request, response) => {
         response.setHeader('Content-Type', 'text/css');
         content = fs.readFileSync(`client${path}`, 'utf8');
         break;
-    case '/404.jpg':
+    case '/img/404.jpg':
         response.statusCode = 200;
         response.setHeader('Content-Type', 'image/jpeg');
-        content = fs.readFileSync(`client/img${path}`);
+        content = fs.readFileSync(`client${path}`);
         break;
     default:
         response.statusCode = 404;
