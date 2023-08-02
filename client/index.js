@@ -19,14 +19,28 @@ function handleSelection(event) {
     }
 }
 
+function highlightMoves(square, remove = false) {
+    const squares = document.querySelectorAll(`.chess-board td.from-${square}`);
+    for (const s of squares) {
+        if (remove) {
+            s.classList.remove('possible');
+        }
+        else {
+            s.classList.add('possible');
+        }
+    }
+}
+
 function selectSquare(square) {
     const alreadySelected = square.classList.contains('selected');
     const squares = document.querySelectorAll('.chess-board td.selected');
-    for (const square of squares) {
-        square.classList.remove('selected');
+    for (const s of squares) {
+        s.classList.remove('selected');
+        highlightMoves(s.id, true);
     }
     if (!alreadySelected) {
         square.classList.add('selected');
+        highlightMoves(square.id);
     }
 }
 

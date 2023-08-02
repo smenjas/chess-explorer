@@ -32,7 +32,18 @@ td {
     width: 4rem;
     text-align: center;
 }
-td.can-move:hover {
+
+td.dark {
+    background: darkseagreen;
+    color: black;
+}
+td.light {
+    background: lightyellow;
+    color: black;
+}
+
+td.can-move:hover,
+td.possible {
     cursor: pointer;
     outline: 5px solid #808080;
     border-radius: 1px;
@@ -41,15 +52,6 @@ td.selected,
 td.selected:hover {
     outline: 5px solid black;
     border-radius: 1px;
-}
-
-.dark {
-    background: darkseagreen;
-    color: black;
-}
-.light {
-    background: lightyellow;
-    color: black;
 }
 
 @media only screen and (prefers-color-scheme: dark) {

@@ -1,12 +1,17 @@
 import Piece from './piece.js';
 
 export default class Square {
-    static draw(square, shade, piece, canMove) {
+    static draw(square, shade, piece, canMove, squares) {
         const symbol = Piece.draw(piece);
         const title = Square.title(square, piece);
         const classes = [piece, shade];
         if (canMove) {
             classes.push('can-move');
+        }
+        if (Array.isArray(squares)) {
+            for (const square of squares) {
+                classes.push(`from-${square}`);
+            }
         }
         return `<td id="${square}" class="${classes.join(' ')}" title="${title}">${symbol}</td>`;
     }
