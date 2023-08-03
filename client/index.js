@@ -24,6 +24,7 @@ function highlightMoves(square, remove = false) {
     for (const s of squares) {
         if (remove) {
             s.classList.remove('possible');
+            s.removeEventListener('click', handleMove);
         }
         else {
             s.classList.add('possible');
