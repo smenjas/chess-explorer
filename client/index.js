@@ -8,6 +8,31 @@ function addEventHandlers() {
     }
 }
 
+function addMoves(squares) {
+    for (const square of squares) {
+        square.classList.add('possible');
+        square.addEventListener('click', handleMove);
+    }
+}
+
+function cancelMoves(squares) {
+    for (const square of squares) {
+        square.classList.remove('possible');
+        square.removeEventListener('click', handleMove);
+    }
+}
+
+function drawPage(board) {
+    document.title = 'Chess Explorer';
+    let html = '<header>';
+    html += `<h1>${document.title}</h1>`;
+    html += '</header>';
+    html += '<main id="board"></main>';
+    html += '<section id="description"></section>';
+    document.body.insertAdjacentHTML('beforeend', html);
+    updatePage(board);
+}
+
 function handleSelection(event) {
     const square = event.target;
     let piece = '';
@@ -19,20 +44,6 @@ function handleSelection(event) {
     }
 }
 
-function highlightMoves(square, remove = false) {
-    const squares = document.querySelectorAll(`.chess-board td.from-${square}`);
-    for (const s of squares) {
-        if (remove) {
-            s.classList.remove('possible');
-            s.removeEventListener('click', handleMove);
-        }
-        else {
-            s.classList.add('possible');
-            s.addEventListener('click', handleMove);
-        }
-    }
-}
-
 function handleMove(event) {
     const square = event.target;
     const squares = document.querySelectorAll('.chess-board td.selected');
@@ -40,9 +51,13 @@ function handleMove(event) {
     board.move(selected.id, square.id);
     selected.classList.remove('selected');
     highlightMoves(selected.id, true);
-    document.getElementById('board').innerHTML = board.draw();
-    document.getElementById('description').innerHTML = board.describe();
-    addEventHandlers();
+    updatePage(board);
+}
+
+function highlightMoves(square, cancel = false) {
+    const squares = document.querySelectorAll(`.chess-board td.from-${square}`);
+    const toggleMoves = cancel ? cancelMoves : addMoves;
+    toggleMoves(squares);
 }
 
 function selectPiece(square) {
@@ -58,17 +73,11 @@ function selectPiece(square) {
     }
 }
 
-const board = new Board();
+function updatePage(board) {
+    document.getElementById('board').innerHTML = board.draw();
+    document.getElementById('description').innerHTML = board.describe();
+    addEventHandlers();
+}
 
-document.title = 'Chess Explorer';
-let html = '<header>';
-html += `<h1>${document.title}</h1>`;
-html += '</header>';
-html += '<main id="board">';
-html += board.draw();
-html += '</main>';
-html += '<section id="description">';
-html += board.describe();
-html += '</section>';
-document.body.insertAdjacentHTML('beforeend', html);
-addEventHandlers();
+const board = new Board();
+drawPage(board);
