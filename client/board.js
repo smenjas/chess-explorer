@@ -79,19 +79,20 @@ export default class Board {
         if (piece.color !== color) {
             return [];
         }
+        const [file, rank] = Square.parse(square);
         switch (piece.type) {
         case 'Bishop':
-            return this.findBishopMoves(square, piece.color);
+            return this.findBishopMoves(file, rank, piece.color);
         case 'King':
-            return this.findKingMoves(square, piece.color);
+            return this.findKingMoves(file, rank, piece.color);
         case 'Knight':
-            return this.findKnightMoves(square, piece.color);
+            return this.findKnightMoves(file, rank, piece.color);
         case 'Pawn':
-            return this.findPawnMoves(square, piece.color, opponent);
+            return this.findPawnMoves(file, rank, piece.color, opponent);
         case 'Queen':
-            return this.findQueenMoves(square, piece.color);
+            return this.findQueenMoves(file, rank, piece.color);
         case 'Rook':
-            return this.findRookMoves(square, piece.color);
+            return this.findRookMoves(file, rank, piece.color);
         }
         return [];
     }
@@ -120,10 +121,9 @@ export default class Board {
         return occupied;
     }
 
-    findBishopMoves(square, color) {
+    findBishopMoves(file, rank, color) {
         // Bishops can move diagonally until blocked by their own color or the
         // edge of the board. They always stay on the same shade of squares.
-        const [file, rank] = Square.parse(square);
         const fileNumber = Square.fileToNumber(file);
         const moves = [];
         for (let n = fileNumber + 1, r = rank + 1; n <= 8 && r <= 8; n++, r++) {
@@ -157,10 +157,9 @@ export default class Board {
         return moves;
     }
 
-    findKingMoves(square, color) {
+    findKingMoves(file, rank, color) {
         // Kings can move one square in any direction.
         // TODO: Disallow moving a king into danger.
-        const [file, rank] = Square.parse(square);
         const squares = Square.findAdjacent(file, rank);
         const moves = [];
         for (const s of squares) {
@@ -171,20 +170,27 @@ export default class Board {
         return moves;
     }
 
-    findKnightMoves(square, color) {
+    findKnightMoves(file, rank, color) {
         // Knights can move in an L shape, two spaces one direction and one
         // space perpendicular. Other pieces do not block their path.
-        const [file, rank] = Square.parse(square);
         const n = Square.fileToNumber(file);
         const moves = [];
-        this.addMove(moves, `${Square.numberToFile(n + 1)}${rank + 2}`, color);
-        this.addMove(moves, `${Square.numberToFile(n + 2)}${rank + 1}`, color);
-        this.addMove(moves, `${Square.numberToFile(n - 1)}${rank + 2}`, color);
-        this.addMove(moves, `${Square.numberToFile(n - 2)}${rank + 1}`, color);
-        this.addMove(moves, `${Square.numberToFile(n + 1)}${rank - 2}`, color);
-        this.addMove(moves, `${Square.numberToFile(n + 2)}${rank - 1}`, color);
-        this.addMove(moves, `${Square.numberToFile(n - 1)}${rank - 2}`, color);
-        this.addMove(moves, `${Square.numberToFile(n - 2)}${rank - 1}`, color);
+        const fPlus1 = Square.numberToFile(n + 1);
+        const fPlus2 = Square.numberToFile(n + 2);
+        const fLess1 = Square.numberToFile(n - 1);
+        const fLess2 = Square.numberToFile(n - 2);
+        const rPlus1 = rank + 1;
+        const rPlus2 = rank + 2;
+        const rLess1 = rank - 1;
+        const rLess2 = rank - 2;
+        this.addMove(moves, `${fPlus1}${rPlus2}`, color);
+        this.addMove(moves, `${fPlus2}${rPlus1}`, color);
+        this.addMove(moves, `${fLess1}${rPlus2}`, color);
+        this.addMove(moves, `${fLess2}${rPlus1}`, color);
+        this.addMove(moves, `${fPlus1}${rLess2}`, color);
+        this.addMove(moves, `${fPlus2}${rLess1}`, color);
+        this.addMove(moves, `${fLess1}${rLess2}`, color);
+        this.addMove(moves, `${fLess2}${rLess1}`, color);
         return moves;
     }
 
@@ -205,13 +211,12 @@ export default class Board {
         return moves;
     }
 
-    findPawnMoves(square, color, jumpsOnly = false) {
+    findPawnMoves(file, rank, color, jumpsOnly = false) {
         // Pawns can:
         // - move forward one square;
         // - move forward two squares, for the first move only;
         // - jump one square diagonally.
         // TODO: Implement en passant.
-        const [file, rank] = Square.parse(square);
         const jumps = this.findPawnJumps(file, rank, color, jumpsOnly);
         if (jumpsOnly) {
             return jumps;
@@ -246,18 +251,17 @@ export default class Board {
         return moves;
     }
 
-    findQueenMoves(square, color) {
+    findQueenMoves(file, rank, color) {
         // Queens can move orthogonally (like a rook) or diagonally (like a
         // bishop) until blocked by their own color or the edge of the board.
-        const rookMoves = this.findRookMoves(square, color);
-        const bishopMoves = this.findBishopMoves(square, color);
+        const rookMoves = this.findRookMoves(file, rank, color);
+        const bishopMoves = this.findBishopMoves(file, rank, color);
         return rookMoves.concat(bishopMoves);
     }
 
-    findRookMoves(square, color) {
+    findRookMoves(file, rank, color) {
         // Rooks can move orthogonally until blocked by their own color or the
         // edge of the board. They move along either the rank or the file.
-        const [file, rank] = Square.parse(square);
         const fileNumber = Square.fileToNumber(file);
         const moves = [];
         for (let n = fileNumber + 1; n <= 8; n++) {
