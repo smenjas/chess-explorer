@@ -15,26 +15,21 @@ export default class Piece {
     };
 
     static draw(abbr) {
-        if (abbr == '') {
-            return '';
-        }
         if (!Piece.exists(abbr)) {
-            console.warn('Invalid piece abbreviation:', abbr);
             return '';
         }
         return Piece.list[abbr].symbol;
     }
 
     static exists(abbr) {
+        if (abbr === '') {
+            return false;
+        }
         return abbr in Piece.list;
     }
 
     static name(abbr) {
-        if (abbr == '') {
-            return '';
-        }
         if (!Piece.exists(abbr)) {
-            console.warn('Invalid piece abbreviation:', abbr);
             return '';
         }
         const piece = Piece.list[abbr];
