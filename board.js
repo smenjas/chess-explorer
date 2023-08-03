@@ -175,14 +175,22 @@ export default class Board {
         // space perpendicular. Other pieces do not block their path.
         const n = Square.fileToNumber(file);
         const moves = [];
-        this.addMove(moves, `${Square.numberToFile(n + 1)}${rank + 2}`, color);
-        this.addMove(moves, `${Square.numberToFile(n + 2)}${rank + 1}`, color);
-        this.addMove(moves, `${Square.numberToFile(n - 1)}${rank + 2}`, color);
-        this.addMove(moves, `${Square.numberToFile(n - 2)}${rank + 1}`, color);
-        this.addMove(moves, `${Square.numberToFile(n + 1)}${rank - 2}`, color);
-        this.addMove(moves, `${Square.numberToFile(n + 2)}${rank - 1}`, color);
-        this.addMove(moves, `${Square.numberToFile(n - 1)}${rank - 2}`, color);
-        this.addMove(moves, `${Square.numberToFile(n - 2)}${rank - 1}`, color);
+        const fPlus1 = Square.numberToFile(n + 1);
+        const fPlus2 = Square.numberToFile(n + 2);
+        const fLess1 = Square.numberToFile(n - 1);
+        const fLess2 = Square.numberToFile(n - 2);
+        const rPlus1 = rank + 1;
+        const rPlus2 = rank + 2;
+        const rLess1 = rank - 1;
+        const rLess2 = rank - 2;
+        this.addMove(moves, `${fPlus1}${rPlus2}`, color);
+        this.addMove(moves, `${fPlus2}${rPlus1}`, color);
+        this.addMove(moves, `${fLess1}${rPlus2}`, color);
+        this.addMove(moves, `${fLess2}${rPlus1}`, color);
+        this.addMove(moves, `${fPlus1}${rLess2}`, color);
+        this.addMove(moves, `${fPlus2}${rLess1}`, color);
+        this.addMove(moves, `${fLess1}${rLess2}`, color);
+        this.addMove(moves, `${fLess2}${rLess1}`, color);
         return moves;
     }
 
