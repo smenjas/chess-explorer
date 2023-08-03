@@ -71,7 +71,7 @@ export default class Board {
 
     findMoves(square, opponent = false) {
         const abbr = this.squares[square];
-        if (!Piece.exists(abbr)) {
+        if (abbr === '') {
             return [];
         }
         const color = !opponent ? this.turn : (this.turn === 'Black') ? 'White' : 'Black';
