@@ -17,8 +17,8 @@ export default class Board {
         turn: 'White',
     };
 
-    constructor() {
-        const board = Board.restore();
+    constructor(newGame = false) {
+        const board = newGame ? Board.fresh : Board.restore();
         for (const key in board) {
             this[key] = board[key];
         }
