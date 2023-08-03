@@ -2,8 +2,8 @@ import Piece from './piece.js';
 import Square from './square.js';
 
 export default class Board {
-    constructor() {
-        this.squares = {
+    static fresh = {
+        squares: {
             a1: 'WR', b1: 'WN', c1: 'WB', d1: 'WQ', e1: 'WK', f1: 'WB', g1: 'WN', h1: 'WR',
             a2: 'WP', b2: 'WP', c2: 'WP', d2: 'WP', e2: 'WP', f2: 'WP', g2: 'WP', h2: 'WP',
             a3: '', b3: '', c3: '', d3: '', e3: '', f3: '', g3: '', h3: '',
@@ -12,9 +12,16 @@ export default class Board {
             a6: '', b6: '', c6: '', d6: '', e6: '', f6: '', g6: '', h6: '',
             a7: 'BP', b7: 'BP', c7: 'BP', d7: 'BP', e7: 'BP', f7: 'BP', g7: 'BP', h7: 'BP',
             a8: 'BR', b8: 'BN', c8: 'BB', d8: 'BQ', e8: 'BK', f8: 'BB', g8: 'BN', h8: 'BR',
-        };
-        this.risks = {};
-        this.turn = 'White';
+        },
+        risks: {},
+        turn: 'White',
+    };
+
+    constructor() {
+        const board = Board.restore();
+        for (const key in board) {
+            this[key] = board[key];
+        }
     }
 
     describe() {
@@ -293,10 +300,20 @@ export default class Board {
         return moves;
     }
 
+    static restore() {
+        return JSON.parse(localStorage.getItem('board')) || Board.fresh;
+    }
+
+    save() {
+        localStorage.setItem('board', JSON.stringify(this));
+    }
+
     move(from, to) {
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
         this.turn = (this.turn === 'Black') ? 'White' : 'Black';
+        this.risks = {};
+        this.save();
     }
 
     squareOccupied(square) {
