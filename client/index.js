@@ -6,6 +6,10 @@ function addEventHandlers() {
     for (const square of squares) {
         square.addEventListener('click', handleSelection);
     }
+    const newGameButton = document.getElementById('new-game');
+    if (newGameButton) {
+        newGameButton.addEventListener('click', handleNewGame);
+    }
 }
 
 function addMoves(squares) {
@@ -29,7 +33,13 @@ function drawPage(board) {
     html += '</header>';
     html += '<main id="board"></main>';
     html += '<section id="description"></section>';
+    html += '<button type="button" id="new-game">New Game</button>';
     document.body.insertAdjacentHTML('beforeend', html);
+    updatePage(board);
+}
+
+function handleNewGame(event) {
+    board = new Board(true);
     updatePage(board);
 }
 
@@ -79,5 +89,5 @@ function updatePage(board) {
     addEventHandlers();
 }
 
-const board = new Board();
+let board = new Board();
 drawPage(board);
