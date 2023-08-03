@@ -1,17 +1,17 @@
 export default class Piece {
     static list = {
-        bb: { symbol: '&#9821;', color: 'Black', type: 'Bishop' },
-        bk: { symbol: '&#9818;', color: 'Black', type: 'King' },
-        bn: { symbol: '&#9822;', color: 'Black', type: 'Knight' },
-        bp: { symbol: '&#9823;', color: 'Black', type: 'Pawn' },
-        bq: { symbol: '&#9819;', color: 'Black', type: 'Queen' },
-        br: { symbol: '&#9820;', color: 'Black', type: 'Rook' },
-        wb: { symbol: '&#9815;', color: 'White', type: 'Bishop' },
-        wk: { symbol: '&#9812;', color: 'White', type: 'King' },
-        wn: { symbol: '&#9816;', color: 'White', type: 'Knight' },
-        wp: { symbol: '&#9817;', color: 'White', type: 'Pawn' },
-        wq: { symbol: '&#9813;', color: 'White', type: 'Queen' },
-        wr: { symbol: '&#9814;', color: 'White', type: 'Rook' },
+        BB: { symbol: '&#9821;', color: 'Black', type: 'Bishop' },
+        BK: { symbol: '&#9818;', color: 'Black', type: 'King' },
+        BN: { symbol: '&#9822;', color: 'Black', type: 'Knight' },
+        BP: { symbol: '&#9823;', color: 'Black', type: 'Pawn' },
+        BQ: { symbol: '&#9819;', color: 'Black', type: 'Queen' },
+        BR: { symbol: '&#9820;', color: 'Black', type: 'Rook' },
+        WB: { symbol: '&#9815;', color: 'White', type: 'Bishop' },
+        WK: { symbol: '&#9812;', color: 'White', type: 'King' },
+        WN: { symbol: '&#9816;', color: 'White', type: 'Knight' },
+        WP: { symbol: '&#9817;', color: 'White', type: 'Pawn' },
+        WQ: { symbol: '&#9813;', color: 'White', type: 'Queen' },
+        WR: { symbol: '&#9814;', color: 'White', type: 'Rook' },
     };
 
     static draw(abbr) {
