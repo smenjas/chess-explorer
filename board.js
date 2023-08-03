@@ -13,6 +13,7 @@ export default class Board {
             a7: 'bp', b7: 'bp', c7: 'bp', d7: 'bp', e7: 'bp', f7: 'bp', g7: 'bp', h7: 'bp',
             a8: 'br', b8: 'bn', c8: 'bb', d8: 'bq', e8: 'bk', f8: 'bb', g8: 'bn', h8: 'br',
         };
+        this.risks = {};
         this.turn = 'White';
     }
 
@@ -24,6 +25,7 @@ export default class Board {
     draw() {
         const ranks = [1, 2, 3, 4, 5, 6, 7, 8];
         const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+        this.risks = this.findRisks(ranks, files);
         const from = this.findAllMoves(ranks, files);
         const to = Board.findAllTargets(from);
         let html = '<table class="chess-board"><tbody>';
@@ -43,12 +45,12 @@ export default class Board {
         return html;
     }
 
-    findAllMoves(ranks, files) {
+    findAllMoves(ranks, files, opponent = false) {
         const from = {};
         for (const rank of ranks) {
             for (const file of files) {
                 const square = `${file}${rank}`;
-                from[square] = this.findMoves(square);
+                from[square] = this.findMoves(square, opponent);
             }
         }
         return from;
@@ -67,13 +69,14 @@ export default class Board {
         return to;
     }
 
-    findMoves(square) {
+    findMoves(square, opponent = false) {
         const abbr = this.squares[square];
         if (!Piece.exists(abbr)) {
             return [];
         }
+        const color = !opponent ? this.turn : (this.turn === 'Black') ? 'White' : 'Black';
         const piece = Piece.list[abbr];
-        if (piece.color !== this.turn) {
+        if (piece.color !== color) {
             return [];
         }
         switch (piece.type) {
@@ -84,7 +87,7 @@ export default class Board {
         case 'Knight':
             return this.findKnightMoves(square, piece.color);
         case 'Pawn':
-            return this.findPawnMoves(square, piece.color);
+            return this.findPawnMoves(square, piece.color, opponent);
         case 'Queen':
             return this.findQueenMoves(square, piece.color);
         case 'Rook':
@@ -93,9 +96,13 @@ export default class Board {
         return [];
     }
 
-    addJump(moves, square, color) {
+    findRisks(ranks, files) {
+        return Board.findAllTargets(this.findAllMoves(ranks, files, true));
+    }
+
+    addJump(moves, square, color, hypothetical = false) {
         // This is for pawns, since they jump weird.
-        if (this.squareOccupiedByOpponent(square, color)) {
+        if (hypothetical || this.squareOccupiedByOpponent(square, color)) {
             moves.push(square);
         }
     }
@@ -157,7 +164,9 @@ export default class Board {
         const squares = Square.findAdjacent(file, rank);
         const moves = [];
         for (const s of squares) {
-            this.addMove(moves, s, color);
+            if (!(s in this.risks)) {
+                this.addMove(moves, s, color);
+            }
         }
         return moves;
     }
@@ -179,7 +188,7 @@ export default class Board {
         return moves;
     }
 
-    findPawnJumps(file, rank, color) {
+    findPawnJumps(file, rank, color, hypothetical = false) {
         if ((color === 'White' && rank === 8) || (color === 'Black' && rank === 1)) {
             return [];
         }
@@ -188,25 +197,28 @@ export default class Board {
         const left = Square.fileLeft(color, file);
         const right = Square.fileRight(color, file);
         if (left) {
-            this.addJump(moves, `${left}${r}`, color);
+            this.addJump(moves, `${left}${r}`, color, hypothetical);
         }
         if (right) {
-            this.addJump(moves, `${right}${r}`, color);
+            this.addJump(moves, `${right}${r}`, color, hypothetical);
         }
         return moves;
     }
 
-    findPawnMoves(square, color) {
+    findPawnMoves(square, color, jumpsOnly = false) {
         // Pawns can:
         // - move forward one square;
         // - move forward two squares, for the first move only;
         // - jump one square diagonally.
         // TODO: Implement en passant.
         const [file, rank] = Square.parse(square);
+        const jumps = this.findPawnJumps(file, rank, color, jumpsOnly);
+        if (jumpsOnly) {
+            return jumps;
+        }
         const moves = (color === 'White') ?
             this.findWhitePawnMoves(file, rank) :
             this.findBlackPawnMoves(file, rank);
-        const jumps = this.findPawnJumps(file, rank, color);
         return moves.concat(jumps);
     }
 
