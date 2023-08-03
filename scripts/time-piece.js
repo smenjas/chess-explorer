@@ -21,7 +21,7 @@ const functions = [
     checkPieceExists,
 ];
 
-const input = ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr', ''];
+const input = ['BB', 'BK', 'BN', 'BP', 'BQ', 'BR', 'WB', 'WK', 'WN', 'WP', 'WQ', 'WR', ''];
 
 const max = 1e7;
 for (const f of functions) {
