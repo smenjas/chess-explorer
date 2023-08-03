@@ -15,7 +15,7 @@ export default class Piece {
     };
 
     static draw(abbr) {
-        if (abbr.length !== 2) {
+        if (abbr == '') {
             return '';
         }
         if (!Piece.exists(abbr)) {
@@ -30,7 +30,7 @@ export default class Piece {
     }
 
     static name(abbr) {
-        if (abbr.length !== 2) {
+        if (abbr == '') {
             return '';
         }
         if (!Piece.exists(abbr)) {

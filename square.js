@@ -90,7 +90,7 @@ export default class Square {
 
     static title(square, piece) {
         let title = square;
-        if (Piece.exists(piece)) {
+        if (piece !== '') {
             title += `: ${Piece.name(piece)}`;
         }
         return title;
