@@ -19,6 +19,7 @@ export default class Board {
         turn: 'White',
         king: 'e1',
         check: false,
+        mate: false,
     };
 
     constructor(newGame = false) {
@@ -29,6 +30,9 @@ export default class Board {
     }
 
     describe() {
+        if (this.mate) {
+            return `<p>Checkmate. ${this.getOpponent()} wins.</p>`;
+        }
         let html = `${this.turn}'s move.`;
         if (this.check) {
             html += ' Check.';
@@ -65,7 +69,14 @@ export default class Board {
         this.origins = this.findAllMoves(ranks, files);
         this.targets = Board.findAllTargets(this.origins);
         // Restrict moves to those that protect the king, when in check.
-        this.filterMoves();
+        const canMove = this.filterMoves();
+        this.mate = this.check && !canMove;
+        if (this.mate) {
+            for (const square in this.origins) {
+                this.origins[square] = [];
+            }
+            this.targets = Board.findAllTargets(this.origins);
+        }
     }
 
     filterMoves() {
@@ -73,11 +84,13 @@ export default class Board {
         if (!this.check) {
             return;
         }
+        let canMove = false;
         const moves = {};
         // Allow moving the king to safety (already determined).
         for (const from in this.origins) {
             const to = this.origins[from];
             if (to.length && from === this.king) {
+                canMove = true;
                 moves[from] = to;
                 continue;
             }
@@ -93,6 +106,7 @@ export default class Board {
                     if (defender === this.king) {
                         continue;
                     }
+                    canMove = true;
                     moves[defender].push(threat);
                 }
             }
@@ -101,12 +115,14 @@ export default class Board {
             for (const square of path) {
                 const options = this.targets[square] ?? [];
                 for (const option of options) {
+                    canMove = true;
                     moves[option].push(square);
                 }
             }
         }
         this.origins = moves;
         this.targets = Board.findAllTargets(this.origins);
+        return canMove;
     }
 
     findPath(from, to) {
@@ -168,7 +184,7 @@ export default class Board {
         if (abbr === '') {
             return [];
         }
-        const color = !opponent ? this.turn : (this.turn === 'Black') ? 'White' : 'Black';
+        const color = opponent ? this.getOpponent() : this.turn;
         const piece = Piece.list[abbr];
         if (piece.color !== color) {
             return [];
@@ -392,6 +408,10 @@ export default class Board {
         return moves;
     }
 
+    getOpponent() {
+        return (this.turn === 'Black') ? 'White' : 'Black';
+    }
+
     static restore() {
         return JSON.parse(localStorage.getItem('board')) || Board.fresh;
     }
@@ -403,7 +423,7 @@ export default class Board {
     move(from, to) {
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
-        this.turn = (this.turn === 'Black') ? 'White' : 'Black';
+        this.turn = this.getOpponent();
         this.origins = {};
         this.targets = {};
         this.risks = {};
