@@ -32,8 +32,7 @@ export default class Board {
     draw() {
         const ranks = [1, 2, 3, 4, 5, 6, 7, 8];
         const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-        this.risks = this.findRisks(ranks, files);
-        const from = this.findAllMoves(ranks, files);
+        const from = this.analyze(ranks, files);
         const to = Board.findAllTargets(from);
         let html = '<table class="chess-board"><tbody>';
         for (const rank of ranks.reverse()) {
@@ -50,6 +49,12 @@ export default class Board {
         }
         html += '</tr></tbody></table>';
         return html;
+    }
+
+    analyze(ranks, files) {
+        // Calculate risks first, to avoid moving the king into danger.
+        this.risks = this.findRisks(ranks, files);
+        return this.findAllMoves(ranks, files);
     }
 
     findAllMoves(ranks, files, opponent = false) {
