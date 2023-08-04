@@ -109,8 +109,9 @@ export default class Board {
     }
 
     addJump(moves, square, color, hypothetical = false) {
-        // This is for pawns, since they jump weird.
-        if (hypothetical || this.squareOccupiedByOpponent(square, color)) {
+        // The hypothetical parameter is for pawns, since they jump weird.
+        if (this.squareOccupiedByOpponent(square, color)
+            || (hypothetical && !this.squareOccupied(square))) {
             moves.push(square);
         }
     }
