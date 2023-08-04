@@ -13,8 +13,11 @@ export default class Board {
             a7: 'BP', b7: 'BP', c7: 'BP', d7: 'BP', e7: 'BP', f7: 'BP', g7: 'BP', h7: 'BP',
             a8: 'BR', b8: 'BN', c8: 'BB', d8: 'BQ', e8: 'BK', f8: 'BB', g8: 'BN', h8: 'BR',
         },
-        risks: {},
+        risks: {}, // Squares with opponents, keyed by their possible moves.
+        origins: {}, // Possible moves, keyed by the origin.
+        targets: {}, // Squares with pieces that can move, keyed by the move.
         turn: 'White',
+        king: 'e1',
         check: false,
     };
 
@@ -36,8 +39,7 @@ export default class Board {
     draw() {
         const ranks = [1, 2, 3, 4, 5, 6, 7, 8];
         const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-        const from = this.analyze(ranks, files);
-        const to = Board.findAllTargets(from);
+        this.analyze(ranks, files);
         let html = '<table class="chess-board"><tbody>';
         for (const rank of ranks.reverse()) {
             let shade = (rank % 2 === 0) ? 'light' : 'dark';
@@ -45,8 +47,8 @@ export default class Board {
             for (const file of files) {
                 const square = `${file}${rank}`;
                 const piece = this.squares[square];
-                const moves = from[square];
-                html += Square.draw(square, shade, piece, !!moves.length, to[square]);
+                const moves = this.origins[square];
+                html += Square.draw(square, shade, piece, !!moves.length, this.targets[square]);
                 shade = (shade === 'light') ? 'dark' : 'light';
             }
             html += '</tr>';
@@ -58,7 +60,83 @@ export default class Board {
     analyze(ranks, files) {
         // Calculate risks first, to avoid moving the king into danger.
         this.risks = this.findRisks(ranks, files);
-        return this.findAllMoves(ranks, files);
+        // Find all hypothetical moves, regardless of whether the king is in check.
+        // Also, find the king, and whether he is in check.
+        this.origins = this.findAllMoves(ranks, files);
+        this.targets = Board.findAllTargets(this.origins);
+        // Restrict moves to those that protect the king, when in check.
+        this.filterMoves();
+    }
+
+    filterMoves() {
+        // When in check, only allow moves that protect the king.
+        if (!this.check) {
+            return;
+        }
+        const moves = {};
+        // Allow moving the king to safety (already determined).
+        for (const from in this.origins) {
+            const to = this.origins[from];
+            if (to.length && from === this.king) {
+                moves[from] = to;
+                continue;
+            }
+            moves[from] = [];
+        }
+        // Allow moves that block or capture the attacker(s).
+        const threats = this.risks[this.king];
+        for (const threat of threats) {
+            // Allow moves that capture the attacker(s).
+            if (threat in this.targets) {
+                const defenders = this.targets[threat];
+                for (const defender of defenders) {
+                    if (defender === this.king) {
+                        continue;
+                    }
+                    moves[defender].push(threat);
+                }
+            }
+            // Allow moves that block the attacker(s).
+            const path = this.findPath(threat, this.king);
+            for (const square of path) {
+                const options = this.targets[square] ?? [];
+                for (const option of options) {
+                    moves[option].push(square);
+                }
+            }
+        }
+        this.origins = moves;
+        this.targets = Board.findAllTargets(this.origins);
+    }
+
+    findPath(from, to) {
+        const abbr = this.squares[from];
+        if (abbr === '') {
+            console.warn(from, 'is not occupied: cannot find a path.');
+            return [];
+        }
+        const piece = Piece.list[abbr];
+        switch (piece.type) {
+        case 'Bishop':
+        case 'Queen':
+        case 'Rook':
+            break;
+        default:
+            return [];
+        }
+        const [fromFile, fromRank] = Square.parse(from);
+        const [toFile, toRank] = Square.parse(to);
+        const squares = [];
+        if (fromFile === toFile) {
+            const lower = Math.min(fromRank, toRank);
+            const upper = Math.max(fromRank, toRank);
+            const min = lower + 1;
+            const max = upper - 1;
+            for (let rank = min; rank <= max; rank++) {
+                squares.push(`${fromFile}${rank}`);
+            }
+        }
+        return squares;
     }
 
     findAllMoves(ranks, files, opponent = false) {
@@ -100,7 +178,10 @@ export default class Board {
         case 'Bishop':
             return this.findBishopMoves(file, rank, piece.color);
         case 'King':
-            this.check = !opponent && square in this.risks;
+            if (!opponent) {
+                this.king = square;
+                this.check = this.king in this.risks;
+            }
             return this.findKingMoves(file, rank, piece.color);
         case 'Knight':
             return this.findKnightMoves(file, rank, piece.color);
@@ -323,6 +404,8 @@ export default class Board {
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
         this.turn = (this.turn === 'Black') ? 'White' : 'Black';
+        this.origins = {};
+        this.targets = {};
         this.risks = {};
         this.save();
     }
