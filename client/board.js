@@ -15,6 +15,7 @@ export default class Board {
         },
         risks: {},
         turn: 'White',
+        check: false,
     };
 
     constructor(newGame = false) {
@@ -25,8 +26,11 @@ export default class Board {
     }
 
     describe() {
-        let html = `<p>${this.turn}'s move.</p>`;
-        return html;
+        let html = `${this.turn}'s move.`;
+        if (this.check) {
+            html += ' Check.';
+        }
+        return `<p>${html}</p>`;
     }
 
     draw() {
@@ -96,6 +100,7 @@ export default class Board {
         case 'Bishop':
             return this.findBishopMoves(file, rank, piece.color);
         case 'King':
+            this.check = !opponent && square in this.risks;
             return this.findKingMoves(file, rank, piece.color);
         case 'Knight':
             return this.findKnightMoves(file, rank, piece.color);
