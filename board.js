@@ -113,13 +113,11 @@ export default class Board {
         if (!this.check) {
             return;
         }
-        let canMove = false;
         const moves = {};
         // Allow moving the king to safety (already determined).
         for (const from in this.origins) {
             const to = this.origins[from];
             if (to.length && from === this.king) {
-                canMove = true;
                 moves[from] = to;
                 continue;
             }
@@ -135,7 +133,6 @@ export default class Board {
                     if (defender === this.king) {
                         continue;
                     }
-                    canMove = true;
                     moves[defender].push(threat);
                 }
             }
@@ -144,14 +141,12 @@ export default class Board {
             for (const square of path) {
                 const options = this.targets[square] ?? [];
                 for (const option of options) {
-                    canMove = true;
                     moves[option].push(square);
                 }
             }
         }
         this.origins = moves;
         this.targets = Board.findAllTargets(this.origins);
-        return canMove;
     }
 
     findPath(from, to) {
