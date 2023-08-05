@@ -305,9 +305,9 @@ export default class Board {
         // Kings can move one square in any direction.
         const squares = Square.findAdjacent(file, rank);
         const moves = [];
-        for (const s of squares) {
-            if (!(s in board.risks)) {
-                Board.addMove(board, moves, s, color);
+        for (const square of squares) {
+            if (!(square in board.risks)) {
+                Board.addMove(board, moves, square, color);
             }
         }
         return moves;
