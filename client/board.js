@@ -89,14 +89,14 @@ export default class Board {
             const piece = this.squares[origin];
             const moves = this.origins[origin];
             for (const move of moves) {
+                // Copy the board, then try a move without updating whose
+                // turn it is, to see whether the king will be in check.
                 const board = structuredClone(this);
                 board[move] = piece;
                 board[origin] = '';
-                // Calculate risks first, to avoid moving the king into danger.
                 board.risks = Board.findRisks(board);
-                // Find all hypothetical moves, regardless of whether the king is in check.
-                // Also, find the king, and whether he is in check.
-                board.origins = Board.findAllMoves(board);
+                Board.findKing(board, board.turn);
+                board.check = board.king in board.risks;
                 if (!board.check) {
                     canMove = true;
                     valid[origin].push(move);
@@ -113,13 +113,11 @@ export default class Board {
         if (!this.check) {
             return;
         }
-        let canMove = false;
         const moves = {};
         // Allow moving the king to safety (already determined).
         for (const from in this.origins) {
             const to = this.origins[from];
             if (to.length && from === this.king) {
-                canMove = true;
                 moves[from] = to;
                 continue;
             }
@@ -135,7 +133,6 @@ export default class Board {
                     if (defender === this.king) {
                         continue;
                     }
-                    canMove = true;
                     moves[defender].push(threat);
                 }
             }
@@ -144,14 +141,12 @@ export default class Board {
             for (const square of path) {
                 const options = this.targets[square] ?? [];
                 for (const option of options) {
-                    canMove = true;
                     moves[option].push(square);
                 }
             }
         }
         this.origins = moves;
         this.targets = Board.findAllTargets(this.origins);
-        return canMove;
     }
 
     findPath(from, to) {
@@ -301,13 +296,27 @@ export default class Board {
         return moves;
     }
 
+    static findKing(board, color) {
+        // Only validate() should call this.
+        const king = `${color[0]}K`;
+        for (const square in board.squares) {
+            const abbr = board.squares[square];
+            if (abbr === king) {
+                board.king = square;
+                return square;
+            }
+        }
+        console.warn(king, 'not found!');
+        return '';
+    }
+
     static findKingMoves(board, file, rank, color) {
         // Kings can move one square in any direction.
         const squares = Square.findAdjacent(file, rank);
         const moves = [];
-        for (const s of squares) {
-            if (!(s in board.risks)) {
-                Board.addMove(board, moves, s, color);
+        for (const square of squares) {
+            if (!(square in board.risks)) {
+                Board.addMove(board, moves, square, color);
             }
         }
         return moves;
