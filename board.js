@@ -89,14 +89,14 @@ export default class Board {
             const piece = this.squares[origin];
             const moves = this.origins[origin];
             for (const move of moves) {
+                // Copy the board, then try a move without updating whose
+                // turn it is, to see whether the king will be in check.
                 const board = structuredClone(this);
                 board[move] = piece;
                 board[origin] = '';
-                // Calculate risks first, to avoid moving the king into danger.
                 board.risks = Board.findRisks(board);
-                // Find all hypothetical moves, regardless of whether the king is in check.
-                // Also, find the king, and whether he is in check.
-                board.origins = Board.findAllMoves(board);
+                Board.findKing(board, board.turn);
+                board.check = board.king in board.risks;
                 if (!board.check) {
                     canMove = true;
                     valid[origin].push(move);
@@ -294,6 +294,20 @@ export default class Board {
             }
         }
         return moves;
+    }
+
+    static findKing(board, color) {
+        // Only validate() should call this.
+        const king = `${color[0]}K`;
+        for (const square in board.squares) {
+            const abbr = board.squares[square];
+            if (abbr === king) {
+                board.king = square;
+                return square;
+            }
+        }
+        console.warn(king, 'not found!');
+        return '';
     }
 
     static findKingMoves(board, file, rank, color) {
