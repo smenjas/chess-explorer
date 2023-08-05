@@ -69,7 +69,9 @@ export default class Board {
         this.origins = Board.findAllMoves(this);
         this.targets = Board.findAllTargets(this.origins);
         // Restrict moves to those that protect the king, when in check.
-        const canMove = this.filterMoves();
+        this.filterMoves();
+        // Prevent moves that put or leave the king in check.
+        const canMove = this.validate();
         this.mate = this.check && !canMove;
         if (this.mate) {
             for (const square in this.origins) {
@@ -77,6 +79,33 @@ export default class Board {
             }
             this.targets = Board.findAllTargets(this.origins);
         }
+    }
+
+    validate() {
+        let canMove = false;
+        const valid = {};
+        for (const origin in this.origins) {
+            valid[origin] = [];
+            const piece = this.squares[origin];
+            const moves = this.origins[origin];
+            for (const move of moves) {
+                const board = structuredClone(this);
+                board[move] = piece;
+                board[origin] = '';
+                // Calculate risks first, to avoid moving the king into danger.
+                board.risks = Board.findRisks(board);
+                // Find all hypothetical moves, regardless of whether the king is in check.
+                // Also, find the king, and whether he is in check.
+                board.origins = Board.findAllMoves(board);
+                if (!board.check) {
+                    canMove = true;
+                    valid[origin].push(move);
+                }
+            }
+        }
+        this.origins = valid;
+        this.targets = Board.findAllTargets(this.origins);
+        return canMove;
     }
 
     filterMoves() {
@@ -274,7 +303,6 @@ export default class Board {
 
     static findKingMoves(board, file, rank, color) {
         // Kings can move one square in any direction.
-        // TODO: Disallow moving a king into danger.
         const squares = Square.findAdjacent(file, rank);
         const moves = [];
         for (const s of squares) {
