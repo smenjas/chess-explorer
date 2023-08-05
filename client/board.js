@@ -21,6 +21,8 @@ export default class Board {
         check: false,
         mate: false,
     };
+    static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
+    static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
     constructor(newGame = false) {
         const board = newGame ? Board.fresh : Board.restore();
@@ -41,14 +43,12 @@ export default class Board {
     }
 
     draw() {
-        const ranks = [1, 2, 3, 4, 5, 6, 7, 8];
-        const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-        this.analyze(ranks, files);
+        this.analyze();
         let html = '<table class="chess-board"><tbody>';
-        for (const rank of ranks.reverse()) {
+        for (const rank of Board.ranks.reverse()) {
             let shade = (rank % 2 === 0) ? 'light' : 'dark';
             html += `<tr class="rank-${rank}">`;
-            for (const file of files) {
+            for (const file of Board.files) {
                 const square = `${file}${rank}`;
                 const piece = this.squares[square];
                 const moves = this.origins[square];
@@ -61,12 +61,12 @@ export default class Board {
         return html;
     }
 
-    analyze(ranks, files) {
+    analyze() {
         // Calculate risks first, to avoid moving the king into danger.
-        this.risks = this.findRisks(ranks, files);
+        this.risks = this.findRisks();
         // Find all hypothetical moves, regardless of whether the king is in check.
         // Also, find the king, and whether he is in check.
-        this.origins = this.findAllMoves(ranks, files);
+        this.origins = this.findAllMoves();
         this.targets = Board.findAllTargets(this.origins);
         // Restrict moves to those that protect the king, when in check.
         const canMove = this.filterMoves();
@@ -155,10 +155,10 @@ export default class Board {
         return squares;
     }
 
-    findAllMoves(ranks, files, opponent = false) {
+    findAllMoves(opponent = false) {
         const from = {};
-        for (const rank of ranks) {
-            for (const file of files) {
+        for (const rank of Board.ranks) {
+            for (const file of Board.files) {
                 const square = `${file}${rank}`;
                 from[square] = this.findMoves(square, opponent);
             }
@@ -211,8 +211,8 @@ export default class Board {
         return [];
     }
 
-    findRisks(ranks, files) {
-        return Board.findAllTargets(this.findAllMoves(ranks, files, true));
+    findRisks() {
+        return Board.findAllTargets(this.findAllMoves(true));
     }
 
     addJump(moves, square, color, hypothetical = false) {
