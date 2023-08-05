@@ -95,7 +95,7 @@ export default class Board {
                 board[move] = piece;
                 board[origin] = '';
                 board.risks = Board.findRisks(board);
-                Board.findKing(board, board.turn);
+                board.king = Board.findKing(board, board.turn);
                 board.check = board.king in board.risks;
                 if (!board.check) {
                     canMove = true;
@@ -302,7 +302,6 @@ export default class Board {
         for (const square in board.squares) {
             const abbr = board.squares[square];
             if (abbr === king) {
-                board.king = square;
                 return square;
             }
         }
