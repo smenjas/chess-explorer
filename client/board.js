@@ -13,9 +13,10 @@ export default class Board {
             a7: 'BP', b7: 'BP', c7: 'BP', d7: 'BP', e7: 'BP', f7: 'BP', g7: 'BP', h7: 'BP',
             a8: 'BR', b8: 'BN', c8: 'BB', d8: 'BQ', e8: 'BK', f8: 'BB', g8: 'BN', h8: 'BR',
         },
-        risks: {}, // Squares with opponents, keyed by their possible moves.
-        origins: {}, // Possible moves, keyed by the origin.
-        targets: {}, // Squares with pieces that can move, keyed by the move.
+        risks: {}, // Squares with opponents, keyed by their possible moves
+        origins: {}, // Possible moves, keyed by the origin
+        targets: {}, // Squares with pieces that can move, keyed by the move
+        enPassant: '', // A skipped square, susceptible to en passant
         turn: 'White',
         king: 'e1',
         check: false,
@@ -242,6 +243,7 @@ export default class Board {
     static addJump(board, moves, square, color, hypothetical = false) {
         // The hypothetical parameter is for pawns, since they jump weird.
         if (Board.squareOccupiedByOpponent(board, square, color)
+            || (board.enPassant !== '' && square === board.enPassant)
             || (hypothetical && !Board.squareOccupied(board, square))) {
             moves.push(square);
         }
@@ -457,6 +459,10 @@ export default class Board {
     }
 
     move(from, to) {
+        const valid = this.trackEnPassant(from, to);
+        if (valid === false) {
+            return;
+        }
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
         this.turn = Board.getOpponent(this);
@@ -476,5 +482,40 @@ export default class Board {
             return false;
         }
         return Piece.list[piece].color !== color;
+    }
+
+    trackEnPassant(from, to) {
+        // Track pawns that are open to en passant.
+        // Return whether the move is valid, even if it's not a pawn.
+        const abbr = this.squares[from];
+        if (abbr === '') {
+            console.warn('No piece on', from, 'to move to', to);
+            this.enPassant = '';
+            return false;
+        }
+        const piece = Piece.list[abbr];
+        if (piece.color !== this.turn) {
+            const name = `${piece.color} ${piece.type}`;
+            console.warn(`Cannot move ${name} on ${this.turn}'s turn.`);
+            this.enPassant = '';
+            return false;
+        }
+        if (piece.type !== 'Pawn') {
+            this.enPassant = '';
+            return true;
+        }
+        const [fromFile, fromRank] = Square.parse(from);
+        const [toFile, toRank] = Square.parse(to);
+        if (to === this.enPassant) {
+            const square = `${toFile}${fromRank}`;
+            this.squares[square] = '';
+        }
+        this.enPassant = '';
+        if (toRank - fromRank === 2) {
+            const rank = (piece.color === 'White') ? toRank - 1 : toRank + 1;
+            const skip = `${toFile}${rank}`;
+            this.enPassant = skip;
+        }
+        return true;
     }
 }
