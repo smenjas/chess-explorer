@@ -465,7 +465,7 @@ export default class Board {
     }
 
     move(from, to) {
-        const valid = this.trackEnPassant(from, to);
+        const valid = this.trackPiece(from, to);
         if (valid === false) {
             return;
         }
@@ -490,7 +490,7 @@ export default class Board {
         return Piece.list[piece].color !== color;
     }
 
-    trackEnPassant(from, to) {
+    trackPiece(from, to) {
         // Track pawns that are open to en passant.
         // Return whether the move is valid, even if it's not a pawn.
         const abbr = this.squares[from];
@@ -510,6 +510,10 @@ export default class Board {
             this.enPassant = '';
             return true;
         }
+        return this.trackPawn(from, to, piece.color);
+    }
+
+    trackPawn(from, to, color) {
         const fromRank = parseInt(from[1]);
         const [toFile, toRank] = Square.parse(to);
         if (to === this.enPassant) {
@@ -517,8 +521,9 @@ export default class Board {
             this.squares[square] = '';
         }
         this.enPassant = '';
+        // When a pawn has just moved two squares, it may be captured en passant.
         if (toRank - fromRank === 2) {
-            const rank = (piece.color === 'White') ? toRank - 1 : toRank + 1;
+            const rank = (color === 'White') ? toRank - 1 : toRank + 1;
             const skip = `${toFile}${rank}`;
             this.enPassant = skip;
         }
