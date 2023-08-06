@@ -38,14 +38,13 @@ function drawPage(board) {
     updatePage(board);
 }
 
-function handleNewGame(event) {
+function handleNewGame() {
     board = new Board(true);
     updatePage(board);
 }
 
 function handleSelection(event) {
     const square = event.target;
-    let piece = '';
     for (const className of event.target.classList) {
         if (Piece.exists(className)) {
             selectPiece(square);
