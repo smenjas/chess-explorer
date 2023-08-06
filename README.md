@@ -7,6 +7,7 @@ web development fundamentals and chess strategy, using HTML, CSS, & JS.
 - No libraries, frameworks, templates, or preprocessors outside Node.js
 - Limited dev tools:
   - [Node.js](https://nodejs.org/)
+  - [ESLint](https://www.npmjs.com/package/eslint)
   - [nodemon](https://www.npmjs.com/package/nodemon)
 
 ## Goals
@@ -24,6 +25,10 @@ npm install
 Start the node server with:
 ```sh
 npm run dev
+```
+Identify syntax and style issues with:
+```sh
+npm run lint
 ```
 
 [Pawn](https://icons8.com/icon/1009/pawn) icon by [Icons8](https://icons8.com)
