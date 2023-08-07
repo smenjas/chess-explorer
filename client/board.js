@@ -93,8 +93,8 @@ export default class Board {
                 // Copy the board, then try a move without updating whose
                 // turn it is, to see whether the king will be in check.
                 const board = structuredClone(this);
-                board[move] = piece;
-                board[origin] = '';
+                board.squares[move] = piece;
+                board.squares[origin] = '';
                 board.risks = Board.findRisks(board);
                 board.king = Board.findKing(board, board.turn);
                 board.check = board.king in board.risks;
