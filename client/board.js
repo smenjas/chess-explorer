@@ -18,7 +18,7 @@ export default class Board {
         targets: {}, // Squares with pieces that can move, keyed by the move
         enPassant: '', // A skipped square, susceptible to en passant
         turn: 'White',
-        king: 'e1',
+        kings: {Black: 'e8', White: 'e1'},
         check: false,
         mate: false,
     };
@@ -66,9 +66,8 @@ export default class Board {
 
     analyze() {
         // Calculate risks first, to avoid moving the king into danger.
-        this.risks = this.findRisks();
+        this.findRisks();
         // Find all hypothetical moves, regardless of whether the king is in check.
-        // Also, find the king, and whether he is in check.
         this.origins = this.findAllMoves();
         this.targets = Board.findAllTargets(this.origins);
         // Restrict moves to those that protect the king, when in check.
@@ -89,11 +88,13 @@ export default class Board {
         // to see whether the king will be in check.
         // Return whether the move is valid.
         const board = new Board(this);
+        const valid = board.trackPiece(from, to);
+        if (valid === false) {
+            return false;
+        }
         board.squares[to] = board.squares[from];
         board.squares[from] = '';
-        board.risks = board.findRisks();
-        board.king = board.findKing();
-        board.check = board.king in board.risks;
+        board.findRisks();
         return !board.check;
     }
 
@@ -120,31 +121,32 @@ export default class Board {
         if (!this.check) {
             return;
         }
+        const king = this.kings[this.turn];
         const moves = {};
         // Allow moving the king to safety (already determined).
         for (const from in this.origins) {
             const to = this.origins[from];
-            if (to.length && from === this.king) {
+            if (to.length && from === king) {
                 moves[from] = to;
                 continue;
             }
             moves[from] = [];
         }
         // Allow moves that block or capture the attacker(s).
-        const threats = this.risks[this.king];
+        const threats = this.risks[king];
         for (const threat of threats) {
             // Allow moves that capture the attacker(s).
             if (threat in this.targets) {
                 const defenders = this.targets[threat];
                 for (const defender of defenders) {
-                    if (defender === this.king) {
+                    if (defender === king) {
                         continue;
                     }
                     moves[defender].push(threat);
                 }
             }
             // Allow moves that block the attacker(s).
-            const path = this.findPath(threat, this.king);
+            const path = this.findPath(threat, king);
             for (const square of path) {
                 const options = this.targets[square] ?? [];
                 for (const option of options) {
@@ -225,10 +227,6 @@ export default class Board {
         case 'Bishop':
             return this.findBishopMoves(file, rank, piece.color);
         case 'King':
-            if (!opponent) {
-                this.king = square;
-                this.check = this.king in this.risks;
-            }
             return this.findKingMoves(file, rank, piece.color);
         case 'Knight':
             return this.findKnightMoves(file, rank, piece.color);
@@ -243,7 +241,9 @@ export default class Board {
     }
 
     findRisks() {
-        return Board.findAllTargets(this.findAllMoves(true));
+        this.risks = Board.findAllTargets(this.findAllMoves(true));
+        const king = this.kings[this.turn];
+        this.check = king in this.risks;
     }
 
     addJump(moves, square, color, hypothetical = false) {
@@ -302,19 +302,6 @@ export default class Board {
             }
         }
         return moves;
-    }
-
-    findKing() {
-        // Only validate() should call this.
-        const king = `${this.turn[0]}K`;
-        for (const square in this.squares) {
-            const abbr = this.squares[square];
-            if (abbr === king) {
-                return square;
-            }
-        }
-        console.warn(king, 'not found!');
-        return '';
     }
 
     findKingMoves(file, rank, color) {
@@ -505,6 +492,11 @@ export default class Board {
             console.warn(`Cannot move ${name} on ${this.turn}'s turn.`);
             this.enPassant = '';
             return false;
+        }
+        if (piece.type === 'King') {
+            this.kings[piece.color] = to;
+            this.enPassant = '';
+            return true;
         }
         if (piece.type !== 'Pawn') {
             this.enPassant = '';
