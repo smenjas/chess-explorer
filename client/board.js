@@ -25,16 +25,18 @@ export default class Board {
     static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
     static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
-    constructor(newGame = false) {
-        const board = newGame ? Board.fresh : Board.restore();
+    constructor(board = null) {
+        if (board === null) {
+            board = Board.restore();
+        }
         for (const key in board) {
-            this[key] = board[key];
+            this[key] = structuredClone(board[key]);
         }
     }
 
     describe() {
         if (this.mate) {
-            return `<p>Checkmate. ${Board.getOpponent(this)} wins.</p>`;
+            return `<p>Checkmate. ${this.getOpponent()} wins.</p>`;
         }
         let html = `${this.turn}'s move.`;
         if (this.check) {
@@ -64,10 +66,10 @@ export default class Board {
 
     analyze() {
         // Calculate risks first, to avoid moving the king into danger.
-        this.risks = Board.findRisks(this);
+        this.risks = this.findRisks();
         // Find all hypothetical moves, regardless of whether the king is in check.
         // Also, find the king, and whether he is in check.
-        this.origins = Board.findAllMoves(this);
+        this.origins = this.findAllMoves();
         this.targets = Board.findAllTargets(this.origins);
         // Restrict moves to those that protect the king, when in check.
         this.filterMoves();
@@ -92,11 +94,11 @@ export default class Board {
             for (const move of moves) {
                 // Copy the board, then try a move without updating whose
                 // turn it is, to see whether the king will be in check.
-                const board = structuredClone(this);
+                const board = new Board(this);
                 board.squares[move] = piece;
                 board.squares[origin] = '';
-                board.risks = Board.findRisks(board);
-                board.king = Board.findKing(board, board.turn);
+                board.risks = board.findRisks();
+                board.king = board.findKing();
                 board.check = board.king in board.risks;
                 if (!board.check) {
                     canMove = true;
@@ -180,12 +182,12 @@ export default class Board {
         return squares;
     }
 
-    static findAllMoves(board, opponent = false) {
+    findAllMoves(opponent = false) {
         const from = {};
         for (const rank of Board.ranks) {
             for (const file of Board.files) {
                 const square = `${file}${rank}`;
-                from[square] = Board.findMoves(board, square, opponent);
+                from[square] = this.findMoves(square, opponent);
             }
         }
         return from;
@@ -204,12 +206,12 @@ export default class Board {
         return to;
     }
 
-    static findMoves(board, square, opponent = false) {
-        const abbr = board.squares[square];
+    findMoves(square, opponent = false) {
+        const abbr = this.squares[square];
         if (abbr === '') {
             return [];
         }
-        const color = opponent ? Board.getOpponent(board) : board.turn;
+        const color = opponent ? this.getOpponent() : this.turn;
         const piece = Piece.list[abbr];
         if (piece.color !== color) {
             return [];
@@ -217,80 +219,80 @@ export default class Board {
         const [file, rank] = Square.parse(square);
         switch (piece.type) {
         case 'Bishop':
-            return Board.findBishopMoves(board, file, rank, piece.color);
+            return this.findBishopMoves(file, rank, piece.color);
         case 'King':
             if (!opponent) {
-                board.king = square;
-                board.check = board.king in board.risks;
+                this.king = square;
+                this.check = this.king in this.risks;
             }
-            return Board.findKingMoves(board, file, rank, piece.color);
+            return this.findKingMoves(file, rank, piece.color);
         case 'Knight':
-            return Board.findKnightMoves(board, file, rank, piece.color);
+            return this.findKnightMoves(file, rank, piece.color);
         case 'Pawn':
-            return Board.findPawnMoves(board, file, rank, piece.color, opponent);
+            return this.findPawnMoves(file, rank, piece.color, opponent);
         case 'Queen':
-            return Board.findQueenMoves(board, file, rank, piece.color);
+            return this.findQueenMoves(file, rank, piece.color);
         case 'Rook':
-            return Board.findRookMoves(board, file, rank, piece.color);
+            return this.findRookMoves(file, rank, piece.color);
         }
         return [];
     }
 
-    static findRisks(board) {
-        return Board.findAllTargets(Board.findAllMoves(board, true));
+    findRisks() {
+        return Board.findAllTargets(this.findAllMoves(true));
     }
 
-    static addJump(board, moves, square, color, hypothetical = false) {
+    addJump(moves, square, color, hypothetical = false) {
         // The hypothetical parameter is for pawns, since they jump weird.
-        if (Board.squareOccupiedByOpponent(board, square, color)
-            || (square === board.enPassant)
-            || (hypothetical && !Board.squareOccupied(board, square))) {
+        if (this.squareOccupiedByOpponent(square, color)
+            || (square === this.enPassant)
+            || (hypothetical && !this.squareOccupied(square))) {
             moves.push(square);
         }
     }
 
-    static addMove(board, moves, square, color = '') {
+    addMove(moves, square, color = '') {
         // Pass the piece's color if you want to include jumps.
         // Pawns should not pass the piece's color, since they jump weird.
-        const occupied = Board.squareOccupied(board, square);
+        const occupied = this.squareOccupied(square);
         if (!occupied) {
             moves.push(square);
         }
         else if (color) {
-            Board.addJump(board, moves, square, color);
+            this.addJump(moves, square, color);
         }
         return occupied;
     }
 
-    static findBishopMoves(board, file, rank, color) {
+    findBishopMoves(file, rank, color) {
         // Bishops can move diagonally until blocked by their own color or the
         // edge of the board. They always stay on the same shade of squares.
         const fileNumber = Square.fileToNumber(file);
         const moves = [];
         for (let n = fileNumber + 1, r = rank + 1; n <= 8 && r <= 8; n++, r++) {
             const f = Square.numberToFile(n);
-            const occupied = Board.addMove(board, moves, `${f}${r}`, color);
+            const occupied = this.addMove(moves, `${f}${r}`, color);
             if (occupied) {
                 break;
             }
         }
         for (let n = fileNumber - 1, r = rank - 1; n >= 1 && r >= 1; n--, r--) {
             const f = Square.numberToFile(n);
-            const occupied = Board.addMove(board, moves, `${f}${r}`, color);
+            const occupied = this.addMove(moves, `${f}${r}`, color);
             if (occupied) {
                 break;
             }
         }
         for (let n = fileNumber + 1, r = rank - 1; n <= 8 && r >= 1; n++, r--) {
             const f = Square.numberToFile(n);
-            const occupied = Board.addMove(board, moves, `${f}${r}`, color);
+            const occupied = this.addMove(moves, `${f}${r}`, color);
             if (occupied) {
                 break;
             }
         }
         for (let n = fileNumber - 1, r = rank + 1; n >= 1 && r <= 8; n--, r++) {
             const f = Square.numberToFile(n);
-            const occupied = Board.addMove(board, moves, `${f}${r}`, color);
+            const occupied = this.addMove(moves, `${f}${r}`, color);
             if (occupied) {
                 break;
             }
@@ -298,11 +300,11 @@ export default class Board {
         return moves;
     }
 
-    static findKing(board, color) {
+    findKing() {
         // Only validate() should call this.
-        const king = `${color[0]}K`;
-        for (const square in board.squares) {
-            const abbr = board.squares[square];
+        const king = `${this.turn[0]}K`;
+        for (const square in this.squares) {
+            const abbr = this.squares[square];
             if (abbr === king) {
                 return square;
             }
@@ -311,19 +313,19 @@ export default class Board {
         return '';
     }
 
-    static findKingMoves(board, file, rank, color) {
+    findKingMoves(file, rank, color) {
         // Kings can move one square in any direction.
         const squares = Square.findAdjacent(file, rank);
         const moves = [];
         for (const square of squares) {
-            if (!(square in board.risks)) {
-                Board.addMove(board, moves, square, color);
+            if (!(square in this.risks)) {
+                this.addMove(moves, square, color);
             }
         }
         return moves;
     }
 
-    static findKnightMoves(board, file, rank, color) {
+    findKnightMoves(file, rank, color) {
         // Knights can move in an L shape, two spaces one direction and one
         // space perpendicular. Other pieces do not block their path.
         const n = Square.fileToNumber(file);
@@ -336,18 +338,18 @@ export default class Board {
         const rPlus2 = rank + 2;
         const rLess1 = rank - 1;
         const rLess2 = rank - 2;
-        Board.addMove(board, moves, `${fPlus1}${rPlus2}`, color);
-        Board.addMove(board, moves, `${fPlus2}${rPlus1}`, color);
-        Board.addMove(board, moves, `${fLess1}${rPlus2}`, color);
-        Board.addMove(board, moves, `${fLess2}${rPlus1}`, color);
-        Board.addMove(board, moves, `${fPlus1}${rLess2}`, color);
-        Board.addMove(board, moves, `${fPlus2}${rLess1}`, color);
-        Board.addMove(board, moves, `${fLess1}${rLess2}`, color);
-        Board.addMove(board, moves, `${fLess2}${rLess1}`, color);
+        this.addMove(moves, `${fPlus1}${rPlus2}`, color);
+        this.addMove(moves, `${fPlus2}${rPlus1}`, color);
+        this.addMove(moves, `${fLess1}${rPlus2}`, color);
+        this.addMove(moves, `${fLess2}${rPlus1}`, color);
+        this.addMove(moves, `${fPlus1}${rLess2}`, color);
+        this.addMove(moves, `${fPlus2}${rLess1}`, color);
+        this.addMove(moves, `${fLess1}${rLess2}`, color);
+        this.addMove(moves, `${fLess2}${rLess1}`, color);
         return moves;
     }
 
-    static findPawnJumps(board, file, rank, color, hypothetical = false) {
+    findPawnJumps(file, rank, color, hypothetical = false) {
         if ((color === 'White' && rank === 8) || (color === 'Black' && rank === 1)) {
             return [];
         }
@@ -356,35 +358,35 @@ export default class Board {
         const left = Square.fileLeft(color, file);
         const right = Square.fileRight(color, file);
         if (left) {
-            Board.addJump(board, moves, `${left}${r}`, color, hypothetical);
+            this.addJump(moves, `${left}${r}`, color, hypothetical);
         }
         if (right) {
-            Board.addJump(board, moves, `${right}${r}`, color, hypothetical);
+            this.addJump(moves, `${right}${r}`, color, hypothetical);
         }
         return moves;
     }
 
-    static findPawnMoves(board, file, rank, color, jumpsOnly = false) {
+    findPawnMoves(file, rank, color, jumpsOnly = false) {
         // Pawns can:
         // - move forward one square;
         // - move forward two squares, for the first move only;
         // - jump one square diagonally.
         // TODO: Implement en passant.
-        const jumps = Board.findPawnJumps(board, file, rank, color, jumpsOnly);
+        const jumps = this.findPawnJumps(file, rank, color, jumpsOnly);
         if (jumpsOnly) {
             return jumps;
         }
         const moves = (color === 'White') ?
-            Board.findWhitePawnMoves(board, file, rank) :
-            Board.findBlackPawnMoves(board, file, rank);
+            this.findWhitePawnMoves(file, rank) :
+            this.findBlackPawnMoves(file, rank);
         return moves.concat(jumps);
     }
 
-    static findBlackPawnMoves(board, file, rank) {
+    findBlackPawnMoves(file, rank) {
         const moves = [];
         const min = (rank === 7) ? 5 : (rank > 1) ? rank - 1 : rank;
         for (let r = rank - 1; r >= min; r--) {
-            const occupied = Board.addMove(board, moves, `${file}${r}`);
+            const occupied = this.addMove(moves, `${file}${r}`);
             if (occupied) {
                 break;
             }
@@ -392,11 +394,11 @@ export default class Board {
         return moves;
     }
 
-    static findWhitePawnMoves(board, file, rank) {
+    findWhitePawnMoves(file, rank) {
         const moves = [];
         const max = (rank === 2) ? 4 : (rank < 8) ? rank + 1 : rank;
         for (let r = rank + 1; r <= max; r++) {
-            const occupied = Board.addMove(board, moves, `${file}${r}`);
+            const occupied = this.addMove(moves, `${file}${r}`);
             if (occupied) {
                 break;
             }
@@ -404,41 +406,41 @@ export default class Board {
         return moves;
     }
 
-    static findQueenMoves(board, file, rank, color) {
+    findQueenMoves(file, rank, color) {
         // Queens can move orthogonally (like a rook) or diagonally (like a
         // bishop) until blocked by their own color or the edge of the board.
-        const rookMoves = Board.findRookMoves(board, file, rank, color);
-        const bishopMoves = Board.findBishopMoves(board, file, rank, color);
+        const rookMoves = this.findRookMoves(file, rank, color);
+        const bishopMoves = this.findBishopMoves(file, rank, color);
         return rookMoves.concat(bishopMoves);
     }
 
-    static findRookMoves(board, file, rank, color) {
+    findRookMoves(file, rank, color) {
         // Rooks can move orthogonally until blocked by their own color or the
         // edge of the board. They move along either the rank or the file.
         const fileNumber = Square.fileToNumber(file);
         const moves = [];
         for (let n = fileNumber + 1; n <= 8; n++) {
             const f = Square.numberToFile(n);
-            const occupied = Board.addMove(board, moves, `${f}${rank}`, color);
+            const occupied = this.addMove(moves, `${f}${rank}`, color);
             if (occupied) {
                 break;
             }
         }
         for (let n = fileNumber - 1; n >= 1; n--) {
             const f = Square.numberToFile(n);
-            const occupied = Board.addMove(board, moves, `${f}${rank}`, color);
+            const occupied = this.addMove(moves, `${f}${rank}`, color);
             if (occupied) {
                 break;
             }
         }
         for (let r = rank + 1; r <= 8; r++) {
-            const occupied = Board.addMove(board, moves, `${file}${r}`, color);
+            const occupied = this.addMove(moves, `${file}${r}`, color);
             if (occupied) {
                 break;
             }
         }
         for (let r = rank - 1; r >= 1; r--) {
-            const occupied = Board.addMove(board, moves, `${file}${r}`, color);
+            const occupied = this.addMove(moves, `${file}${r}`, color);
             if (occupied) {
                 break;
             }
@@ -446,8 +448,8 @@ export default class Board {
         return moves;
     }
 
-    static getOpponent(board) {
-        return (board.turn === 'Black') ? 'White' : 'Black';
+    getOpponent() {
+        return (this.turn === 'Black') ? 'White' : 'Black';
     }
 
     static restore() {
@@ -465,19 +467,19 @@ export default class Board {
         }
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
-        this.turn = Board.getOpponent(this);
+        this.turn = this.getOpponent();
         this.origins = {};
         this.targets = {};
         this.risks = {};
         this.save();
     }
 
-    static squareOccupied(board, square) {
-        return board.squares[square] !== '';
+    squareOccupied(square) {
+        return this.squares[square] !== '';
     }
 
-    static squareOccupiedByOpponent(board, square, color) {
-        const piece = board.squares[square];
+    squareOccupiedByOpponent(square, color) {
+        const piece = this.squares[square];
         if (!piece) {
             return false;
         }

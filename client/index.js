@@ -39,7 +39,7 @@ function drawPage(board) {
 }
 
 function handleNewGame() {
-    board = new Board(true);
+    board = new Board(Board.fresh);
     updatePage(board);
 }
 
