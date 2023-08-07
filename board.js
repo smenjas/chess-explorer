@@ -74,7 +74,7 @@ export default class Board {
         // Restrict moves to those that protect the king, when in check.
         this.filterMoves();
         // Prevent moves that put or leave the king in check.
-        const canMove = this.validate();
+        const canMove = this.validateMoves();
         this.mate = this.check && !canMove;
         if (this.mate) {
             for (const square in this.origins) {
@@ -84,29 +84,33 @@ export default class Board {
         }
     }
 
-    validate() {
+    validateMove(from, to) {
+        // Copy the board, then try a move without updating whose turn it is,
+        // to see whether the king will be in check.
+        // Return whether the move is valid.
+        const board = new Board(this);
+        board.squares[to] = board.squares[from];
+        board.squares[from] = '';
+        board.risks = board.findRisks();
+        board.king = board.findKing();
+        board.check = board.king in board.risks;
+        return !board.check;
+    }
+
+    validateMoves() {
         let canMove = false;
-        const valid = {};
-        for (const origin in this.origins) {
-            valid[origin] = [];
-            const piece = this.squares[origin];
-            const moves = this.origins[origin];
-            for (const move of moves) {
-                // Copy the board, then try a move without updating whose
-                // turn it is, to see whether the king will be in check.
-                const board = new Board(this);
-                board.squares[move] = piece;
-                board.squares[origin] = '';
-                board.risks = board.findRisks();
-                board.king = board.findKing();
-                board.check = board.king in board.risks;
-                if (!board.check) {
+        const moves = {};
+        for (const from in this.origins) {
+            moves[from] = [];
+            for (const to of this.origins[from]) {
+                const valid = this.validateMove(from, to);
+                if (valid) {
                     canMove = true;
-                    valid[origin].push(move);
+                    moves[from].push(to);
                 }
             }
         }
-        this.origins = valid;
+        this.origins = moves;
         this.targets = Board.findAllTargets(this.origins);
         return canMove;
     }
