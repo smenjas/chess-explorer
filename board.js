@@ -504,7 +504,7 @@ export default class Board {
             this.enPassant = '';
             return true;
         }
-        const fromRank = Square.parse(from)[1];
+        const fromRank = parseInt(from[1]);
         const [toFile, toRank] = Square.parse(to);
         if (to === this.enPassant) {
             const square = `${toFile}${fromRank}`;
