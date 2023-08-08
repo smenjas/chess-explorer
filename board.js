@@ -171,13 +171,35 @@ export default class Board {
         const [fromFile, fromRank] = Square.parse(from);
         const [toFile, toRank] = Square.parse(to);
         const squares = [];
+        const minR = Math.min(fromRank, toRank) + 1;
+        const maxR = Math.max(fromRank, toRank) - 1;
         if (fromFile === toFile) {
-            const lower = Math.min(fromRank, toRank);
-            const upper = Math.max(fromRank, toRank);
-            const min = lower + 1;
-            const max = upper - 1;
-            for (let rank = min; rank <= max; rank++) {
+            for (let rank = minR; rank <= maxR; rank++) {
                 squares.push(fromFile + rank);
+            }
+            return squares;
+        }
+        const fromF = Square.fileToNumber(fromFile);
+        const toF = Square.fileToNumber(toFile);
+        const minF = Math.min(fromF, toF) + 1;
+        const maxF = Math.max(fromF, toF) - 1;
+        if (fromRank === toRank) {
+            for (let f = minF; f <= maxF; f++) {
+                const file = Square.numberToFile(f);
+                squares.push(file + fromRank);
+            }
+            return squares;
+        }
+        if ((fromFile < toFile && fromRank < toRank) || (fromFile > toFile && fromRank > toRank)) {
+            for (let f = minF, r = minR; f <= maxF, r <= maxR; f++, r++) {
+                const file = Square.numberToFile(f);
+                squares.push(file + r);
+            }
+        }
+        else {
+            for (let f = minF, r = maxR; f <= maxF, r >= minR; f++, r--) {
+                const file = Square.numberToFile(f);
+                squares.push(file + r);
             }
         }
         return squares;
