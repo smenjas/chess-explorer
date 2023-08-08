@@ -64,19 +64,19 @@ export default class Square {
         const fileDown = Square.fileDown(file);
         if (fileDown) {
             for (let r = min; r <= max; r++) {
-                squares.push(`${fileDown}${r}`);
+                squares.push(fileDown + r);
             }
         }
         if (min !== rank) {
-            squares.push(`${file}${min}`);
+            squares.push(file + min);
         }
         if (max !== rank) {
-            squares.push(`${file}${max}`);
+            squares.push(file + max);
         }
         const fileUp = Square.fileUp(file);
         if (fileUp) {
             for (let r = min; r <= max; r++) {
-                squares.push(`${fileUp}${r}`);
+                squares.push(fileUp + r);
             }
         }
         return squares;
