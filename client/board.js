@@ -18,7 +18,7 @@ export default class Board {
         targets: {}, // Squares with pieces that can move, keyed by the move
         enPassant: '', // A skipped square, susceptible to en passant
         turn: 'White',
-        king: 'e1',
+        kings: {Black: 'e8', White: 'e1'},
         check: false,
         mate: false,
     };
@@ -52,7 +52,7 @@ export default class Board {
             let shade = (rank % 2 === 0) ? 'light' : 'dark';
             html += `<tr class="rank-${rank}">`;
             for (const file of Board.files) {
-                const square = `${file}${rank}`;
+                const square = file + rank;
                 const piece = this.squares[square];
                 const moves = this.origins[square];
                 html += Square.draw(square, shade, piece, !!moves.length, this.targets[square]);
@@ -66,15 +66,14 @@ export default class Board {
 
     analyze() {
         // Calculate risks first, to avoid moving the king into danger.
-        this.risks = this.findRisks();
+        this.findRisks();
         // Find all hypothetical moves, regardless of whether the king is in check.
-        // Also, find the king, and whether he is in check.
         this.origins = this.findAllMoves();
         this.targets = Board.findAllTargets(this.origins);
         // Restrict moves to those that protect the king, when in check.
         this.filterMoves();
         // Prevent moves that put or leave the king in check.
-        const canMove = this.validate();
+        const canMove = this.validateMoves();
         this.mate = this.check && !canMove;
         if (this.mate) {
             for (const square in this.origins) {
@@ -84,31 +83,53 @@ export default class Board {
         }
     }
 
-    validate() {
+    validateMove(from, to) {
+        // Copy the board, then try a move without updating whose turn it is,
+        // to see whether the king will be in check.
+        // Return whether the move is valid.
+        const board = new Board(this);
+        const valid = board.move(from, to, true);
+        if (valid === false) {
+            return false;
+        }
+        board.findRisks();
+        return !board.check;
+    }
+
+    validateMoves() {
         let canMove = false;
-        const valid = {};
-        for (const origin in this.origins) {
-            valid[origin] = [];
-            const piece = this.squares[origin];
-            const moves = this.origins[origin];
-            for (const move of moves) {
-                // Copy the board, then try a move without updating whose
-                // turn it is, to see whether the king will be in check.
-                const board = new Board(this);
-                board.squares[move] = piece;
-                board.squares[origin] = '';
-                board.risks = board.findRisks();
-                board.king = board.findKing();
-                board.check = board.king in board.risks;
-                if (!board.check) {
+        const moves = {};
+        for (const from in this.origins) {
+            moves[from] = [];
+            for (const to of this.origins[from]) {
+                const valid = this.validateMove(from, to);
+                if (valid) {
                     canMove = true;
-                    valid[origin].push(move);
+                    moves[from].push(to);
                 }
             }
         }
-        this.origins = valid;
+        this.origins = moves;
         this.targets = Board.findAllTargets(this.origins);
         return canMove;
+    }
+
+    filterMove(moves, king, threat) {
+        // Allow moves that capture the attacker.
+        const defenders = this.targets[threat] ?? [];
+        for (const defender of defenders) {
+            if (defender !== king) {
+                moves[defender].push(threat);
+            }
+        }
+        // Allow moves that block the attacker.
+        const path = this.findPath(threat, king);
+        for (const square of path) {
+            const blockers = this.targets[square] ?? [];
+            for (const blocker of blockers) {
+                moves[blocker].push(square);
+            }
+        }
     }
 
     filterMoves() {
@@ -117,36 +138,16 @@ export default class Board {
             return;
         }
         const moves = {};
-        // Allow moving the king to safety (already determined).
         for (const from in this.origins) {
-            const to = this.origins[from];
-            if (to.length && from === this.king) {
-                moves[from] = to;
-                continue;
-            }
             moves[from] = [];
         }
+        // Allow moving the king to safety (already determined).
+        const king = this.kings[this.turn];
+        moves[king] = this.origins[king];
         // Allow moves that block or capture the attacker(s).
-        const threats = this.risks[this.king];
+        const threats = this.risks[king];
         for (const threat of threats) {
-            // Allow moves that capture the attacker(s).
-            if (threat in this.targets) {
-                const defenders = this.targets[threat];
-                for (const defender of defenders) {
-                    if (defender === this.king) {
-                        continue;
-                    }
-                    moves[defender].push(threat);
-                }
-            }
-            // Allow moves that block the attacker(s).
-            const path = this.findPath(threat, this.king);
-            for (const square of path) {
-                const options = this.targets[square] ?? [];
-                for (const option of options) {
-                    moves[option].push(square);
-                }
-            }
+            this.filterMove(moves, king, threat);
         }
         this.origins = moves;
         this.targets = Board.findAllTargets(this.origins);
@@ -176,7 +177,7 @@ export default class Board {
             const min = lower + 1;
             const max = upper - 1;
             for (let rank = min; rank <= max; rank++) {
-                squares.push(`${fromFile}${rank}`);
+                squares.push(fromFile + rank);
             }
         }
         return squares;
@@ -186,7 +187,7 @@ export default class Board {
         const from = {};
         for (const rank of Board.ranks) {
             for (const file of Board.files) {
-                const square = `${file}${rank}`;
+                const square = file + rank;
                 from[square] = this.findMoves(square, opponent);
             }
         }
@@ -221,10 +222,6 @@ export default class Board {
         case 'Bishop':
             return this.findBishopMoves(file, rank, piece.color);
         case 'King':
-            if (!opponent) {
-                this.king = square;
-                this.check = this.king in this.risks;
-            }
             return this.findKingMoves(file, rank, piece.color);
         case 'Knight':
             return this.findKnightMoves(file, rank, piece.color);
@@ -239,7 +236,9 @@ export default class Board {
     }
 
     findRisks() {
-        return Board.findAllTargets(this.findAllMoves(true));
+        this.risks = Board.findAllTargets(this.findAllMoves(true));
+        const king = this.kings[this.turn];
+        this.check = king in this.risks;
     }
 
     addJump(moves, square, color, hypothetical = false) {
@@ -271,46 +270,33 @@ export default class Board {
         const moves = [];
         for (let n = fileNumber + 1, r = rank + 1; n <= 8 && r <= 8; n++, r++) {
             const f = Square.numberToFile(n);
-            const occupied = this.addMove(moves, `${f}${r}`, color);
+            const occupied = this.addMove(moves, f + r, color);
             if (occupied) {
                 break;
             }
         }
         for (let n = fileNumber - 1, r = rank - 1; n >= 1 && r >= 1; n--, r--) {
             const f = Square.numberToFile(n);
-            const occupied = this.addMove(moves, `${f}${r}`, color);
+            const occupied = this.addMove(moves, f + r, color);
             if (occupied) {
                 break;
             }
         }
         for (let n = fileNumber + 1, r = rank - 1; n <= 8 && r >= 1; n++, r--) {
             const f = Square.numberToFile(n);
-            const occupied = this.addMove(moves, `${f}${r}`, color);
+            const occupied = this.addMove(moves, f + r, color);
             if (occupied) {
                 break;
             }
         }
         for (let n = fileNumber - 1, r = rank + 1; n >= 1 && r <= 8; n--, r++) {
             const f = Square.numberToFile(n);
-            const occupied = this.addMove(moves, `${f}${r}`, color);
+            const occupied = this.addMove(moves, f + r, color);
             if (occupied) {
                 break;
             }
         }
         return moves;
-    }
-
-    findKing() {
-        // Only validate() should call this.
-        const king = `${this.turn[0]}K`;
-        for (const square in this.squares) {
-            const abbr = this.squares[square];
-            if (abbr === king) {
-                return square;
-            }
-        }
-        console.warn(king, 'not found!');
-        return '';
     }
 
     findKingMoves(file, rank, color) {
@@ -338,14 +324,14 @@ export default class Board {
         const rPlus2 = rank + 2;
         const rLess1 = rank - 1;
         const rLess2 = rank - 2;
-        this.addMove(moves, `${fPlus1}${rPlus2}`, color);
-        this.addMove(moves, `${fPlus2}${rPlus1}`, color);
-        this.addMove(moves, `${fLess1}${rPlus2}`, color);
-        this.addMove(moves, `${fLess2}${rPlus1}`, color);
-        this.addMove(moves, `${fPlus1}${rLess2}`, color);
-        this.addMove(moves, `${fPlus2}${rLess1}`, color);
-        this.addMove(moves, `${fLess1}${rLess2}`, color);
-        this.addMove(moves, `${fLess2}${rLess1}`, color);
+        this.addMove(moves, fPlus1 + rPlus2, color);
+        this.addMove(moves, fPlus2 + rPlus1, color);
+        this.addMove(moves, fLess1 + rPlus2, color);
+        this.addMove(moves, fLess2 + rPlus1, color);
+        this.addMove(moves, fPlus1 + rLess2, color);
+        this.addMove(moves, fPlus2 + rLess1, color);
+        this.addMove(moves, fLess1 + rLess2, color);
+        this.addMove(moves, fLess2 + rLess1, color);
         return moves;
     }
 
@@ -358,10 +344,10 @@ export default class Board {
         const left = Square.fileLeft(color, file);
         const right = Square.fileRight(color, file);
         if (left) {
-            this.addJump(moves, `${left}${r}`, color, hypothetical);
+            this.addJump(moves, left + r, color, hypothetical);
         }
         if (right) {
-            this.addJump(moves, `${right}${r}`, color, hypothetical);
+            this.addJump(moves, right + r, color, hypothetical);
         }
         return moves;
     }
@@ -386,7 +372,7 @@ export default class Board {
         const moves = [];
         const min = (rank === 7) ? 5 : (rank > 1) ? rank - 1 : rank;
         for (let r = rank - 1; r >= min; r--) {
-            const occupied = this.addMove(moves, `${file}${r}`);
+            const occupied = this.addMove(moves, file + r);
             if (occupied) {
                 break;
             }
@@ -398,7 +384,7 @@ export default class Board {
         const moves = [];
         const max = (rank === 2) ? 4 : (rank < 8) ? rank + 1 : rank;
         for (let r = rank + 1; r <= max; r++) {
-            const occupied = this.addMove(moves, `${file}${r}`);
+            const occupied = this.addMove(moves, file + r);
             if (occupied) {
                 break;
             }
@@ -421,26 +407,26 @@ export default class Board {
         const moves = [];
         for (let n = fileNumber + 1; n <= 8; n++) {
             const f = Square.numberToFile(n);
-            const occupied = this.addMove(moves, `${f}${rank}`, color);
+            const occupied = this.addMove(moves, f + rank, color);
             if (occupied) {
                 break;
             }
         }
         for (let n = fileNumber - 1; n >= 1; n--) {
             const f = Square.numberToFile(n);
-            const occupied = this.addMove(moves, `${f}${rank}`, color);
+            const occupied = this.addMove(moves, f + rank, color);
             if (occupied) {
                 break;
             }
         }
         for (let r = rank + 1; r <= 8; r++) {
-            const occupied = this.addMove(moves, `${file}${r}`, color);
+            const occupied = this.addMove(moves, file + r, color);
             if (occupied) {
                 break;
             }
         }
         for (let r = rank - 1; r >= 1; r--) {
-            const occupied = this.addMove(moves, `${file}${r}`, color);
+            const occupied = this.addMove(moves, file + r, color);
             if (occupied) {
                 break;
             }
@@ -460,18 +446,22 @@ export default class Board {
         localStorage.setItem('board', JSON.stringify(this));
     }
 
-    move(from, to) {
-        const valid = this.trackEnPassant(from, to);
+    move(from, to, hypthetical = false) {
+        const valid = this.trackPiece(from, to);
         if (valid === false) {
-            return;
+            return false;
         }
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
+        if (hypthetical === true) {
+            return true;
+        }
         this.turn = this.getOpponent();
         this.origins = {};
         this.targets = {};
         this.risks = {};
         this.save();
+        return true;
     }
 
     squareOccupied(square) {
@@ -486,36 +476,44 @@ export default class Board {
         return Piece.list[piece].color !== color;
     }
 
-    trackEnPassant(from, to) {
+    trackPiece(from, to) {
         // Track pawns that are open to en passant.
         // Return whether the move is valid, even if it's not a pawn.
         const abbr = this.squares[from];
         if (abbr === '') {
             console.warn('No piece on', from, 'to move to', to);
-            this.enPassant = '';
             return false;
         }
         const piece = Piece.list[abbr];
         if (piece.color !== this.turn) {
             const name = `${piece.color} ${piece.type}`;
             console.warn(`Cannot move ${name} on ${this.turn}'s turn.`);
-            this.enPassant = '';
             return false;
+        }
+        if (piece.type === 'King') {
+            this.kings[piece.color] = to;
+            this.enPassant = '';
+            return true;
         }
         if (piece.type !== 'Pawn') {
             this.enPassant = '';
             return true;
         }
+        return this.trackPawn(from, to, piece.color);
+    }
+
+    trackPawn(from, to, color) {
         const fromRank = parseInt(from[1]);
         const [toFile, toRank] = Square.parse(to);
         if (to === this.enPassant) {
-            const square = `${toFile}${fromRank}`;
+            const square = toFile + fromRank;
             this.squares[square] = '';
         }
         this.enPassant = '';
+        // When a pawn has just moved two squares, it may be captured en passant.
         if (toRank - fromRank === 2) {
-            const rank = (piece.color === 'White') ? toRank - 1 : toRank + 1;
-            const skip = `${toFile}${rank}`;
+            const rank = (color === 'White') ? toRank - 1 : toRank + 1;
+            const skip = toFile + rank;
             this.enPassant = skip;
         }
         return true;
