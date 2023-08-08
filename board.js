@@ -119,36 +119,29 @@ export default class Board {
         if (!this.check) {
             return;
         }
-        const king = this.kings[this.turn];
         const moves = {};
-        // Allow moving the king to safety (already determined).
         for (const from in this.origins) {
-            const to = this.origins[from];
-            if (to.length && from === king) {
-                moves[from] = to;
-                continue;
-            }
             moves[from] = [];
         }
+        // Allow moving the king to safety (already determined).
+        const king = this.kings[this.turn];
+        moves[king] = this.origins[king];
         // Allow moves that block or capture the attacker(s).
         const threats = this.risks[king];
         for (const threat of threats) {
-            // Allow moves that capture the attacker(s).
-            if (threat in this.targets) {
-                const defenders = this.targets[threat];
-                for (const defender of defenders) {
-                    if (defender === king) {
-                        continue;
-                    }
+            // Allow moves that capture the attacker.
+            const defenders = this.targets[threat] ?? [];
+            for (const defender of defenders) {
+                if (defender !== king) {
                     moves[defender].push(threat);
                 }
             }
-            // Allow moves that block the attacker(s).
+            // Allow moves that block the attacker.
             const path = this.findPath(threat, king);
             for (const square of path) {
-                const options = this.targets[square] ?? [];
-                for (const option of options) {
-                    moves[option].push(square);
+                const blockers = this.targets[square] ?? [];
+                for (const blocker of blockers) {
+                    moves[blocker].push(square);
                 }
             }
         }
