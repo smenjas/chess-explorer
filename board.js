@@ -485,14 +485,12 @@ export default class Board {
         const abbr = this.squares[from];
         if (abbr === '') {
             console.warn('No piece on', from, 'to move to', to);
-            this.enPassant = '';
             return false;
         }
         const piece = Piece.list[abbr];
         if (piece.color !== this.turn) {
             const name = `${piece.color} ${piece.type}`;
             console.warn(`Cannot move ${name} on ${this.turn}'s turn.`);
-            this.enPassant = '';
             return false;
         }
         if (piece.type === 'King') {
