@@ -88,12 +88,10 @@ export default class Board {
         // to see whether the king will be in check.
         // Return whether the move is valid.
         const board = new Board(this);
-        const valid = board.trackPiece(from, to);
+        const valid = board.move(from, to, true);
         if (valid === false) {
             return false;
         }
-        board.squares[to] = board.squares[from];
-        board.squares[from] = '';
         board.findRisks();
         return !board.check;
     }
@@ -451,18 +449,22 @@ export default class Board {
         localStorage.setItem('board', JSON.stringify(this));
     }
 
-    move(from, to) {
+    move(from, to, hypthetical = false) {
         const valid = this.trackPiece(from, to);
         if (valid === false) {
-            return;
+            return false;
         }
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
+        if (hypthetical === true) {
+            return true;
+        }
         this.turn = this.getOpponent();
         this.origins = {};
         this.targets = {};
         this.risks = {};
         this.save();
+        return true;
     }
 
     squareOccupied(square) {
