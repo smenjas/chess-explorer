@@ -363,13 +363,13 @@ export default class Board {
         }
         const moves = [];
         const r = (color === 'White') ? rank + 1 : rank - 1;
-        const left = Square.fileLeft(color, file);
-        const right = Square.fileRight(color, file);
-        if (left) {
-            this.addJump(moves, left + r, color, hypothetical);
+        const fileDown = Square.fileDown(color, file);
+        const fileUp = Square.fileUp(color, file);
+        if (fileDown !== '') {
+            this.addJump(moves, fileDown + r, color, hypothetical);
         }
-        if (right) {
-            this.addJump(moves, right + r, color, hypothetical);
+        if (fileUp !== '') {
+            this.addJump(moves, fileUp + r, color, hypothetical);
         }
         return moves;
     }
