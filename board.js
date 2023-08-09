@@ -363,8 +363,8 @@ export default class Board {
         }
         const moves = [];
         const r = (color === 'White') ? rank + 1 : rank - 1;
-        const fileDown = Square.fileDown(color, file);
-        const fileUp = Square.fileUp(color, file);
+        const fileDown = Square.fileDown(file);
+        const fileUp = Square.fileUp(file);
         if (fileDown !== '') {
             this.addJump(moves, fileDown + r, color, hypothetical);
         }
