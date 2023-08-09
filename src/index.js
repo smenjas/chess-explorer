@@ -34,6 +34,12 @@ const server = http.createServer((request, response) => {
         response.setHeader('Content-Type', 'image/jpeg');
         content = fs.readFileSync(`client${path}`);
         break;
+    case '/img/board-120.png':
+    case '/img/board-128.png':
+    case '/img/board-152.png':
+    case '/img/board-167.png':
+    case '/img/board-180.png':
+    case '/img/board-192.png':
     case '/img/icons8-pawn-ios-16-16.png':
     case '/img/icons8-pawn-ios-16-32.png':
     case '/img/icons8-pawn-ios-16-57.png':
