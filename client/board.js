@@ -103,7 +103,7 @@ export default class Board {
             moves[from] = [];
             for (const to of this.origins[from]) {
                 const valid = this.validateMove(from, to);
-                if (valid) {
+                if (valid === true) {
                     canMove = true;
                     moves[from].push(to);
                 }
@@ -114,7 +114,7 @@ export default class Board {
         return canMove;
     }
 
-    filterMove(moves, king, threat) {
+    defendKing(moves, king, threat) {
         // Allow moves that capture the attacker.
         const defenders = this.targets[threat] ?? [];
         for (const defender of defenders) {
@@ -147,7 +147,7 @@ export default class Board {
         // Allow moves that block or capture the attacker(s).
         const threats = this.risks[king];
         for (const threat of threats) {
-            this.filterMove(moves, king, threat);
+            this.defendKing(moves, king, threat);
         }
         this.origins = moves;
         this.targets = Board.findAllTargets(this.origins);
@@ -276,10 +276,10 @@ export default class Board {
         // Pass the piece's color if you want to include jumps.
         // Pawns should not pass the piece's color, since they jump weird.
         const occupied = this.squareOccupied(square);
-        if (!occupied) {
+        if (occupied === false) {
             moves.push(square);
         }
-        else if (color) {
+        else if (color !== '') {
             this.addJump(moves, square, color);
         }
         return occupied;
@@ -293,28 +293,28 @@ export default class Board {
         for (let n = fileNumber + 1, r = rank + 1; n <= 8 && r <= 8; n++, r++) {
             const f = Square.numberToFile(n);
             const occupied = this.addMove(moves, f + r, color);
-            if (occupied) {
+            if (occupied === true) {
                 break;
             }
         }
         for (let n = fileNumber - 1, r = rank - 1; n >= 1 && r >= 1; n--, r--) {
             const f = Square.numberToFile(n);
             const occupied = this.addMove(moves, f + r, color);
-            if (occupied) {
+            if (occupied === true) {
                 break;
             }
         }
         for (let n = fileNumber + 1, r = rank - 1; n <= 8 && r >= 1; n++, r--) {
             const f = Square.numberToFile(n);
             const occupied = this.addMove(moves, f + r, color);
-            if (occupied) {
+            if (occupied === true) {
                 break;
             }
         }
         for (let n = fileNumber - 1, r = rank + 1; n >= 1 && r <= 8; n--, r++) {
             const f = Square.numberToFile(n);
             const occupied = this.addMove(moves, f + r, color);
-            if (occupied) {
+            if (occupied === true) {
                 break;
             }
         }
@@ -337,7 +337,6 @@ export default class Board {
         // Knights can move in an L shape, two spaces one direction and one
         // space perpendicular. Other pieces do not block their path.
         const n = Square.fileToNumber(file);
-        const moves = [];
         const fPlus1 = Square.numberToFile(n + 1);
         const fPlus2 = Square.numberToFile(n + 2);
         const fLess1 = Square.numberToFile(n - 1);
@@ -346,14 +345,16 @@ export default class Board {
         const rPlus2 = rank + 2;
         const rLess1 = rank - 1;
         const rLess2 = rank - 2;
-        this.addMove(moves, fPlus1 + rPlus2, color);
-        this.addMove(moves, fPlus2 + rPlus1, color);
-        this.addMove(moves, fLess1 + rPlus2, color);
-        this.addMove(moves, fLess2 + rPlus1, color);
-        this.addMove(moves, fPlus1 + rLess2, color);
-        this.addMove(moves, fPlus2 + rLess1, color);
-        this.addMove(moves, fLess1 + rLess2, color);
-        this.addMove(moves, fLess2 + rLess1, color);
+        const moves = [];
+        const squares = [
+            fPlus1 + rPlus2, fPlus2 + rPlus1, fLess1 + rPlus2, fLess2 + rPlus1,
+            fPlus1 + rLess2, fPlus2 + rLess1, fLess1 + rLess2, fLess2 + rLess1,
+        ];
+        for (const square in squares) {
+            if ((square in this.squares) === true) {
+                this.addMove(moves, square, color);
+            }
+        }
         return moves;
     }
 
@@ -379,9 +380,8 @@ export default class Board {
         // - move forward one square;
         // - move forward two squares, for the first move only;
         // - jump one square diagonally.
-        // TODO: Implement en passant.
         const jumps = this.findPawnJumps(file, rank, color, jumpsOnly);
-        if (jumpsOnly) {
+        if (jumpsOnly === true) {
             return jumps;
         }
         const moves = (color === 'White') ?
@@ -395,7 +395,7 @@ export default class Board {
         const min = (rank === 7) ? 5 : (rank > 1) ? rank - 1 : rank;
         for (let r = rank - 1; r >= min; r--) {
             const occupied = this.addMove(moves, file + r);
-            if (occupied) {
+            if (occupied === true) {
                 break;
             }
         }
@@ -407,7 +407,7 @@ export default class Board {
         const max = (rank === 2) ? 4 : (rank < 8) ? rank + 1 : rank;
         for (let r = rank + 1; r <= max; r++) {
             const occupied = this.addMove(moves, file + r);
-            if (occupied) {
+            if (occupied === true) {
                 break;
             }
         }
@@ -430,26 +430,26 @@ export default class Board {
         for (let n = fileNumber + 1; n <= 8; n++) {
             const f = Square.numberToFile(n);
             const occupied = this.addMove(moves, f + rank, color);
-            if (occupied) {
+            if (occupied === true) {
                 break;
             }
         }
         for (let n = fileNumber - 1; n >= 1; n--) {
             const f = Square.numberToFile(n);
             const occupied = this.addMove(moves, f + rank, color);
-            if (occupied) {
+            if (occupied === true) {
                 break;
             }
         }
         for (let r = rank + 1; r <= 8; r++) {
             const occupied = this.addMove(moves, file + r, color);
-            if (occupied) {
+            if (occupied === true) {
                 break;
             }
         }
         for (let r = rank - 1; r >= 1; r--) {
             const occupied = this.addMove(moves, file + r, color);
-            if (occupied) {
+            if (occupied === true) {
                 break;
             }
         }
