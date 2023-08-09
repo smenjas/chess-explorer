@@ -379,7 +379,6 @@ export default class Board {
         // - move forward one square;
         // - move forward two squares, for the first move only;
         // - jump one square diagonally.
-        // TODO: Implement en passant.
         const jumps = this.findPawnJumps(file, rank, color, jumpsOnly);
         if (jumpsOnly) {
             return jumps;
