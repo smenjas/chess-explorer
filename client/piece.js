@@ -15,7 +15,7 @@ export default class Piece {
     };
 
     static draw(abbr) {
-        if (!Piece.exists(abbr)) {
+        if (Piece.exists(abbr) === false) {
             return '';
         }
         return Piece.list[abbr].symbol;
@@ -29,7 +29,7 @@ export default class Piece {
     }
 
     static name(abbr) {
-        if (!Piece.exists(abbr)) {
+        if (Piece.exists(abbr) === false) {
             return '';
         }
         const piece = Piece.list[abbr];

@@ -5,10 +5,10 @@ export default class Square {
         const symbol = Piece.draw(piece);
         const title = Square.title(square, piece);
         const classes = [piece, shade];
-        if (canMove) {
+        if (canMove === true) {
             classes.push('can-move');
         }
-        if (Array.isArray(squares)) {
+        if (Array.isArray(squares) === true) {
             for (const square of squares) {
                 classes.push(`from-${square}`);
             }
@@ -62,7 +62,7 @@ export default class Square {
         const min = (rank === 1) ? 1 : rank - 1;
         const max = (rank === 8) ? 8 : rank + 1;
         const fileDown = Square.fileDown(file);
-        if (fileDown) {
+        if (fileDown !== '') {
             for (let r = min; r <= max; r++) {
                 squares.push(fileDown + r);
             }
@@ -74,7 +74,7 @@ export default class Square {
             squares.push(file + max);
         }
         const fileUp = Square.fileUp(file);
-        if (fileUp) {
+        if (fileUp !== '') {
             for (let r = min; r <= max; r++) {
                 squares.push(fileUp + r);
             }
