@@ -114,7 +114,7 @@ export default class Board {
         return canMove;
     }
 
-    filterMove(moves, king, threat) {
+    defendKing(moves, king, threat) {
         // Allow moves that capture the attacker.
         const defenders = this.targets[threat] ?? [];
         for (const defender of defenders) {
@@ -147,7 +147,7 @@ export default class Board {
         // Allow moves that block or capture the attacker(s).
         const threats = this.risks[king];
         for (const threat of threats) {
-            this.filterMove(moves, king, threat);
+            this.defendKing(moves, king, threat);
         }
         this.origins = moves;
         this.targets = Board.findAllTargets(this.origins);
