@@ -358,7 +358,7 @@ export default class Board {
     }
 
     findPawnJumps(file, rank, color, hypothetical = false) {
-        if ((color === 'White' && rank === 8) || (color === 'Black' && rank === 1)) {
+        if (rank === 1 || rank === 8) {
             return [];
         }
         const moves = [];
