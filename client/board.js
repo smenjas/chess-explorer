@@ -337,7 +337,6 @@ export default class Board {
         // Knights can move in an L shape, two spaces one direction and one
         // space perpendicular. Other pieces do not block their path.
         const n = Square.fileToNumber(file);
-        const moves = [];
         const fPlus1 = Square.numberToFile(n + 1);
         const fPlus2 = Square.numberToFile(n + 2);
         const fLess1 = Square.numberToFile(n - 1);
@@ -346,14 +345,16 @@ export default class Board {
         const rPlus2 = rank + 2;
         const rLess1 = rank - 1;
         const rLess2 = rank - 2;
-        this.addMove(moves, fPlus1 + rPlus2, color);
-        this.addMove(moves, fPlus2 + rPlus1, color);
-        this.addMove(moves, fLess1 + rPlus2, color);
-        this.addMove(moves, fLess2 + rPlus1, color);
-        this.addMove(moves, fPlus1 + rLess2, color);
-        this.addMove(moves, fPlus2 + rLess1, color);
-        this.addMove(moves, fLess1 + rLess2, color);
-        this.addMove(moves, fLess2 + rLess1, color);
+        const moves = [];
+        const squares = [
+            fPlus1 + rPlus2, fPlus2 + rPlus1, fLess1 + rPlus2, fLess2 + rPlus1,
+            fPlus1 + rLess2, fPlus2 + rLess1, fLess1 + rLess2, fLess2 + rLess1,
+        ];
+        for (const square in squares) {
+            if ((square in this.squares) === true) {
+                this.addMove(moves, square, color);
+            }
+        }
         return moves;
     }
 
