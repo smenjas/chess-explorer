@@ -465,6 +465,9 @@ export default class Board {
     }
 
     save() {
+        this.origins = {};
+        this.targets = {};
+        this.risks = {};
         localStorage.setItem('board', JSON.stringify(this));
     }
 
@@ -479,9 +482,6 @@ export default class Board {
             return true;
         }
         this.turn = this.getOpponent();
-        this.origins = {};
-        this.targets = {};
-        this.risks = {};
         this.save();
         return true;
     }
