@@ -58,6 +58,7 @@ function handleMove(event) {
     const squares = document.querySelectorAll('.chess-board td.selected');
     const selected = squares[0];
     board.move(selected.id, square.id);
+    board.save();
     selected.classList.remove('selected');
     highlightMoves(selected.id, true);
     updatePage(board);

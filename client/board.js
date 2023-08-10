@@ -482,7 +482,6 @@ export default class Board {
             return true;
         }
         this.turn = this.getOpponent();
-        this.save();
         return true;
     }
 
