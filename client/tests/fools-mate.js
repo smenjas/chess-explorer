@@ -3,7 +3,7 @@ import Board from '../board.js';
 const tests = {};
 
 tests['Fool\'s mate works.'] = () => {
-    let failures = [];
+    const failures = [];
     const board = new Board();
     const moves = [
         ['f2', 'f3'], ['e7', 'e5'],
