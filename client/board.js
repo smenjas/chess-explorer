@@ -461,10 +461,16 @@ export default class Board {
     }
 
     static restore() {
+        if (typeof window === 'undefined') {
+            return Board.fresh;
+        }
         return JSON.parse(localStorage.getItem('board')) || Board.fresh;
     }
 
     save() {
+        this.origins = {};
+        this.targets = {};
+        this.risks = {};
         localStorage.setItem('board', JSON.stringify(this));
     }
 
@@ -479,10 +485,20 @@ export default class Board {
             return true;
         }
         this.turn = this.getOpponent();
-        this.origins = {};
-        this.targets = {};
-        this.risks = {};
-        this.save();
+        return true;
+    }
+
+    testMove(from, to) {
+        this.analyze();
+        return this.move(from, to);
+    }
+
+    testMoves(moves) {
+        for (const move of moves) {
+            if (this.testMove(...move) === false) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -504,6 +520,10 @@ export default class Board {
         const abbr = this.squares[from];
         if (abbr === '') {
             console.warn('No piece on', from, 'to move to', to);
+            return false;
+        }
+        if (!(to in this.targets) || !this.targets[to].includes(from)) {
+            console.warn('Cannot move', abbr, 'from', from, 'to', to);
             return false;
         }
         const piece = Piece.list[abbr];
@@ -533,7 +553,7 @@ export default class Board {
         }
         this.enPassant = '';
         // When a pawn has just moved two squares, it may be captured en passant.
-        if (toRank - fromRank === 2) {
+        if (Math.abs(toRank - fromRank) === 2) {
             const rank = (color === 'White') ? toRank - 1 : toRank + 1;
             const skip = toFile + rank;
             this.enPassant = skip;
