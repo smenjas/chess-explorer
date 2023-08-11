@@ -505,6 +505,10 @@ export default class Board {
             console.warn('No piece on', from, 'to move to', to);
             return false;
         }
+        if (!(to in this.targets) || !this.targets[to].includes(from)) {
+            console.warn('Cannot move', abbr, 'from', from, 'to', to);
+            return false;
+        }
         const piece = Piece.list[abbr];
         if (piece.color !== this.turn) {
             const name = `${piece.color} ${piece.type}`;
