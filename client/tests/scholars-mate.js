@@ -3,7 +3,7 @@ import Board from '../board.js';
 const tests = {};
 
 tests['Scholar\'s mate works.'] = () => {
-    let failures = [];
+    const failures = [];
     const board = new Board();
     const moves = [
         ['e2', 'e4'], ['e7', 'e5'],
@@ -20,6 +20,6 @@ tests['Scholar\'s mate works.'] = () => {
         failures.push('Checkmate not recognized');
     }
     return failures;
-}
+};
 
 export default tests;
