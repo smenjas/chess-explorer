@@ -350,7 +350,7 @@ export default class Board {
             fPlus1 + rPlus2, fPlus2 + rPlus1, fLess1 + rPlus2, fLess2 + rPlus1,
             fPlus1 + rLess2, fPlus2 + rLess1, fLess1 + rLess2, fLess2 + rLess1,
         ];
-        for (const square in squares) {
+        for (const square of squares) {
             if ((square in this.squares) === true) {
                 this.addMove(moves, square, color);
             }
