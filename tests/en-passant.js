@@ -24,7 +24,7 @@ tests['A white pawn can capture a black pawn en passant.'] = () => {
         failures.push('Captured pawn still on the board');
     }
     return failures;
-}
+};
 
 tests['A black pawn can capture a white pawn en passant.'] = () => {
     const failures = [];
@@ -49,6 +49,6 @@ tests['A black pawn can capture a white pawn en passant.'] = () => {
         failures.push('Captured pawn still on the board');
     }
     return failures;
-}
+};
 
 export default tests;

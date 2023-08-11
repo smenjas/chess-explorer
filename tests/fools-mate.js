@@ -18,6 +18,6 @@ tests['Fool\'s mate works.'] = () => {
         failures.push('Checkmate not recognized');
     }
     return failures;
-}
+};
 
 export default tests;
