@@ -553,7 +553,7 @@ export default class Board {
         }
         this.enPassant = '';
         // When a pawn has just moved two squares, it may be captured en passant.
-        if (toRank - fromRank === 2) {
+        if (Math.abs(toRank - fromRank) === 2) {
             const rank = (color === 'White') ? toRank - 1 : toRank + 1;
             const skip = toFile + rank;
             this.enPassant = skip;
