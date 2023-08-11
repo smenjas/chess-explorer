@@ -30,5 +30,9 @@ Identify syntax and style issues with:
 ```sh
 npm run lint
 ```
+Run automated tests with:
+```sh
+npm run test
+```
 
 [Pawn](https://icons8.com/icon/1009/pawn) icon by [Icons8](https://icons8.com)

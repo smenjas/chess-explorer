@@ -461,6 +461,9 @@ export default class Board {
     }
 
     static restore() {
+        if (typeof window === 'undefined') {
+            return Board.fresh;
+        }
         return JSON.parse(localStorage.getItem('board')) || Board.fresh;
     }
 
@@ -482,6 +485,20 @@ export default class Board {
             return true;
         }
         this.turn = this.getOpponent();
+        return true;
+    }
+
+    testMove(from, to) {
+        this.analyze();
+        return this.move(from, to);
+    }
+
+    testMoves(moves) {
+        for (const move of moves) {
+            if (this.testMove(...move) === false) {
+                return false;
+            }
+        }
         return true;
     }
 
