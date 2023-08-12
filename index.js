@@ -25,10 +25,9 @@ function cancelMoves(squares) {
 function drawPage(board) {
     document.title = 'Chess Explorer';
     let html = '<header>';
-    html += `<h1>${document.title}</h1>`;
+    html += `<h1 id="description">${document.title}</h1>`;
     html += '</header>';
     html += '<main id="board"></main>';
-    html += '<section id="description"></section>';
     html += '<button type="button" id="new-game">New Game</button>';
     document.body.insertAdjacentHTML('beforeend', html);
     const newGameButton = document.getElementById('new-game');
