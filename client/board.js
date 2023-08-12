@@ -37,13 +37,13 @@ export default class Board {
 
     describe() {
         if (this.mate) {
-            return `<p>Checkmate. ${this.getOpponent()} wins.</p>`;
+            return `Checkmate. ${this.getOpponent()} wins.`;
         }
         let html = `${this.turn}'s move.`;
         if (this.check) {
             html += ' Check.';
         }
-        return `<p>${html}</p>`;
+        return html;
     }
 
     draw() {
