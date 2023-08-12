@@ -65,13 +65,9 @@ td.selected:hover {
     a:visited {
         color: #faf;
     }
-    a span.link:hover {
-        outline-color: white;
-    }
 }
 
 @media print {
-    .all article,
     body {
         background: white !important;
         color: black !important;
