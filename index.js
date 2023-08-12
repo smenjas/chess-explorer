@@ -28,7 +28,9 @@ function drawPage(board) {
     html += `<h1 id="description">${document.title}</h1>`;
     html += '</header>';
     html += '<main id="board"></main>';
+    html += '<section id="buttons">';
     html += '<button type="button" id="new-game">New Game</button>';
+    html += '</section>';
     document.body.insertAdjacentHTML('beforeend', html);
     const newGameButton = document.getElementById('new-game');
     if (newGameButton) {
