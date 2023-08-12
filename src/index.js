@@ -22,17 +22,17 @@ const server = http.createServer((request, response) => {
     case '/square.js':
         response.statusCode = 200;
         response.setHeader('Content-Type', 'text/javascript');
-        content = fs.readFileSync(`client${path}`, 'utf8');
+        content = fs.readFileSync('client' + path, 'utf8');
         break;
     case '/main.css':
         response.statusCode = 200;
         response.setHeader('Content-Type', 'text/css');
-        content = fs.readFileSync(`client${path}`, 'utf8');
+        content = fs.readFileSync('client' + path, 'utf8');
         break;
     case '/img/404.jpg':
         response.statusCode = 200;
         response.setHeader('Content-Type', 'image/jpeg');
-        content = fs.readFileSync(`client${path}`);
+        content = fs.readFileSync('client' + path);
         break;
     case '/img/board-120.png':
     case '/img/board-128.png':
@@ -50,12 +50,12 @@ const server = http.createServer((request, response) => {
     case '/img/icons8-pawn-ios-16-96.png':
         response.statusCode = 200;
         response.setHeader('Content-Type', 'image/png');
-        content = fs.readFileSync(`client${path}`);
+        content = fs.readFileSync('client' + path);
         break;
     case '/apple-touch-icon.png':
         response.statusCode = 200;
         response.setHeader('Content-Type', 'image/png');
-        content = fs.readFileSync(`client/img${path}`);
+        content = fs.readFileSync('client/img' + path);
         break;
     default:
         response.statusCode = 404;
