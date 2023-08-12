@@ -605,6 +605,10 @@ export default class Board {
             const skip = toFile + rank;
             this.enPassant = skip;
         }
+        else if (toRank === 1 || toRank === 8) {
+            // Automatically promote the pawn to a queen.
+            this.squares[from] = this.squares[from][0] + 'Q';
+        }
         return true;
     }
 
