@@ -19,6 +19,7 @@ export default class Board {
         enPassant: '', // A skipped square, susceptible to en passant
         turn: 'White',
         kings: {Black: 'e8', White: 'e1'},
+        castle: {Black: ['c8', 'g8'], White: ['c1', 'g1']},
         check: false,
         mate: false,
     };
@@ -321,9 +322,39 @@ export default class Board {
         return moves;
     }
 
+    findCastleMoves(square, color) {
+        if (this.check === true) {
+            // Castling is not allowed when in check.
+            return [];
+        }
+        const squares = [];
+        for (const target of this.castle[color]) {
+            const [rookFrom, rookTo] = this.findRookCastleMove(target);
+            const path = this.findPath(square, rookFrom);
+            const clear = path.every(square => this.squares[square] === '');
+            if (clear === true && (rookTo in this.risks) === false) {
+                squares.push(target);
+            }
+        }
+        return squares;
+    }
+
+    findRookCastleMove(kingTo) {
+        let rookFile = 'a';
+        let skipFile = 'd';
+        if (kingTo[0] === 'g') {
+            rookFile = 'h';
+            skipFile = 'f';
+        }
+        const rank = kingTo[1];
+        return [rookFile + rank, skipFile + rank];
+    }
+
     findKingMoves(file, rank, color) {
         // Kings can move one square in any direction.
-        const squares = Square.findAdjacent(file, rank);
+        const adjacentSquares = Square.findAdjacent(file, rank);
+        const castleSquares = this.findCastleMoves(file + rank, color);
+        const squares = adjacentSquares.concat(castleSquares);
         const moves = [];
         for (const square of squares) {
             if (!(square in this.risks)) {
@@ -474,14 +505,14 @@ export default class Board {
         localStorage.setItem('board', JSON.stringify(this));
     }
 
-    move(from, to, hypthetical = false) {
+    move(from, to, hypothetical = false) {
         const valid = this.trackPiece(from, to);
         if (valid === false) {
             return false;
         }
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
-        if (hypthetical === true) {
+        if (hypothetical === true) {
             return true;
         }
         this.turn = this.getOpponent();
@@ -533,7 +564,12 @@ export default class Board {
             return false;
         }
         if (piece.type === 'King') {
-            this.kings[piece.color] = to;
+            this.trackKing(from, to, piece.color);
+            this.enPassant = '';
+            return true;
+        }
+        if (piece.type === 'Rook') {
+            this.trackRook(from, to, piece.color);
             this.enPassant = '';
             return true;
         }
@@ -542,6 +578,17 @@ export default class Board {
             return true;
         }
         return this.trackPawn(from, to, piece.color);
+    }
+
+    trackKing(from, to, color) {
+        this.kings[color] = to;
+        if (this.castle[color].includes(to)) {
+            // When castling, move the rook.
+            const [rookFrom, rookTo] = this.findRookCastleMove(to);
+            this.squares[rookTo] = this.squares[rookFrom];
+            this.squares[rookFrom] = '';
+        }
+        this.castle[color] = []; // Eliminate castling option.
     }
 
     trackPawn(from, to, color) {
@@ -559,5 +606,16 @@ export default class Board {
             this.enPassant = skip;
         }
         return true;
+    }
+
+    trackRook(from, to, color) {
+        if (this.castle[color].length === 0) {
+            return;
+        }
+        // Eliminate castling option when this rook moves.
+        const [fromFile, fromRank] = Square.parse(from);
+        const file = (fromFile === 'a') ? 'c' : 'g';
+        const index = this.castle[color].indexOf(file + fromRank);
+        this.castle[color].splice(index, 1);
     }
 }
