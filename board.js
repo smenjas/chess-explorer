@@ -505,14 +505,14 @@ export default class Board {
         localStorage.setItem('board', JSON.stringify(this));
     }
 
-    move(from, to, hypthetical = false) {
+    move(from, to, hypothetical = false) {
         const valid = this.trackPiece(from, to);
         if (valid === false) {
             return false;
         }
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
-        if (hypthetical === true) {
+        if (hypothetical === true) {
             return true;
         }
         this.turn = this.getOpponent();
