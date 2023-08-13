@@ -3,7 +3,7 @@ export default class Piece {
         BB: { symbol: '&#9821;', color: 'Black', type: 'Bishop' },
         BK: { symbol: '&#9818;', color: 'Black', type: 'King' },
         BN: { symbol: '&#9822;', color: 'Black', type: 'Knight' },
-        BP: { symbol: '&#9823;', color: 'Black', type: 'Pawn' },
+        BP: { symbol: '&#x265F;&#xFE0E;', color: 'Black', type: 'Pawn' },
         BQ: { symbol: '&#9819;', color: 'Black', type: 'Queen' },
         BR: { symbol: '&#9820;', color: 'Black', type: 'Rook' },
         WB: { symbol: '&#9815;', color: 'White', type: 'Bishop' },
