@@ -21,6 +21,21 @@ tests['Square.fileToNumber() works.'] = () => {
     return Test.run(Square.fileToNumber, tests);
 };
 
+tests['Square.numberToFile() works.'] = () => {
+    const tests = [
+        [[1], 'a'],
+        [[2], 'b'],
+        [[3], 'c'],
+        [[4], 'd'],
+        [[5], 'e'],
+        [[6], 'f'],
+        [[7], 'g'],
+        [[8], 'h'],
+        [[0], ''],
+    ];
+    return Test.run(Square.numberToFile, tests);
+};
+
 tests['Square.parse() works.'] = () => {
     const squares = {
         a1: ['a', 1],
