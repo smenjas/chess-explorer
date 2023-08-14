@@ -21,11 +21,11 @@ export default class Square {
         return Square.numberToFile(fileNumber - 1);
     }
 
-    static fileLeft(color, file) {
+    static fileLeft(file, color) {
         return (color === 'White') ? Square.fileDown(file) : Square.fileUp(file);
     }
 
-    static fileRight(color, file) {
+    static fileRight(file, color) {
         return (color === 'White') ? Square.fileUp(file) : Square.fileDown(file);
     }
 
