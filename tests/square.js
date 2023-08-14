@@ -3,6 +3,24 @@ import Test from '../test.js';
 
 const tests = {};
 
+tests['Square.fileDown() works.'] = () => {
+    const tests = [
+        [['a'], ''],
+        [['b'], 'a'],
+        [['c'], 'b'],
+        [['d'], 'c'],
+        [['e'], 'd'],
+        [['f'], 'e'],
+        [['g'], 'f'],
+        [['h'], 'g'],
+        [['H'], ''],
+        [['i'], ''],
+        [[''], ''],
+        [[1], ''],
+    ];
+    return Test.run(Square.fileDown, tests);
+};
+
 tests['Square.fileToNumber() works.'] = () => {
     const tests = [
         [['a'], 1],
