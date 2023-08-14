@@ -21,6 +21,36 @@ tests['Square.fileDown() works.'] = () => {
     return Test.run(Square.fileDown, tests);
 };
 
+tests['Square.fileLeft() works.'] = () => {
+    const tests = [
+        [['a', 'Black'], 'b'],
+        [['b', 'Black'], 'c'],
+        [['c', 'Black'], 'd'],
+        [['d', 'Black'], 'e'],
+        [['e', 'Black'], 'f'],
+        [['f', 'Black'], 'g'],
+        [['g', 'Black'], 'h'],
+        [['h', 'Black'], ''],
+        [['H', 'Black'], ''],
+        [['i', 'Black'], ''],
+        [['', 'Black'], ''],
+        [[1, 'Black'], ''],
+        [['a', 'White'], ''],
+        [['b', 'White'], 'a'],
+        [['c', 'White'], 'b'],
+        [['d', 'White'], 'c'],
+        [['e', 'White'], 'd'],
+        [['f', 'White'], 'e'],
+        [['g', 'White'], 'f'],
+        [['h', 'White'], 'g'],
+        [['H', 'White'], ''],
+        [['i', 'White'], ''],
+        [['', 'White'], ''],
+        [[1, 'White'], ''],
+    ];
+    return Test.run(Square.fileLeft, tests);
+};
+
 tests['Square.fileUp() works.'] = () => {
     const tests = [
         [['a'], 'b'],
