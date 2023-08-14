@@ -21,6 +21,24 @@ tests['Square.fileDown() works.'] = () => {
     return Test.run(Square.fileDown, tests);
 };
 
+tests['Square.fileUp() works.'] = () => {
+    const tests = [
+        [['a'], 'b'],
+        [['b'], 'c'],
+        [['c'], 'd'],
+        [['d'], 'e'],
+        [['e'], 'f'],
+        [['f'], 'g'],
+        [['g'], 'h'],
+        [['h'], ''],
+        [['A'], ''],
+        [['i'], ''],
+        [[''], ''],
+        [[1], ''],
+    ];
+    return Test.run(Square.fileUp, tests);
+};
+
 tests['Square.fileToNumber() works.'] = () => {
     const tests = [
         [['a'], 1],
@@ -50,6 +68,8 @@ tests['Square.numberToFile() works.'] = () => {
         [[7], 'g'],
         [[8], 'h'],
         [[0], ''],
+        [[''], ''],
+        [['a'], ''],
     ];
     return Test.run(Square.numberToFile, tests);
 };
