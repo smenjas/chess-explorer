@@ -70,6 +70,16 @@ tests['Test.showArray() works.'] = () => {
     return Test.run(Test.showArray, tests);
 };
 
+tests['Test.showString() works.'] = () => {
+    const tests = [
+        [[ '' ], '\'\''],
+        [[ 'A' ], '\'A\''],
+        [[ 'I\'m' ], '\'I\'m\''],
+        [[ '\x00' ], '\'\\u0000\''],
+    ];
+    return Test.run(Test.showString, tests);
+};
+
 tests['Test.showValue() works.'] = () => {
     const tests = [
         [[ undefined ], 'undefined'],

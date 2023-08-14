@@ -68,9 +68,31 @@ export default class Test {
         return '[' + values.join(', ') + ']';
     }
 
+    static showEscapeSequence(code) {
+        if (code > 65535) {
+            console.warn('Invalid UTF-16 code point:', code);
+            return '';
+        }
+        return '\\u' + code.toString().padStart(4, '0');
+    }
+
+    static showString(value) {
+        let string = '';
+        for (const index in value) {
+            const code = value.codePointAt(index);
+            // See: https://en.wikipedia.org/wiki/Unicode_control_characters
+            if (code < 32 || (code > 126 && code < 160)) {
+                string += Test.showEscapeSequence(code);
+                continue;
+            }
+            string += value[index];
+        }
+        return `'${string}'`;
+    }
+
     static showValue(value) {
         if (typeof value === 'string') {
-            return `'${value}'`;
+            return Test.showString(value);
         }
         switch (value) {
         case undefined:
