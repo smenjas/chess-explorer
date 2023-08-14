@@ -31,6 +31,9 @@ export default class Square {
 
     static fileUp(file) {
         const fileNumber = Square.fileToNumber(file);
+        if (fileNumber === 0) {
+            return '';
+        }
         return Square.numberToFile(fileNumber + 1);
     }
 
