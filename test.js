@@ -33,6 +33,17 @@ export default class Test {
         return true;
     }
 
+    static run(method, tests) {
+        let failures = [];
+        for (const test of tests) {
+            const failure = Test.runTest(method, test);
+            if (failure !== '') {
+                failures.push(failure);
+            }
+        }
+        return failures;
+    }
+
     static runTest(method, test) {
         const [args, expected] = test;
         const actual = method(...args);
