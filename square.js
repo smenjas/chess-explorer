@@ -54,7 +54,7 @@ export default class Square {
 
     static numberToFile(fileNumber) {
         // This is 6-10% faster than using a switch statement.
-        if (fileNumber < 1 || fileNumber > 8) {
+        if (typeof fileNumber !== 'number' || fileNumber < 1 || fileNumber > 8) {
             return '';
         }
         return String.fromCharCode(fileNumber + 96);
