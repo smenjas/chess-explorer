@@ -79,6 +79,7 @@ export default class Board {
         const canMove = this.validateMoves();
         this.mate = this.check && !canMove;
         if (this.mate) {
+            this.score[this.score.length - 1][5] = true;
             for (const square in this.origins) {
                 this.origins[square] = [];
             }
@@ -264,6 +265,9 @@ export default class Board {
         this.risks = Board.findAllTargets(this.findAllMoves(true));
         const king = this.kings[this.turn];
         this.check = king in this.risks;
+        if (this.check) {
+            this.score[this.score.length - 1][4] = true;
+        }
     }
 
     addJump(moves, square, color, hypothetical = false) {
@@ -519,7 +523,7 @@ export default class Board {
             return true;
         }
         // TODO: Record whether the piece is ambiguous.
-        this.score.push([this.squares[to], from, to, captured]);
+        this.score.push([this.squares[to], from, to, captured, false, false]);
         this.turn = this.getOpponent();
         return true;
     }
