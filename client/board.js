@@ -1,4 +1,5 @@
 import Piece from './piece.js';
+import Score from './score.js';
 import Square from './square.js';
 
 export default class Board {
@@ -22,6 +23,7 @@ export default class Board {
         castle: {Black: ['c8', 'g8'], White: ['c1', 'g1']},
         check: false,
         mate: false,
+        score: [],
     };
     static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
     static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -510,11 +512,14 @@ export default class Board {
         if (valid === false) {
             return false;
         }
+        const captured = this.squares[to];
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
         if (hypothetical === true) {
             return true;
         }
+        // TODO: Record whether the piece is ambiguous.
+        this.score.push([this.squares[to], from, to, captured]);
         this.turn = this.getOpponent();
         return true;
     }
@@ -531,6 +536,10 @@ export default class Board {
             }
         }
         return true;
+    }
+
+    drawScore() {
+        return Score.draw(this.score);
     }
 
     squareOccupied(square) {
