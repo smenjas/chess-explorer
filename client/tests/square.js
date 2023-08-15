@@ -134,6 +134,19 @@ tests['Square.numberToFile() works.'] = () => {
     return Test.run(Square.numberToFile, tests);
 };
 
+tests['Square.findAdjacent() works.'] = () => {
+    const tests = [
+        [['a', 1], ['a2', 'b1', 'b2']],
+        [['a', 8], ['a7', 'b7', 'b8']],
+        [['d', 4], ['c3', 'c4', 'c5', 'd3', 'd5', 'e3', 'e4', 'e5']],
+        [['e', 1], ['d1', 'd2', 'e2', 'f1', 'f2']],
+        [['e', 8], ['d7', 'd8', 'e7', 'f7', 'f8']],
+        [['h', 1], ['g1', 'g2', 'h2']],
+        [['h', 8], ['g7', 'g8', 'h7']],
+    ];
+    return Test.run(Square.findAdjacent, tests);
+};
+
 tests['Square.parse() works.'] = () => {
     const squares = {
         a1: ['a', 1],
