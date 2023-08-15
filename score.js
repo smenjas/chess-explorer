@@ -26,7 +26,7 @@ export default class Score {
         }
     }
 
-    static notateMove(abbr, from, to, captured) {
+    static notateMove(abbr, from, to, captured, check, mate) {
         // See: https://en.wikipedia.org/wiki/Algebraic_notation_(chess)
         if (abbr === '') {
             return '';
@@ -62,6 +62,12 @@ export default class Score {
             text += 'x';
         }
         text += to;
+        if (mate === true) {
+            text += '#';
+        }
+        else if (check === true) {
+            text += '+';
+        }
         return text;
     }
 

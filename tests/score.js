@@ -31,38 +31,38 @@ tests['Score.notateMove() works.'] = () => {
 };
 
 const score = [
-    ['WP', 'e2', 'e4', ''],
-    ['BP', 'e7', 'e5', ''],
-    ['WN', 'b1', 'c3', ''],
-    ['BP', 'f7', 'f6', ''],
-    ['WQ', 'd1', 'h5', ''],
-    ['BP', 'g7', 'g6', ''],
-    ['WQ', 'h5', 'g6', 'BP'],
-    ['BP', 'h7', 'g6', 'WQ'],
-    ['WB', 'f1', 'b5', ''],
-    ['BP', 'a7', 'a6', ''],
-    ['WB', 'b5', 'c4', ''],
-    ['BP', 'b7', 'b5', ''],
-    ['WB', 'c4', 'd5', ''],
-    ['BP', 'c7', 'c6', ''],
-    ['WB', 'd5', 'e6', ''],
-    ['BP', 'd7', 'e6', 'WB'],
-    ['WN', 'g1', 'f3', ''],
-    ['BN', 'g8', 'h6', ''],
-    ['WP', 'd2', 'd3', ''],
-    ['BQ', 'd8', 'd4', ''],
-    ['WB', 'c1', 'e3', ''],
-    ['BB', 'f8', 'b4', ''],
-    ['WK', 'e1', 'c1', ''],
-    ['BK', 'e8', 'g8', ''],
+    ['WP', 'e2', 'e4', '', false, false],
+    ['BP', 'e7', 'e5', '', false, false],
+    ['WN', 'b1', 'c3', '', false, false],
+    ['BP', 'f7', 'f6', '', false, false],
+    ['WQ', 'd1', 'h5', '', true, false],
+    ['BP', 'g7', 'g6', '', false, false],
+    ['WQ', 'h5', 'g6', 'BP', true, false],
+    ['BP', 'h7', 'g6', 'WQ', false, false],
+    ['WB', 'f1', 'b5', '', false, false],
+    ['BP', 'a7', 'a6', '', false, false],
+    ['WB', 'b5', 'c4', '', false, false],
+    ['BP', 'b7', 'b5', '', false, false],
+    ['WB', 'c4', 'd5', '', false, false],
+    ['BP', 'c7', 'c6', '', false, false],
+    ['WB', 'd5', 'e6', '', false, false],
+    ['BP', 'd7', 'e6', 'WB', false, false],
+    ['WN', 'g1', 'f3', '', false, false],
+    ['BN', 'g8', 'h6', '', false, false],
+    ['WP', 'd2', 'd3', '', false, false],
+    ['BQ', 'd8', 'd4', '', false, false],
+    ['WB', 'c1', 'e3', '', false, false],
+    ['BB', 'f8', 'b4', '', false, false],
+    ['WK', 'e1', 'c1', '', false, false],
+    ['BK', 'e8', 'g8', '', false, false],
 ];
 
 tests['Score.notate() works.'] = () => {
     const notations = [
         ['e4', 'e5'],
         ['Nc3', 'f6'],
-        ['Qh5', 'g6'],
-        ['Qxg6', 'hxg6'],
+        ['Qh5+', 'g6'],
+        ['Qxg6+', 'hxg6'],
         ['Bb5', 'a6'],
         ['Bc4', 'b5'],
         ['Bd5', 'c6'],
@@ -82,8 +82,8 @@ tests['Score.draw() works.'] = () => {
     let list = '<ol>';
     list += '<li>e4 e5</li>';
     list += '<li>Nc3 f6</li>';
-    list += '<li>Qh5 g6</li>';
-    list += '<li>Qxg6 hxg6</li>';
+    list += '<li>Qh5+ g6</li>';
+    list += '<li>Qxg6+ hxg6</li>';
     list += '<li>Bb5 a6</li>';
     list += '<li>Bc4 b5</li>';
     list += '<li>Bd5 c6</li>';
