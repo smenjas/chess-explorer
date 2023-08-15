@@ -21,16 +21,19 @@ export default class Square {
         return Square.numberToFile(fileNumber - 1);
     }
 
-    static fileLeft(color, file) {
+    static fileLeft(file, color) {
         return (color === 'White') ? Square.fileDown(file) : Square.fileUp(file);
     }
 
-    static fileRight(color, file) {
+    static fileRight(file, color) {
         return (color === 'White') ? Square.fileUp(file) : Square.fileDown(file);
     }
 
     static fileUp(file) {
         const fileNumber = Square.fileToNumber(file);
+        if (fileNumber === 0) {
+            return '';
+        }
         return Square.numberToFile(fileNumber + 1);
     }
 
@@ -51,7 +54,7 @@ export default class Square {
 
     static numberToFile(fileNumber) {
         // This is 6-10% faster than using a switch statement.
-        if (fileNumber < 1 || fileNumber > 8) {
+        if (typeof fileNumber !== 'number' || fileNumber < 1 || fileNumber > 8) {
             return '';
         }
         return String.fromCharCode(fileNumber + 96);
