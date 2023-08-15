@@ -1,4 +1,5 @@
 import Piece from './piece.js';
+import Score from './score.js';
 import Square from './square.js';
 
 export default class Board {
@@ -22,6 +23,7 @@ export default class Board {
         castle: {Black: ['c8', 'g8'], White: ['c1', 'g1']},
         check: false,
         mate: false,
+        score: [],
     };
     static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
     static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -77,6 +79,7 @@ export default class Board {
         const canMove = this.validateMoves();
         this.mate = this.check && !canMove;
         if (this.mate) {
+            this.score[this.score.length - 1][5] = true;
             for (const square in this.origins) {
                 this.origins[square] = [];
             }
@@ -262,6 +265,9 @@ export default class Board {
         this.risks = Board.findAllTargets(this.findAllMoves(true));
         const king = this.kings[this.turn];
         this.check = king in this.risks;
+        if (this.check) {
+            this.score[this.score.length - 1][4] = true;
+        }
     }
 
     addJump(moves, square, color, hypothetical = false) {
@@ -510,11 +516,14 @@ export default class Board {
         if (valid === false) {
             return false;
         }
+        const captured = this.squares[to];
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
         if (hypothetical === true) {
             return true;
         }
+        // TODO: Record whether the piece is ambiguous.
+        this.score.push([this.squares[to], from, to, captured, false, false]);
         this.turn = this.getOpponent();
         return true;
     }
@@ -531,6 +540,10 @@ export default class Board {
             }
         }
         return true;
+    }
+
+    drawScore() {
+        return Score.draw(this.score);
     }
 
     squareOccupied(square) {

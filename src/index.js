@@ -19,6 +19,7 @@ const server = http.createServer((request, response) => {
     case '/index.js':
     case '/board.js':
     case '/piece.js':
+    case '/score.js':
     case '/square.js':
         response.statusCode = 200;
         response.setHeader('Content-Type', 'text/javascript');
