@@ -3,6 +3,15 @@ import Test from '../test.js';
 
 const tests = {};
 
+// This also tests Piece.draw(), Piece.name(), and Square.title().
+tests['Square.draw() works.'] = () => {
+    const tests = [
+        [['a1', 'dark', 'WR', false, []], '<td id="a1" class="WR dark" title="a1: White Rook">&#9814;</td>'],
+        [['a6', 'light', '', false, ['a7', 'a8']], '<td id="a6" class=" light from-a7 from-a8" title="a6"></td>'],
+    ];
+    return Test.run(Square.draw, tests);
+};
+
 tests['Square.fileDown() works.'] = () => {
     const tests = [
         [['a'], ''],
