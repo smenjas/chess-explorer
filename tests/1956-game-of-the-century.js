@@ -4,7 +4,6 @@ const tests = {};
 
 // See: https://en.wikipedia.org/wiki/The_Game_of_the_Century_(chess)
 tests['The Game of the Century works.'] = () => {
-    const failures = [];
     const board = new Board();
     const moves = [
         ['g1', 'f3'], ['g8', 'f6'], // 1. Nf3 Nf6
@@ -50,14 +49,13 @@ tests['The Game of the Century works.'] = () => {
         ['b1', 'c1'], ['a2', 'c2'], // 41. Kc1 Rc2# 0-1
     ];
     if (board.testMoves(moves) === false) {
-        failures.push('Move failed');
-        return failures;
+        return ['Move failed'];
     }
     board.analyze();
     if (board.mate !== true) {
-        failures.push('Checkmate not recognized');
+        return ['Checkmate not recognized'];
     }
-    return failures;
+    return [];
 };
 
 export default tests;

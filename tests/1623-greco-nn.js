@@ -4,7 +4,6 @@ const tests = {};
 
 // See: https://www.chessgames.com/perl/chessgame?gid=1243022
 tests['1623 Greco-NN works.'] = () => {
-    const failures = [];
     const board = new Board();
     const moves = [
         ['e2', 'e4'], ['b7', 'b6'], // 1. e4 b6
@@ -17,14 +16,13 @@ tests['1623 Greco-NN works.'] = () => {
         ['d3', 'g6'], // 8. Bg6# 1-0
     ];
     if (board.testMoves(moves) === false) {
-        failures.push('Move failed');
-        return failures;
+        return ['Move failed'];
     }
     board.analyze();
     if (board.mate !== true) {
-        failures.push('Checkmate not recognized');
+        return ['Checkmate not recognized'];
     }
-    return failures;
+    return [];
 };
 
 export default tests;
