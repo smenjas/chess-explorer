@@ -61,7 +61,11 @@ export default class Test {
     }
 
     static showArray(array) {
+        const maxLength = 5;
         const values = [];
+        if (array.length > maxLength) {
+            return `Array(${array.length})`;
+        }
         for (const value of array) {
             values.push(Test.showValue(value));
         }
