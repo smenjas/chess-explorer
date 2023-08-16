@@ -55,7 +55,9 @@ export default class Score {
             text += 'R';
             break;
         }
-        text += disambiguator;
+        if (disambiguator !== undefined) {
+            text += disambiguator;
+        }
         if (captured !== '') {
             if (piece.type === 'Pawn') {
                 text += from[0];
