@@ -67,7 +67,14 @@ export default class Test {
     }
 
     static showDifference(expected, actual) {
-        return `${Test.showValue(actual)} !== ${Test.showValue(expected)}`;
+        if (Array.isArray(expected) && Array.isArray(actual)) {
+            for (const key in expected) {
+                if (!Test.compare(expected[key], actual[key])) {
+                    return `${Test.showValue(expected[key])} !== ${Test.showValue(actual[key])}`;
+                }
+            }
+        }
+        return `${Test.showValue(expected)} !== ${Test.showValue(actual)}`;
     }
 
     static showEscapeSequence(code) {
