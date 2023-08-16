@@ -66,6 +66,10 @@ export default class Test {
         return '[' + values.join(', ') + ']';
     }
 
+    static showDifference(expected, actual) {
+        return `${Test.showValue(actual)} !== ${Test.showValue(expected)}`;
+    }
+
     static showEscapeSequence(code) {
         if (code > 65535) {
             console.warn('Invalid UTF-16 code point:', code);
@@ -75,13 +79,11 @@ export default class Test {
     }
 
     static showSignature(method, args, expected, actual) {
-        let failure = `${method.name}(`;
+        const argStrings = [];
         for (const arg of args) {
-            failure += Test.showValue(arg) + ', ';
+            argStrings.push(Test.showValue(arg));
         }
-        failure = failure.substring(0, failure.length - 2);
-        failure += `): ${Test.showValue(actual)} !== ${Test.showValue(expected)}`;
-        return failure;
+        return `${method.name}(${argStrings.join(', ')}): ${Test.showDifference(expected, actual)}`;
     }
 
     static showString(value) {
