@@ -513,7 +513,6 @@ export default class Board {
 
     disambiguate(from, to) {
         // See: https://en.wikipedia.org/wiki/Algebraic_notation_(chess)#Disambiguating_moves
-        // TODO: Disambiguate situations where neither the rank or file alone are sufficient.
         const origins = this.targets[to];
         if (origins.length < 2) {
             return '';
@@ -527,6 +526,7 @@ export default class Board {
         if (type === 'P' || type === 'K') {
             return '';
         }
+        const disambiguators = [];
         for (const origin of origins) {
             if (origin === from) {
                 continue;
@@ -535,13 +535,20 @@ export default class Board {
                 continue;
             }
             if (from[0] !== origin[0]) {
-                return from[0];
+                disambiguators.push(from[0]);
             }
             else if (from[1] !== origin[1]) {
-                return from[1];
+                disambiguators.push(from[1]);
             }
         }
-        return '';
+        switch (disambiguators.length) {
+        case 0:
+            return '';
+        case 1:
+            return disambiguators[0];
+        default:
+            return from;
+        }
     }
 
     move(from, to, hypothetical = false) {
