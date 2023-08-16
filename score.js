@@ -26,7 +26,7 @@ export default class Score {
         }
     }
 
-    static notateMove(abbr, from, to, captured, check, mate) {
+    static notateMove(abbr, from, to, captured, check, mate, disambiguator) {
         // See: https://en.wikipedia.org/wiki/Algebraic_notation_(chess)
         if (abbr === '') {
             return '';
@@ -55,6 +55,7 @@ export default class Score {
             text += 'R';
             break;
         }
+        text += disambiguator;
         if (captured !== '') {
             if (piece.type === 'Pawn') {
                 text += from[0];
