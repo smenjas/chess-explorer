@@ -51,13 +51,7 @@ export default class Test {
         if (result === true) {
             return '';
         }
-        let failure = `${method.name}(`;
-        for (const arg of args) {
-            failure += Test.showValue(arg) + ', ';
-        }
-        failure = failure.substring(0, failure.length - 2);
-        failure += `): ${Test.showValue(actual)} !== ${Test.showValue(expected)}`;
-        return failure;
+        return Test.showSignature(method, args, expected, actual);
     }
 
     static showArray(array) {
@@ -78,6 +72,16 @@ export default class Test {
             return '';
         }
         return '\\u' + code.toString().padStart(4, '0');
+    }
+
+    static showSignature(method, args, expected, actual) {
+        let failure = `${method.name}(`;
+        for (const arg of args) {
+            failure += Test.showValue(arg) + ', ';
+        }
+        failure = failure.substring(0, failure.length - 2);
+        failure += `): ${Test.showValue(actual)} !== ${Test.showValue(expected)}`;
+        return failure;
     }
 
     static showString(value) {
