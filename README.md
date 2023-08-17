@@ -4,15 +4,25 @@ This is a chess app built with vanilla JavaScript. It's an exercise to learn
 web development fundamentals and chess strategy, using HTML, CSS, & JS.
 
 ## Exercise Constraints
-- No libraries, frameworks, templates, or preprocessors outside Node.js
+- The game runs in the browser
+- No libraries, frameworks, templates, or preprocessors
 - Limited dev tools:
   - [Node.js](https://nodejs.org/)
   - [ESLint](https://www.npmjs.com/package/eslint)
   - [nodemon](https://www.npmjs.com/package/nodemon)
 
 ## Goals
-- [ ] Play as white or black
-- [ ] Provide commentary on the game
+- [x] Play locally
+  - [x] Support basic movements of each piece
+  - [x] Recognize check and mate
+  - [ ] Recognize a draw
+  - [x] Don't allow moves that put or leave the king in check
+  - [x] Allow castling
+  - [x] Allow en passant
+  - [x] Promote pawns to queen
+  - [ ] Promote pawns to rook, bishop, or knight
+- [x] Document the game score in algebraic notation
+- [ ] Play against another person remotely
 - [ ] Play against an artificial opponent
 
 ![Chess board](screenshots/board.png)
