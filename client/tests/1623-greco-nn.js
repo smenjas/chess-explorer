@@ -1,4 +1,6 @@
 import Board from '../board.js';
+import Score from '../score.js';
+import Test from '../test.js';
 
 const tests = {};
 
@@ -22,7 +24,20 @@ tests['1623 Greco-NN works.'] = () => {
     if (board.mate !== true) {
         return ['Checkmate not recognized'];
     }
-    return [];
+    const notations = [
+        ['e4', 'b6'],
+        ['d4', 'Bb7'],
+        ['Bd3', 'f5'],
+        ['exf5', 'Bxg2'],
+        ['Qh5+', 'g6'],
+        ['fxg6', 'Nf6'],
+        ['gxh7+', 'Nxh5'],
+        ['Bg6#'],
+    ];
+    const test = [
+        [[board.score], notations],
+    ];
+    return Test.run(Score.notate, test);
 };
 
 export default tests;
