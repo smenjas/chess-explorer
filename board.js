@@ -48,7 +48,7 @@ export default class Board {
         return html;
     }
 
-    draw() {
+    render() {
         this.analyze();
         let html = '<table class="chess-board"><tbody>';
         for (const rank of Board.ranks.toReversed()) {
@@ -58,7 +58,7 @@ export default class Board {
                 const square = file + rank;
                 const piece = this.squares[square];
                 const moves = this.origins[square];
-                html += Square.draw(square, shade, piece, !!moves.length, this.targets[square]);
+                html += Square.render(square, shade, piece, !!moves.length, this.targets[square]);
                 shade = (shade === 'light') ? 'dark' : 'light';
             }
             html += '</tr>';
@@ -592,8 +592,8 @@ export default class Board {
         return true;
     }
 
-    drawScore() {
-        return Score.draw(this.score);
+    renderScore() {
+        return Score.render(this.score);
     }
 
     squareOccupied(square) {

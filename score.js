@@ -1,7 +1,7 @@
 import Piece from './piece.js';
 
 export default class Score {
-    static draw(score) {
+    static render(score) {
         let html = '<ol>';
         let notations = Score.notate(score);
         for (const moves of notations) {

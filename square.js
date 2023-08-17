@@ -1,8 +1,8 @@
 import Piece from './piece.js';
 
 export default class Square {
-    static draw(square, shade, piece, canMove, squares) {
-        const symbol = Piece.draw(piece);
+    static render(square, shade, piece, canMove, squares) {
+        const symbol = Piece.render(piece);
         const title = Square.title(square, piece);
         const classes = [piece, shade];
         if (canMove === true) {

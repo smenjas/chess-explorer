@@ -14,7 +14,7 @@ export default class Piece {
         WR: { symbol: '&#9814;', color: 'White', type: 'Rook' },
     };
 
-    static draw(abbr) {
+    static render(abbr) {
         if (Piece.exists(abbr) === false) {
             return '';
         }
