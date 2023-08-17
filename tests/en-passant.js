@@ -1,4 +1,6 @@
 import Board from '../board.js';
+import Score from '../score.js';
+import Test from '../test.js';
 
 const tests = {};
 
@@ -21,7 +23,15 @@ tests['A white pawn can capture a black pawn en passant.'] = () => {
     if (board.squares['d5'] !== '') {
         return ['Captured pawn still on the board'];
     }
-    return [];
+    const notations = [
+        ['e4', 'c6'],
+        ['e5', 'd5'],
+        ['exd6'],
+    ];
+    const test = [
+        [[board.score], notations],
+    ];
+    return Test.run(Score.notate, test);
 };
 
 tests['A black pawn can capture a white pawn en passant.'] = () => {
@@ -43,7 +53,15 @@ tests['A black pawn can capture a white pawn en passant.'] = () => {
     if (board.squares['c4'] !== '') {
         return ['Captured pawn still on the board'];
     }
-    return [];
+    const notations = [
+        ['e4', 'e5'],
+        ['d4', 'exd4'],
+        ['c4', 'dxc3'],
+    ];
+    const test = [
+        [[board.score], notations],
+    ];
+    return Test.run(Score.notate, test);
 };
 
 export default tests;
