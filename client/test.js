@@ -51,21 +51,30 @@ export default class Test {
         if (result === true) {
             return '';
         }
-        let failure = `${method.name}(`;
-        for (const arg of args) {
-            failure += Test.showValue(arg) + ', ';
-        }
-        failure = failure.substring(0, failure.length - 2);
-        failure += `): ${Test.showValue(actual)} !== ${Test.showValue(expected)}`;
-        return failure;
+        return Test.showSignature(method, args, expected, actual);
     }
 
     static showArray(array) {
+        const maxLength = 5;
         const values = [];
+        if (array.length > maxLength) {
+            return `Array(${array.length})`;
+        }
         for (const value of array) {
             values.push(Test.showValue(value));
         }
         return '[' + values.join(', ') + ']';
+    }
+
+    static showDifference(expected, actual) {
+        if (Array.isArray(expected) && Array.isArray(actual)) {
+            for (const key in expected) {
+                if (!Test.compare(expected[key], actual[key])) {
+                    return `${Test.showValue(expected[key])} !== ${Test.showValue(actual[key])}`;
+                }
+            }
+        }
+        return `${Test.showValue(expected)} !== ${Test.showValue(actual)}`;
     }
 
     static showEscapeSequence(code) {
@@ -74,6 +83,14 @@ export default class Test {
             return '';
         }
         return '\\u' + code.toString().padStart(4, '0');
+    }
+
+    static showSignature(method, args, expected, actual) {
+        const argStrings = [];
+        for (const arg of args) {
+            argStrings.push(Test.showValue(arg));
+        }
+        return `${method.name}(${argStrings.join(', ')}): ${Test.showDifference(expected, actual)}`;
     }
 
     static showString(value) {

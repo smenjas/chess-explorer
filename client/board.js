@@ -511,6 +511,46 @@ export default class Board {
         localStorage.setItem('board', JSON.stringify(this));
     }
 
+    disambiguate(from, to) {
+        // See: https://en.wikipedia.org/wiki/Algebraic_notation_(chess)#Disambiguating_moves
+        const origins = this.targets[to];
+        if (origins.length < 2) {
+            return '';
+        }
+        const abbr = this.squares[to];
+        if (abbr === '') {
+            console.warn('Cannot disambiguate, no piece on', to);
+            return '';
+        }
+        const type = abbr[1];
+        if (type === 'P' || type === 'K') {
+            return '';
+        }
+        const disambiguators = [];
+        for (const origin of origins) {
+            if (origin === from) {
+                continue;
+            }
+            if (type !== this.squares[origin][1]) {
+                continue;
+            }
+            if (from[0] !== origin[0]) {
+                disambiguators.push(from[0]);
+            }
+            else if (from[1] !== origin[1]) {
+                disambiguators.push(from[1]);
+            }
+        }
+        switch (disambiguators.length) {
+        case 0:
+            return '';
+        case 1:
+            return disambiguators[0];
+        default:
+            return from;
+        }
+    }
+
     move(from, to, hypothetical = false) {
         const valid = this.trackPiece(from, to);
         if (valid === false) {
@@ -523,7 +563,8 @@ export default class Board {
             return true;
         }
         // TODO: Record whether the piece is ambiguous.
-        this.score.push([this.squares[to], from, to, captured, false, false]);
+        const disambiguator = this.disambiguate(from, to);
+        this.score.push([this.squares[to], from, to, captured, false, false, disambiguator]);
         this.turn = this.getOpponent();
         return true;
     }

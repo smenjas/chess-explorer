@@ -4,7 +4,6 @@ const tests = {};
 
 // See: https://en.wikipedia.org/wiki/Peruvian_Immortal
 tests['The Peruvian Immortal works.'] = () => {
-    const failures = [];
     const board = new Board();
     const moves = [
         ['e2', 'e4'], ['d7', 'd5'], // 1. e4 d5
@@ -23,14 +22,13 @@ tests['The Peruvian Immortal works.'] = () => {
         ['e2', 'a6'], // 14. Ba6# 1-0
     ];
     if (board.testMoves(moves) === false) {
-        failures.push('Move failed');
-        return failures;
+        return ['Move failed'];
     }
     board.analyze();
     if (board.mate !== true) {
-        failures.push('Checkmate not recognized');
+        return ['Checkmate not recognized'];
     }
-    return failures;
+    return [];
 };
 
 export default tests;
