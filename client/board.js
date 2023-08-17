@@ -551,12 +551,21 @@ export default class Board {
         }
     }
 
+    findCapturedPiece(from, to) {
+        // Call this *before* the move.
+        const abbr = this.squares[from];
+        if (this.squares[to] === '' && abbr[1] === 'P' && (from[0] !== to[0])) {
+            return this.getOpponent()[0] + 'P';
+        }
+        return this.squares[to];
+    }
+
     move(from, to, hypothetical = false) {
         const valid = this.trackPiece(from, to);
         if (valid === false) {
             return false;
         }
-        const captured = this.squares[to];
+        const captured = this.findCapturedPiece(from, to);
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
         if (hypothetical === true) {
