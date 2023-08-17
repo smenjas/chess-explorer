@@ -22,6 +22,7 @@ export default class Board {
         kings: {Black: 'e8', White: 'e1'},
         castle: {Black: ['c8', 'g8'], White: ['c1', 'g1']},
         check: false,
+        draw: false,
         mate: false,
         score: [],
     };
@@ -40,6 +41,9 @@ export default class Board {
     describe() {
         if (this.mate) {
             return `Checkmate. ${this.getOpponent()} wins.`;
+        }
+        if (this.draw) {
+            return 'Stalemate: no legal move.';
         }
         let html = `${this.turn}'s move.`;
         if (this.check) {
@@ -77,14 +81,19 @@ export default class Board {
         this.filterMoves();
         // Prevent moves that put or leave the king in check.
         const canMove = this.validateMoves();
-        this.mate = this.check && !canMove;
-        if (this.mate) {
+        if (canMove === true) {
+            return;
+        }
+        if (this.check === true) {
+            this.mate = true;
             this.score[this.score.length - 1][5] = true;
             for (const square in this.origins) {
                 this.origins[square] = [];
             }
             this.targets = Board.findAllTargets(this.origins);
         }
+        // Stalemate: cannot move, but not in check
+        this.draw = true;
     }
 
     validateMove(from, to) {
