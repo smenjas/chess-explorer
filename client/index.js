@@ -22,7 +22,7 @@ function cancelMoves(squares) {
     }
 }
 
-function drawPage(board) {
+function renderPage(board) {
     document.title = 'Chess Explorer';
     let html = '<div id="container">';
     html += '<div>';
@@ -90,11 +90,11 @@ function selectPiece(square) {
 }
 
 function updatePage(board) {
-    document.getElementById('board').innerHTML = board.draw();
+    document.getElementById('board').innerHTML = board.render();
     document.getElementById('description').innerHTML = board.describe();
-    document.getElementById('score').innerHTML = board.drawScore();
+    document.getElementById('score').innerHTML = board.renderScore();
     addEventHandlers();
 }
 
 let board = new Board();
-drawPage(board);
+renderPage(board);
