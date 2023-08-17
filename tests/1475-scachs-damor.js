@@ -1,4 +1,6 @@
 import Board from '../board.js';
+import Score from '../score.js';
+import Test from '../test.js';
 
 const tests = {};
 
@@ -35,7 +37,33 @@ tests['Scachs d\'amor works.'] = () => {
     if (board.mate !== true) {
         return ['Checkmate not recognized'];
     }
-    return [];
+    const notations = [
+        ['e4', 'd5'],
+        ['exd5', 'Qxd5'],
+        ['Nc3', 'Qd8'],
+        ['Bc4', 'Nf6'],
+        ['Nf3', 'Bg4'],
+        ['h3', 'Bxf3'],
+        ['Qxf3', 'e6'],
+        ['Qxb7', 'Nbd7'],
+        ['Nb5', 'Rc8'],
+        ['Nxa7', 'Nb6'],
+        ['Nxc8', 'Nxc8'],
+        ['d4', 'Nd6'],
+        ['Bb5+', 'Nxb5'],
+        ['Qxb5+', 'Nd7'],
+        ['d5', 'exd5'],
+        ['Be3', 'Bd6'],
+        ['Rd1', 'Qf6'],
+        ['Rxd5', 'Qg6'],
+        ['Bf4', 'Bxf4'],
+        ['Qxd7+', 'Kf8'],
+        ['Qd8#'],
+    ];
+    const test = [
+        [[board.score], notations],
+    ];
+    return Test.run(Score.notate, test);
 };
 
 export default tests;
