@@ -1,4 +1,6 @@
 import Board from '../board.js';
+import Score from '../score.js';
+import Test from '../test.js';
 
 const tests = {};
 
@@ -16,7 +18,14 @@ tests['Fool\'s mate works.'] = () => {
     if (board.mate !== true) {
         return ['Checkmate not recognized'];
     }
-    return [];
+    const notations = [
+        ['f3', 'e5'],
+        ['g4', 'Qh4#'],
+    ];
+    const test = [
+        [[board.score], notations],
+    ];
+    return Test.run(Score.notate, test);
 };
 
 export default tests;

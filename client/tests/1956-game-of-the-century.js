@@ -100,10 +100,10 @@ tests['The Game of the Century works.'] = () => {
         ['Kb1', 'Nc3+'],
         ['Kc1', 'Rc2#'],
     ];
-    const tests = [
+    const test = [
         [[board.score], notations],
     ];
-    return Test.run(Score.notate, tests);
+    return Test.run(Score.notate, test);
 };
 
 export default tests;

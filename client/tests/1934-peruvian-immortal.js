@@ -1,4 +1,6 @@
 import Board from '../board.js';
+import Score from '../score.js';
+import Test from '../test.js';
 
 const tests = {};
 
@@ -18,7 +20,7 @@ tests['The Peruvian Immortal works.'] = () => {
         ['a2', 'a3'], ['e8', 'c8'], // 10. a3 0-0-0??
         ['a3', 'b4'], ['a5', 'a1'], // 11. axb4!! Qxa1+
         ['e1', 'd2'], ['a1', 'h1'], // 12. Kd2! Qxh1
-        ['f3', 'c6'], ['b7', 'c6'], // 13. Qxc6! bxc6
+        ['f3', 'c6'], ['b7', 'c6'], // 13. Qxc6+! bxc6
         ['e2', 'a6'], // 14. Ba6# 1-0
     ];
     if (board.testMoves(moves) === false) {
@@ -28,7 +30,26 @@ tests['The Peruvian Immortal works.'] = () => {
     if (board.mate !== true) {
         return ['Checkmate not recognized'];
     }
-    return [];
+    const notations = [
+        ['e4', 'd5'],
+        ['exd5', 'Qxd5'],
+        ['Nc3', 'Qa5'],
+        ['d4', 'c6'],
+        ['Nf3', 'Bg4'],
+        ['Bf4', 'e6'],
+        ['h3', 'Bxf3'],
+        ['Qxf3', 'Bb4'],
+        ['Be2', 'Nd7'],
+        ['a3', '0-0-0'],
+        ['axb4', 'Qxa1+'],
+        ['Kd2', 'Qxh1'],
+        ['Qxc6+', 'bxc6'],
+        ['Ba6#'],
+    ];
+    const test = [
+        [[board.score], notations],
+    ];
+    return Test.run(Score.notate, test);
 };
 
 export default tests;
