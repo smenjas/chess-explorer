@@ -6,8 +6,8 @@ const tests = {};
 // This also tests Piece.render().
 tests['Square.render() works.'] = () => {
     const tests = [
-        [['a1', 'dark', 'WR', false, []], '<td id="a1" class="WR dark"><div class="coord full">a1</div><div class="coord rank">1</div>&#9814;</td>'],
-        [['a6', 'light', '', false, ['a7', 'a8']], '<td id="a6" class=" light from-a7 from-a8"><div class="coord full">a6</div><div class="coord rank">6</div></td>'],
+        [['a1', 'dark', 'WR', false, []], '<td id="a1" class="WR dark"><div class="coord">a1</div>&#9814;</td>'],
+        [['a6', 'light', '', false, ['a7', 'a8']], '<td id="a6" class=" light from-a7 from-a8"><div class="coord">a6</div></td>'],
     ];
     return Test.run(Square.render, tests);
 };
