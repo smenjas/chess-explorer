@@ -104,7 +104,7 @@ tests['1987 Beliavsky-Christiansen works.'] = () => {
         ['Kh3', 'Rg3+'],
         ['Kh2', 'Rg2+'],
         ['Kh1', 'Rg1+'],
-        ['Kxg1'],
+        ['Kxg1 (=)'],
     ];
     const test = [
         [[board.score], notations],

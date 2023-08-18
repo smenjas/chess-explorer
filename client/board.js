@@ -40,19 +40,41 @@ export default class Board {
 
     describe() {
         if (this.mate) {
-            return `Checkmate. ${this.getOpponent()} wins.`;
+            return `Checkmate: ${this.getOpponent().toLowerCase()} wins`;
         }
         if (this.draw) {
-            return 'Stalemate: no legal move.';
+            return `${this.turn} can't move: stalemate`;
         }
-        let html = `${this.turn}'s move.`;
+        let html = `${this.turn}'s move`;
         if (this.check) {
-            html += ' Check.';
+            html += ', check';
         }
         return html;
     }
 
+    fixScore() {
+        // This is for backward compatibility with the previous score format.
+        for (let i = 0; i < this.score.length; i++) {
+            const tempo = this.score[i];
+            if (tempo.length === 8) {
+                continue;
+            }
+            this.score[i] = [
+                tempo[0], // piece abbreviation
+                tempo[1], // from
+                tempo[2], // to
+                tempo[3], // captured
+                tempo[6], // disambiguator
+                tempo[4], // check
+                false, // draw
+                tempo[5], // mate
+            ];
+        }
+        this.save();
+    }
+
     render() {
+        this.fixScore();
         this.analyze();
         let html = '<table class="chess-board"><tbody>';
         for (const rank of Board.ranks.toReversed()) {
@@ -86,7 +108,7 @@ export default class Board {
         }
         if (this.check === true) {
             this.mate = true;
-            this.score[this.score.length - 1][5] = true;
+            this.score[this.score.length - 1][7] = true;
             for (const square in this.origins) {
                 this.origins[square] = [];
             }
@@ -94,6 +116,7 @@ export default class Board {
         }
         // Stalemate: cannot move, but not in check
         this.draw = true;
+        this.score[this.score.length - 1][6] = true;
     }
 
     validateMove(from, to) {
@@ -275,7 +298,7 @@ export default class Board {
         const king = this.kings[this.turn];
         this.check = king in this.risks;
         if (this.check) {
-            this.score[this.score.length - 1][4] = true;
+            this.score[this.score.length - 1][5] = true;
         }
     }
 
@@ -582,7 +605,7 @@ export default class Board {
         }
         // TODO: Record whether the piece is ambiguous.
         const disambiguator = this.disambiguate(from, to);
-        this.score.push([this.squares[to], from, to, captured, false, false, disambiguator]);
+        this.score.push([this.squares[to], from, to, captured, disambiguator, false, false, false]);
         this.turn = this.getOpponent();
         return true;
     }
