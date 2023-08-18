@@ -3,6 +3,8 @@
 This is a chess app built with vanilla JavaScript. It's an exercise to learn
 web development fundamentals and chess strategy, using HTML, CSS, & JS.
 
+![Chess board](screenshots/board.png)
+
 ## Exercise Constraints
 - The game runs in the browser
 - No libraries, frameworks, templates, or preprocessors
@@ -24,8 +26,6 @@ web development fundamentals and chess strategy, using HTML, CSS, & JS.
 - [x] Document the game score in algebraic notation
 - [ ] Play against another person remotely
 - [ ] Play against an artificial opponent
-
-![Chess board](screenshots/board.png)
 
 ## Development
 Install the dependencies by running:
