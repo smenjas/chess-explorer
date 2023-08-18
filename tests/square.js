@@ -3,11 +3,11 @@ import Test from '../test.js';
 
 const tests = {};
 
-// This also tests Piece.render(), Piece.name(), and Square.title().
+// This also tests Piece.render().
 tests['Square.render() works.'] = () => {
     const tests = [
-        [['a1', 'dark', 'WR', false, []], '<td id="a1" class="WR dark" title="a1: White Rook">&#9814;</td>'],
-        [['a6', 'light', '', false, ['a7', 'a8']], '<td id="a6" class=" light from-a7 from-a8" title="a6"></td>'],
+        [['a1', 'dark', 'WR', false, []], '<td id="a1" class="WR dark"><div class="coord full">a1</div><div class="coord rank">1</div>&#9814;</td>'],
+        [['a6', 'light', '', false, ['a7', 'a8']], '<td id="a6" class=" light from-a7 from-a8"><div class="coord full">a6</div><div class="coord rank">6</div></td>'],
     ];
     return Test.run(Square.render, tests);
 };
