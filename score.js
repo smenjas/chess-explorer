@@ -26,7 +26,7 @@ export default class Score {
         }
     }
 
-    static notateMove(abbr, from, to, captured, check, mate, disambiguator) {
+    static notateMove(abbr, from, to, captured, disambiguator, check, draw, mate) {
         // See: https://en.wikipedia.org/wiki/Algebraic_notation_(chess)
         if (abbr === '') {
             return '';
@@ -55,7 +55,7 @@ export default class Score {
             text += 'R';
             break;
         }
-        if (disambiguator !== undefined) {
+        if (typeof disambiguator === 'string') {
             text += disambiguator;
         }
         if (captured !== '') {
@@ -73,6 +73,9 @@ export default class Score {
         }
         else if (check === true) {
             text += '+';
+        }
+        else if (draw === true) {
+            text += ' (=)';
         }
         return text;
     }

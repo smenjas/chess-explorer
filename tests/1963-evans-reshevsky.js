@@ -119,7 +119,7 @@ tests['1963 Evans-Reshevsky works.'] = () => {
         ['h4', 'Re2+'],
         ['Kh1', 'Qxg3'],
         ['Qg8+', 'Kxg8'],
-        ['Rxg7+', 'Kxg7'],
+        ['Rxg7+', 'Kxg7 (=)'],
     ];
     const test = [
         [[board.score], notations],
