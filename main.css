@@ -73,6 +73,10 @@ button#new-game {
     body {
         margin: 0;
     }
+    #board td {
+        font-size: 2.5rem;
+        height: calc(100vw / 8);
+    }
 }
 
 @media only screen and (prefers-color-scheme: dark) {
