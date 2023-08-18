@@ -52,7 +52,7 @@ tests['1987 Beliavsky-Christiansen works.'] = () => {
         ['h2', 'h3'], ['g2', 'g3'], // 40. Kh3 Rg3+!
         ['h3', 'h2'], ['g3', 'g2'], // 41. Kh2 Rg2+!
         ['h2', 'h1'], ['g2', 'g1'], // 42. Kh1 Rg1+!
-        ['h1', 'g1'], // 42. Kxg1 (=) 1/2-1/2
+        ['h1', 'g1'], // 43. Kxg1 (=) 1/2-1/2
     ];
     if (board.testMoves(moves) === false) {
         return ['Move failed'];
