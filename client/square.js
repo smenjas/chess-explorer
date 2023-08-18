@@ -3,7 +3,6 @@ import Piece from './piece.js';
 export default class Square {
     static render(square, shade, piece, canMove, squares) {
         const symbol = Piece.render(piece);
-        const title = Square.title(square, piece);
         const classes = [piece, shade];
         if (canMove === true) {
             classes.push('can-move');
@@ -13,7 +12,16 @@ export default class Square {
                 classes.push(`from-${square}`);
             }
         }
-        return `<td id="${square}" class="${classes.join(' ')}" title="${title}">${symbol}</td>`;
+        let file = '';
+        if (square[1] === '8') {
+            file = `<div class="coord file">${square[0]}</div>`;
+        }
+        let rank = '';
+        if (square[0] === 'a') {
+            rank = `<div class="coord rank">${square[1]}</div>`;
+        }
+        const full = `<div class="coord full">${square}</div>`;
+        return `<td id="${square}" class="${classes.join(' ')}">${file}${full}${rank}${symbol}</td>`;
     }
 
     static fileDown(file) {
