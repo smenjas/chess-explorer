@@ -32,12 +32,40 @@ th {
     padding: 0.2rem;
 }
 td {
+    position: relative;
     cursor: default;
     font-size: 3rem;
     border: none;
     height: 4rem;
     width: 4rem;
     text-align: center;
+}
+
+td .coord {
+    font-size: 33%;
+    position: absolute;
+}
+td:hover .coord.full {
+    display: block;
+}
+td .coord.full {
+    display: none;
+    bottom: 2%;
+    right: 4%;
+}
+td .coord.file {
+    top: 2%;
+    left: 4%;
+}
+td .coord.rank {
+    bottom: 2%;
+    left: 4%;
+}
+td.dark .coord {
+    color: lightyellow;
+}
+td.light .coord {
+    color: darkseagreen;
 }
 
 td.dark {
@@ -51,12 +79,14 @@ td.light {
 
 td.can-move:hover,
 td.possible {
+    z-index: 1;
     cursor: pointer;
     outline: 5px solid #808080;
     border-radius: 1px;
 }
 td.selected,
 td.selected:hover {
+    z-index: 2;
     outline: 5px solid black;
     border-radius: 1px;
 }
