@@ -69,6 +69,12 @@ button#new-game {
     text-align: center;
 }
 
+@media only screen and (max-width: 480px) {
+    body {
+        margin: 0;
+    }
+}
+
 @media only screen and (prefers-color-scheme: dark) {
     body {
         background: black;
