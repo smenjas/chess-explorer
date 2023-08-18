@@ -196,12 +196,12 @@ export default class Board {
             return [];
         }
         const piece = Piece.list[abbr];
+        // Queens, rooks, and bishops can move multiple squares.
+        // Kings can move two squares when castling.
+        // Knights can leap over pieces.
         switch (piece.type) {
-        case 'Bishop':
-        case 'Queen':
-        case 'Rook':
-            break;
-        default:
+        case 'Knight':
+        case 'Pawn':
             return [];
         }
         const [fromFile, fromRank] = Square.parse(from);
