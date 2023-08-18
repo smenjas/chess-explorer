@@ -79,7 +79,7 @@ tests['Score.notate() works.'] = () => {
     return Test.run(Score.notate, tests);
 };
 
-tests['Score.draw() works.'] = () => {
+tests['Score.render() works.'] = () => {
     let list = '<ol>';
     list += '<li>e4 e5</li>';
     list += '<li>Nc3 f6</li>';
@@ -97,7 +97,7 @@ tests['Score.draw() works.'] = () => {
     const tests = [
         [[score], list],
     ];
-    return Test.run(Score.draw, tests);
+    return Test.run(Score.render, tests);
 };
 
 export default tests;

@@ -22,6 +22,7 @@ export default class Board {
         kings: {Black: 'e8', White: 'e1'},
         castle: {Black: ['c8', 'g8'], White: ['c1', 'g1']},
         check: false,
+        draw: false,
         mate: false,
         score: [],
     };
@@ -41,6 +42,9 @@ export default class Board {
         if (this.mate) {
             return `Checkmate. ${this.getOpponent()} wins.`;
         }
+        if (this.draw) {
+            return 'Stalemate: no legal move.';
+        }
         let html = `${this.turn}'s move.`;
         if (this.check) {
             html += ' Check.';
@@ -48,7 +52,7 @@ export default class Board {
         return html;
     }
 
-    draw() {
+    render() {
         this.analyze();
         let html = '<table class="chess-board"><tbody>';
         for (const rank of Board.ranks.toReversed()) {
@@ -58,7 +62,7 @@ export default class Board {
                 const square = file + rank;
                 const piece = this.squares[square];
                 const moves = this.origins[square];
-                html += Square.draw(square, shade, piece, !!moves.length, this.targets[square]);
+                html += Square.render(square, shade, piece, !!moves.length, this.targets[square]);
                 shade = (shade === 'light') ? 'dark' : 'light';
             }
             html += '</tr>';
@@ -77,14 +81,19 @@ export default class Board {
         this.filterMoves();
         // Prevent moves that put or leave the king in check.
         const canMove = this.validateMoves();
-        this.mate = this.check && !canMove;
-        if (this.mate) {
+        if (canMove === true) {
+            return;
+        }
+        if (this.check === true) {
+            this.mate = true;
             this.score[this.score.length - 1][5] = true;
             for (const square in this.origins) {
                 this.origins[square] = [];
             }
             this.targets = Board.findAllTargets(this.origins);
         }
+        // Stalemate: cannot move, but not in check
+        this.draw = true;
     }
 
     validateMove(from, to) {
@@ -592,8 +601,8 @@ export default class Board {
         return true;
     }
 
-    drawScore() {
-        return Score.draw(this.score);
+    renderScore() {
+        return Score.render(this.score);
     }
 
     squareOccupied(square) {
