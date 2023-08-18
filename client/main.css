@@ -42,24 +42,14 @@ td {
 }
 
 td .coord {
+    display: none;
     font-size: 33%;
     position: absolute;
-}
-td:hover .coord.full {
-    display: block;
-}
-td .coord.full {
-    display: none;
-    bottom: 2%;
-    right: 4%;
-}
-td .coord.file {
     top: 2%;
     left: 4%;
 }
-td .coord.rank {
-    bottom: 2%;
-    left: 4%;
+td:hover .coord {
+    display: block;
 }
 td.dark .coord {
     color: lightyellow;
