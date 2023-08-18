@@ -198,6 +198,7 @@ export default class Board {
         const piece = Piece.list[abbr];
         switch (piece.type) {
         case 'Bishop':
+        case 'King':
         case 'Queen':
         case 'Rook':
             break;
