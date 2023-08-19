@@ -1,6 +1,6 @@
 :root {
     --size: min(calc(100vh - 16px), calc(100vw - 15px));
-    --square: calc(var(--size) / 8);
+    --square: calc((var(--size) / 8) - 8px);
 }
 
 body {
@@ -45,7 +45,7 @@ button#new-game {
 }
 
 table {
-    border-collapse: collapse;
+    border-spacing: 0;
     height: var(--size);
     width: var(--size);
 }
@@ -57,10 +57,11 @@ td {
     position: relative;
     cursor: default;
     font-size: calc(var(--square) * 0.8);
-    border: none;
+    border: 5px solid transparent;
     height: var(--square);
     width: var(--square);
     text-align: center;
+    padding: 0;
 }
 
 td .coord {
@@ -82,25 +83,23 @@ td.light .coord {
 
 td.dark {
     background: darkseagreen;
+    border-color: darkseagreen;
     color: black;
 }
 td.light {
     background: lightyellow;
+    border-color: lightyellow;
     color: black;
 }
 
 td.can-move:hover,
 td.possible {
-    z-index: 1;
     cursor: pointer;
-    outline: 5px solid #808080;
-    border-radius: 1px;
+    border: 5px solid #909090;
 }
 td.selected,
 td.selected:hover {
-    z-index: 2;
-    outline: 5px solid black;
-    border-radius: 1px;
+    border: 5px solid black;
 }
 
 @media only screen and (max-width: 480px) {
