@@ -120,7 +120,7 @@ td.selected:hover {
     border-color: black !important;
 }
 
-@media only screen and (max-width: 480px) {
+@media only screen and (width <= 480px) {
     :root {
         --size: min(94.5vh, 100vw);
     }
