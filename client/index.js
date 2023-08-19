@@ -25,16 +25,14 @@ function cancelMoves(squares) {
 function renderPage(board) {
     document.title = 'Chess Explorer';
     let html = '<div id="container">';
-    html += '<div>';
-    html += '<header>';
-    html += `<h1 id="description">${document.title}</h1>`;
-    html += '</header>';
     html += '<main id="board"></main>';
+    html += '<div id="not-board">';
     html += '<section id="buttons">';
     html += '<button type="button" id="new-game">New Game</button>';
     html += '</section>';
-    html += '</div>';
+    html += '<h1 id="tempo"></h1>';
     html += '<aside id="score"></aside>';
+    html += '</div>';
     html += '</div>';
     document.body.insertAdjacentHTML('beforeend', html);
     const newGameButton = document.getElementById('new-game');
@@ -91,7 +89,7 @@ function selectPiece(square) {
 
 function updatePage(board) {
     document.getElementById('board').innerHTML = board.render();
-    document.getElementById('description').innerHTML = board.describe();
+    document.getElementById('tempo').innerHTML = board.describe();
     document.getElementById('score').innerHTML = board.renderScore();
     addEventHandlers();
 }

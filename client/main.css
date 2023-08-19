@@ -1,8 +1,13 @@
+:root {
+    --size: min(calc(100vh - 16px), calc(100vw - 15px));
+    --square: calc(var(--size) / 8);
+}
+
 body {
     font-family: sans-serif;
     background: white;
     color: black;
-    margin: 0 1rem;
+    margin: 0;
 }
 a {
     color: #005;
@@ -12,20 +17,37 @@ a:visited {
 }
 
 h1 {
+    font-size: 1.75rem;
+    margin: 0.75rem;
     text-align: center;
-    margin-top: 0.75rem;
-    margin-bottom: calc(0.75rem + 2px);
 }
 
 #container {
     display: flex;
     flex-wrap: wrap;
 }
+#not-board {
+    margin: 1rem auto 0;
+}
+#score {
+    height: calc(100vh - 6.75rem);
+    margin: 0;
+    overflow: auto;
+}
+#score ol {
+    margin: 0;
+}
+#buttons {
+    text-align: center;
+}
+button#new-game {
+    font-size: 1.5rem;
+}
 
 table {
-    outline: 2px solid black;
     border-collapse: collapse;
-    margin: auto;
+    height: var(--size);
+    width: var(--size);
 }
 th {
     border: none;
@@ -34,10 +56,10 @@ th {
 td {
     position: relative;
     cursor: default;
-    font-size: 3rem;
+    font-size: calc(var(--square) * 0.8);
     border: none;
-    height: 4rem;
-    width: 4rem;
+    height: var(--square);
+    width: var(--square);
     text-align: center;
 }
 
@@ -81,15 +103,10 @@ td.selected:hover {
     border-radius: 1px;
 }
 
-button#new-game {
-    font-size: 1.5rem;
-    margin-top: 1.5rem;
-}
-#buttons {
-    text-align: center;
-}
-
 @media only screen and (max-width: 480px) {
+    :root {
+        --size: min(94.5vh, 100vw);
+    }
     body {
         margin: 0;
     }
