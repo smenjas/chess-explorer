@@ -95,7 +95,7 @@ td.light {
 td.can-move:hover,
 td.possible {
     cursor: pointer;
-    border: 5px solid #909090;
+    border-color: #909090;
 }
 td.dark.can-move:hover,
 td.dark.possible {
@@ -103,7 +103,7 @@ td.dark.possible {
 }
 td.selected,
 td.selected:hover {
-    border: 5px solid black !important;
+    border-color: black !important;
 }
 
 @media only screen and (max-width: 480px) {
