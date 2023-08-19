@@ -55,6 +55,7 @@ th {
 }
 td {
     position: relative;
+    color: black;
     cursor: default;
     font-size: calc(var(--square) * 0.8);
     border: 5px solid transparent;
@@ -84,12 +85,10 @@ td.light .coord {
 td.dark {
     background: darkseagreen;
     border-color: darkseagreen;
-    color: black;
 }
 td.light {
     background: lightyellow;
     border-color: lightyellow;
-    color: black;
 }
 
 td.can-move:hover,
