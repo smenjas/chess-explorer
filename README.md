@@ -12,6 +12,7 @@ web development fundamentals and chess strategy, using HTML, CSS, & JS.
   - [Node.js](https://nodejs.org/)
   - [ESLint](https://www.npmjs.com/package/eslint)
   - [nodemon](https://www.npmjs.com/package/nodemon)
+  - [Stylelint](https://stylelint.io/)
 
 ## Goals
 - [x] Play locally
