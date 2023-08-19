@@ -97,9 +97,13 @@ td.possible {
     cursor: pointer;
     border: 5px solid #909090;
 }
+td.dark.can-move:hover,
+td.dark.possible {
+    border-color: #808080;
+}
 td.selected,
 td.selected:hover {
-    border: 5px solid black;
+    border: 5px solid black !important;
 }
 
 @media only screen and (max-width: 480px) {
