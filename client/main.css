@@ -9,9 +9,11 @@ body {
     color: black;
     margin: 0;
 }
+
 a {
     color: #005;
 }
+
 a:visited {
     color: #505;
 }
@@ -26,20 +28,25 @@ h1 {
     display: flex;
     flex-wrap: wrap;
 }
+
 #not-board {
     margin: 1rem auto 0;
 }
+
 #score {
     height: calc(100vh - 6.75rem);
     margin: 0;
     overflow: auto;
 }
+
 #score ol {
     margin: 0;
 }
+
 #buttons {
     text-align: center;
 }
+
 button#new-game {
     font-size: 1.5rem;
 }
@@ -49,10 +56,12 @@ table {
     height: var(--size);
     width: var(--size);
 }
+
 th {
     border: none;
     padding: 0.2rem;
 }
+
 td {
     position: relative;
     color: black;
@@ -72,12 +81,15 @@ td .coord {
     top: 2%;
     left: 4%;
 }
+
 td:hover .coord {
     display: block;
 }
+
 td.dark .coord {
     color: lightyellow;
 }
+
 td.light .coord {
     color: darkseagreen;
 }
@@ -86,6 +98,7 @@ td.dark {
     background: darkseagreen;
     border-color: darkseagreen;
 }
+
 td.light {
     background: lightyellow;
     border-color: lightyellow;
@@ -96,22 +109,26 @@ td.possible {
     cursor: pointer;
     border-color: #909090;
 }
+
 td.dark.can-move:hover,
 td.dark.possible {
     border-color: #808080;
 }
+
 td.selected,
 td.selected:hover {
     border-color: black !important;
 }
 
-@media only screen and (max-width: 480px) {
+@media only screen and (width <= 480px) {
     :root {
         --size: min(94.5vh, 100vw);
     }
+
     body {
         margin: 0;
     }
+
     #board td {
         font-size: 2.5rem;
         height: calc(100vw / 8);
@@ -123,9 +140,11 @@ td.selected:hover {
         background: black;
         color: white;
     }
+
     a {
         color: #aaf;
     }
+
     a:visited {
         color: #faf;
     }
