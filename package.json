@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "node_modules/nodemon/bin/nodemon.js src/index.js",
-    "lint": "node_modules/eslint/bin/eslint.js test.js src/*.js client/*.js client/*/*.js; npx stylelint \"**/*.css\"",
+    "lint": "npx eslint test.js src/*.js client/*.js client/*/*.js; npx stylelint \"**/*.css\"",
     "test": "time node test.js"
   },
   "repository": {
