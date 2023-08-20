@@ -21,6 +21,16 @@ export default class Piece {
         return Piece.list[abbr].symbol;
     }
 
+    static encode(abbr) {
+        if (abbr === '') {
+            return ' ';
+        }
+        if (abbr[0] === 'B') {
+            return abbr[1];
+        }
+        return abbr[1].toLowerCase();
+    }
+
     static exists(abbr) {
         if (abbr === '') {
             return false;
