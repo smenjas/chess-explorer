@@ -25,7 +25,7 @@ tests['Quick stalemate works.'] = () => {
         return ['Move failed'];
     }
     board.analyze();
-    if (board.draw !== true) {
+    if (board.draw !== 'stalemate') {
         return ['Stalemate not recognized'];
     }
     const notations = [
