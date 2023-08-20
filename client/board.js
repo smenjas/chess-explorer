@@ -26,17 +26,22 @@ export default class Board {
         draw: '',
         drawCount: 0,
         score: [],
+        history: [],
     };
     static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
     static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
-    constructor(board = null) {
+    constructor(board = null, hypothetical = false) {
         if (board === null) {
             board = Board.restore();
         }
         for (const key in board) {
             this[key] = structuredClone(board[key]);
         }
+        if (hypothetical === true) {
+            return;
+        }
+        this.history.push(this.encode());
     }
 
     describe() {
@@ -51,6 +56,54 @@ export default class Board {
             html += ', check';
         }
         return html;
+    }
+
+    encode() {
+        // Hash the state of the board.
+        let hash = Board.encodeSquares(this.squares);
+        hash += Board.encodeEnPassant(this.enPassant);
+        hash += Board.encodeCastleRights(this.castle);
+        hash += this.turn[0];
+        return hash;
+    }
+
+    static encodeCastleRights(castle) {
+        let code = 0;
+        for (const color in castle) {
+            for (const square of castle[color]) {
+                code += Board.encodeCastleTarget(square);
+            }
+        }
+        return code.toString(16);
+    }
+
+    static encodeCastleTarget(square) {
+        switch (square) {
+        case 'c1': return 1;
+        case 'g1': return 2;
+        case 'c8': return 4;
+        case 'g8': return 8;
+        default:
+            console.warn('Invalid castle square:', square);
+            return 0;
+        }
+    }
+
+    static encodeEnPassant(square) {
+        if (square === '') {
+            return ' ';
+        }
+        return square[0];
+    }
+
+    static encodeSquares(squares) {
+        let hash = '';
+        for (const rank of Board.ranks) {
+            for (const file of Board.files) {
+                hash += Piece.encode(squares[file + rank]);
+            }
+        }
+        return hash;
     }
 
     fixFormat() {
@@ -141,7 +194,7 @@ export default class Board {
         // Copy the board, then try a move without updating whose turn it is,
         // to see whether the king will be in check.
         // Return whether the move is valid.
-        const board = new Board(this);
+        const board = new Board(this, true);
         const valid = board.move(from, to, true);
         if (valid === false) {
             return false;
@@ -621,10 +674,12 @@ export default class Board {
         if (hypothetical === true) {
             return true;
         }
+        this.turn = this.getOpponent();
         const disambiguator = this.disambiguate(from, to);
         this.score.push([this.squares[to], from, to, captured, disambiguator, false, false, false]);
+        this.history.push(this.encode());
+        this.countRepetitions();
         this.updateDrawCount(this.squares[to], captured);
-        this.turn = this.getOpponent();
         return true;
     }
 
@@ -736,7 +791,24 @@ export default class Board {
         this.castle[color].splice(index, 1);
     }
 
+    countRepetitions() {
+        const lastHash = this.history[this.history.length - 1];
+        let count = 0;
+        for (const hash of this.history) {
+            if (hash === lastHash) {
+                count += 1;
+            }
+        }
+        if (count === 5) {
+            this.draw = 'fivefold repetition';
+            this.score[this.score.length - 1][6] = true;
+        }
+    }
+
     updateDrawCount(moved, captured) {
+        if (this.draw !== '') {
+            return;
+        }
         if (captured !== '') {
             this.drawCount = 0;
         }
