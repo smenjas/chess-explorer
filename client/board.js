@@ -22,8 +22,9 @@ export default class Board {
         kings: {Black: 'e8', White: 'e1'},
         castle: {Black: ['c8', 'g8'], White: ['c1', 'g1']},
         check: false,
-        draw: false,
         mate: false,
+        draw: '',
+        drawCount: 0,
         score: [],
     };
     static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -42,14 +43,32 @@ export default class Board {
         if (this.mate) {
             return `Checkmate: ${this.getOpponent().toLowerCase()} wins`;
         }
-        if (this.draw) {
-            return `${this.turn} can't move: stalemate`;
+        if (this.draw !== '') {
+            return `Draw due to ${this.draw}`;
         }
         let html = `${this.turn}'s move`;
         if (this.check) {
             html += ', check';
         }
         return html;
+    }
+
+    fixFormat() {
+        // This is for backward compatibility with older board formats.
+        this.fixScore();
+        this.fixDraw();
+        this.save();
+    }
+
+    fixDraw() {
+        switch (this.draw) {
+        case false:
+            this.draw = '';
+            break;
+        case true:
+            this.draw = 'stalemate';
+            break;
+        }
     }
 
     fixScore() {
@@ -70,11 +89,10 @@ export default class Board {
                 tempo[5], // mate
             ];
         }
-        this.save();
     }
 
     render() {
-        this.fixScore();
+        this.fixFormat();
         this.analyze();
         let html = '<table class="chess-board"><tbody>';
         for (const rank of Board.ranks.toReversed()) {
@@ -115,7 +133,7 @@ export default class Board {
             this.targets = Board.findAllTargets(this.origins);
         }
         // Stalemate: cannot move, but not in check
-        this.draw = true;
+        this.draw = 'stalemate';
         this.score[this.score.length - 1][6] = true;
     }
 
@@ -603,9 +621,9 @@ export default class Board {
         if (hypothetical === true) {
             return true;
         }
-        // TODO: Record whether the piece is ambiguous.
         const disambiguator = this.disambiguate(from, to);
         this.score.push([this.squares[to], from, to, captured, disambiguator, false, false, false]);
+        this.updateDrawCount(this.squares[to], captured);
         this.turn = this.getOpponent();
         return true;
     }
@@ -716,5 +734,19 @@ export default class Board {
         const file = (fromFile === 'a') ? 'c' : 'g';
         const index = this.castle[color].indexOf(file + fromRank);
         this.castle[color].splice(index, 1);
+    }
+
+    updateDrawCount(moved, captured) {
+        if (captured !== '') {
+            this.drawCount = 0;
+        }
+        if (moved[1] === 'P') {
+            this.drawCount = 0;
+        }
+        this.drawCount += 1;
+        if (this.drawCount === 75) {
+            this.draw = 'the 75-move rule';
+            this.score[this.score.length - 1][6] = true;
+        }
     }
 }

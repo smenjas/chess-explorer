@@ -70,11 +70,12 @@ export default class Score {
         }
         if (mate === true) {
             text += '#';
+            return text;
         }
-        else if (check === true) {
+        if (check === true) {
             text += '+';
         }
-        else if (draw === true) {
+        if (draw === true) {
             text += ' (=)';
         }
         return text;
