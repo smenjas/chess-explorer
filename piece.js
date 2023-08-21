@@ -21,6 +21,17 @@ export default class Piece {
         return Piece.list[abbr].symbol;
     }
 
+    static decode(code) {
+        if (code === ' ') {
+            return '';
+        }
+        const upper = code.toUpperCase();
+        if (code === upper) {
+            return 'B' + upper;
+        }
+        return 'W' + upper;
+    }
+
     static encode(abbr) {
         if (abbr === '') {
             return ' ';

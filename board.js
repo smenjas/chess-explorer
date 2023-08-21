@@ -72,6 +72,15 @@ export default class Board {
         return html;
     }
 
+    static decode(hash) {
+        const board = {};
+        board.squares = Board.decodeSquares(hash);
+        board.enPassant = Board.decodeEnPassant(hash);
+        board.castle = Board.decodeCastleRights(hash);
+        board.turn = (hash[66] === 'W') ? 'White' : 'Black';
+        return board;
+    }
+
     encode() {
         // Hash the state of the board.
         let hash = Board.encodeSquares(this.squares);
@@ -79,6 +88,25 @@ export default class Board {
         hash += Board.encodeCastleRights(this.castle);
         hash += this.turn[0];
         return hash;
+    }
+
+    static decodeCastleRights(hash) {
+        const hex = hash[65];
+        const nybble = parseInt(hex, 16).toString(2).padStart(4, '0');
+        const castle = {Black: [], White: []};
+        if (nybble[3] === '1') {
+            castle.White.push('c1');
+        }
+        if (nybble[2] === '1') {
+            castle.White.push('g1');
+        }
+        if (nybble[1] === '1') {
+            castle.Black.push('c8');
+        }
+        if (nybble[0] === '1') {
+            castle.Black.push('g8');
+        }
+        return castle;
     }
 
     static encodeCastleRights(castle) {
@@ -103,11 +131,31 @@ export default class Board {
         }
     }
 
+    static decodeEnPassant(hash) {
+        const file = hash[64];
+        if (file === ' ') {
+            return '';
+        }
+        const rank = (hash[66] === 'W') ? 3 : 6;
+        return file + rank;
+    }
+
     static encodeEnPassant(square) {
         if (square === '') {
             return ' ';
         }
         return square[0];
+    }
+
+    static decodeSquares(hash) {
+        const codes = hash.split('');
+        const squares = {};
+        for (const rank of Board.ranks) {
+            for (const file of Board.files) {
+                squares[file + rank] = Piece.decode(codes.shift());
+            }
+        }
+        return squares;
     }
 
     static encodeSquares(squares) {

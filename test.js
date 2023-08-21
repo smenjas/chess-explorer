@@ -12,6 +12,9 @@ export default class Test {
         if (Array.isArray(a)) {
             return Test.compareArrays(a, b);
         }
+        if (Test.isObject(a)) {
+            return Test.compareObjects(a, b);
+        }
         return false;
     }
 
@@ -29,6 +32,54 @@ export default class Test {
             if (!Test.compare(a[key], b[key])) {
                 return false;
             }
+        }
+        return true;
+    }
+
+    static compareObjects(a, b) {
+        if (!Test.isObject(a)) {
+            return false;
+        }
+        if (!Test.isObject(b)) {
+            return false;
+        }
+        if (Object.keys(a).length !== Object.keys(b).length) {
+            return false;
+        }
+        for (const key in a) {
+            if (!(key in b)) {
+                return false;
+            }
+            if (!Test.compare(a[key], b[key])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static isObject(obj) {
+        // Handle undefined, booleans, numbers, NaN, bigints, strings, and symbols.
+        if (typeof obj !== 'object') {
+            return false;
+        }
+        // Handle null.
+        if (!(obj instanceof Object)) {
+            return false;
+        }
+        if (Array.isArray(obj)) {
+            return false;
+        }
+        if (obj instanceof Map) {
+            return false;
+        }
+        if (obj instanceof Set) {
+            return false;
+        }
+        if (obj instanceof WeakMap) {
+            return false;
+        }
+        if (obj instanceof WeakSet) {
+            return false;
         }
         return true;
     }
