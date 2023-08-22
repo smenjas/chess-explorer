@@ -679,6 +679,7 @@ export default class Board {
         this.score.push([this.squares[to], from, to, captured, disambiguator, false, false, false]);
         this.history.push(this.encode());
         this.countRepetitions();
+        this.detectDeadPosition();
         this.updateDrawCount(this.squares[to], captured);
         return true;
     }
@@ -791,6 +792,22 @@ export default class Board {
         this.castle[color].splice(index, 1);
     }
 
+    countPieces() {
+        const pieces = {Black: {}, White: {}};
+        for (const square in this.squares) {
+            const abbr = this.squares[square];
+            if (abbr === '') {
+                continue;
+            }
+            const piece = Piece.list[abbr];
+            if (!(piece.type in pieces[piece.color])) {
+                pieces[piece.color][piece.type] = 0;
+            }
+            pieces[piece.color][piece.type] += 1;
+        }
+        return pieces;
+    }
+
     countRepetitions() {
         const lastHash = this.history[this.history.length - 1];
         let count = 0;
@@ -801,6 +818,31 @@ export default class Board {
         }
         if (count === 5) {
             this.draw = 'fivefold repetition';
+            this.score[this.score.length - 1][6] = true;
+        }
+    }
+
+    detectDeadPosition() {
+        const { Black, White } = this.countPieces();
+        const numBlack = Object.keys(Black).length;
+        const numWhite = Object.keys(White).length;
+        let deadPosition = false;
+        if (numBlack === 1 && numWhite === 1) {
+            // King against king
+            deadPosition = true;
+        }
+        else if (numBlack === 1 && numWhite === 2) {
+            if ('Bishop' in White || 'Knight' in White) {
+                deadPosition = true;
+            }
+        }
+        else if (numBlack === 2 && numWhite === 1) {
+            if ('Bishop' in Black || 'Knight' in Black) {
+                deadPosition = true;
+            }
+        }
+        if (deadPosition === true) {
+            this.draw = 'insufficient material';
             this.score[this.score.length - 1][6] = true;
         }
     }
