@@ -1,10 +1,29 @@
 import Board from './board.js';
 import Piece from './piece.js';
 
-function addEventHandlers() {
-    const squares = document.querySelectorAll('.chess-board td.can-move');
-    for (const square of squares) {
-        square.addEventListener('click', handleSelection);
+function addEventHandlers(board) {
+    if (board.players[board.turn] !== 'robot') {
+        const squares = document.querySelectorAll('.chess-board td.can-move');
+        for (const square of squares) {
+            square.addEventListener('click', handleSelection);
+        }
+    }
+
+    function handlePlayer(event) {
+        const menu = event.target;
+        const color = menu.id;
+        const player = menu[menu.selectedIndex].value;
+        board.players[color] = player;
+        updatePage(board);
+    }
+
+    const blackPlayer = document.getElementById('Black');
+    if (blackPlayer) {
+        blackPlayer.addEventListener('change', handlePlayer);
+    }
+    const whitePlayer = document.getElementById('White');
+    if (whitePlayer) {
+        whitePlayer.addEventListener('change', handlePlayer);
     }
 }
 
@@ -27,24 +46,61 @@ function renderPage(board) {
     let html = '<div id="container">';
     html += '<main id="board"></main>';
     html += '<div id="not-board">';
-    html += '<section id="buttons">';
-    html += '<button type="button" id="new-game">New Game</button>';
-    html += '</section>';
-    html += '<h1 id="tempo"></h1>';
-    html += '<aside id="score"></aside>';
+    html += renderUI(board);
     html += '</div>';
     html += '</div>';
     document.body.insertAdjacentHTML('beforeend', html);
     const newGameButton = document.getElementById('new-game');
     if (newGameButton) {
-        newGameButton.addEventListener('click', handleNewGame);
+        newGameButton.addEventListener('click', () => {
+            board = new Board(Board.fresh);
+            for (const color of ['Black', 'White']) {
+                document.getElementById(color).value = board.players[color];
+            }
+            updatePage(board);
+        });
     }
     updatePage(board);
 }
 
-function handleNewGame() {
-    board = new Board(Board.fresh);
-    updatePage(board);
+function renderOptions(options, selected) {
+    let html = '';
+    for (const option in options) {
+        const selectedAttr = (option === selected) ? ' selected' : '';
+        html += `<option value="${option}"${selectedAttr}>${options[option]}</option>`;
+    }
+    return html;
+}
+
+function renderSelect(id, options, selected) {
+    let html = `<select id="${id}">`;
+    html += renderOptions(options, selected);
+    html += '</select>';
+    return html;
+}
+
+function renderUI(board) {
+    const players = {
+        human: 'Human',
+        robot: 'Robot',
+    };
+    let html = '';
+    html += '<section id="ui">';
+    html += '<form>';
+    html += '<fieldset>';
+    html += '<div><button type="button" id="new-game">New Game</button></div>';
+    html += '</fieldset>';
+    html += '<fieldset>';
+    html += '<div class="player menu">Black: ' + renderSelect('Black', players, board.players.Black) + '</div>';
+    html += '<div class="player menu">White: ' + renderSelect('White', players, board.players.White) + '</div>';
+    html += '</fieldset>';
+    html += '</form>';
+    html += '</section>';
+    if (board.score.length) {
+        html += '<h1 id="tempo"></h1>';
+        html += '<aside id="score"></aside>';
+    }
+    return html;
 }
 
 function handleSelection(event) {
@@ -87,11 +143,25 @@ function selectPiece(square) {
     }
 }
 
-function updatePage(board) {
+async function updatePage(board) {
     document.getElementById('board').innerHTML = board.render();
-    document.getElementById('tempo').innerHTML = board.describe();
-    document.getElementById('score').innerHTML = board.renderScore();
-    addEventHandlers();
+    const tempo = document.getElementById('tempo');
+    if (tempo) {
+        tempo.innerHTML = board.describe();
+    }
+    const score = document.getElementById('score');
+    if (score) {
+        score.innerHTML = board.renderScore();
+    }
+    if (board.players[board.turn] === 'robot') {
+        await new Promise(resolve => setTimeout(resolve, 1));
+        const refresh = board.play();
+        if (refresh === true) {
+            updatePage(board);
+        }
+        return;
+    }
+    addEventHandlers(board);
 }
 
 let board = new Board();

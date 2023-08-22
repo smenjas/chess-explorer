@@ -18,15 +18,15 @@ web development fundamentals and chess strategy, using HTML, CSS, & JS.
 - [x] Play locally
   - [x] Support basic movements of each piece
   - [x] Recognize check and mate
-  - [ ] Recognize a draw
+  - [x] Recognize a draw
   - [x] Don't allow moves that put or leave the king in check
   - [x] Allow castling
   - [x] Allow en passant
   - [x] Promote pawns to queen
   - [ ] Promote pawns to rook, bishop, or knight
 - [x] Document the game score in algebraic notation
+- [x] Play against an artificial opponent
 - [ ] Play against another person remotely
-- [ ] Play against an artificial opponent
 
 ## Development
 Install the dependencies by running:

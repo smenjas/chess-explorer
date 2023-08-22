@@ -27,6 +27,7 @@ export default class Board {
         drawCount: 0,
         score: [],
         history: [],
+        players: {Black: 'human', White: 'human'},
     };
     static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
     static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -38,6 +39,11 @@ export default class Board {
         for (const key in board) {
             this[key] = structuredClone(board[key]);
         }
+        for (const key in Board.fresh) {
+            if ((key in board) === false) {
+                this[key] = Board.fresh[key];
+            }
+        }
         if (hypothetical === true) {
             return;
         }
@@ -46,14 +52,14 @@ export default class Board {
 
     describe() {
         if (this.mate) {
-            return `Checkmate: ${this.getOpponent().toLowerCase()} wins`;
+            return `Checkmate<br>${this.getOpponent()} wins`;
         }
         if (this.draw !== '') {
             return `Draw due to ${this.draw}`;
         }
         let html = `${this.turn}'s move`;
         if (this.check) {
-            html += ', check';
+            html += '<br>Check';
         }
         return html;
     }
@@ -681,6 +687,34 @@ export default class Board {
         this.countRepetitions();
         this.detectDeadPosition();
         this.updateDrawCount(this.squares[to], captured);
+        return true;
+    }
+
+    chooseRandomMove() {
+        // What legal moves are there to choose from?
+        const choices = Object.keys(this.origins)
+            .filter(origin => this.origins[origin].length !== 0);
+        // Choose a piece randomly.
+        const fromIndex = Math.floor(Math.random() * choices.length);
+        const from = choices[fromIndex];
+        // Choose where to move randomly.
+        const moves = this.origins[from];
+        const toIndex = Math.floor(Math.random() * moves.length);
+        const to = moves[toIndex];
+        return [from, to];
+    }
+
+    chooseMove() {
+        return this.chooseRandomMove();
+    }
+
+    play() {
+        if (this.mate === true || this.draw !== '') {
+            return false;
+        }
+        const move = this.chooseMove();
+        this.move(...move);
+        this.save();
         return true;
     }
 
