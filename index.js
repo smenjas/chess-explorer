@@ -9,14 +9,27 @@ function addEventHandlers(board) {
         }
     }
 
+    function handleLevel(event) {
+        const menu = event.target;
+        board.level = menu[menu.selectedIndex].value;
+        updatePage(board);
+    }
+
     function handlePlayer(event) {
         const menu = event.target;
         const color = menu.id;
         const player = menu[menu.selectedIndex].value;
         board.players[color] = player;
         updatePage(board);
+        document.querySelector('.level.menu').style.visibility =
+            (board.players.Black === 'robot' || board.players.White === 'robot') ?
+                'visible' : 'hidden';
     }
 
+    const level = document.getElementById('level');
+    if (level) {
+        level.addEventListener('change', handleLevel);
+    }
     const blackPlayer = document.getElementById('Black');
     if (blackPlayer) {
         blackPlayer.addEventListener('change', handlePlayer);
@@ -57,6 +70,7 @@ function renderPage(board) {
             for (const color of ['Black', 'White']) {
                 document.getElementById(color).value = board.players[color];
             }
+            document.getElementById('level').value = board.level;
             updatePage(board);
         });
     }
@@ -66,7 +80,7 @@ function renderPage(board) {
 function renderOptions(options, selected) {
     let html = '';
     for (const option in options) {
-        const selectedAttr = (option === selected) ? ' selected' : '';
+        const selectedAttr = (option === `${selected}`) ? ' selected' : '';
         html += `<option value="${option}"${selectedAttr}>${options[option]}</option>`;
     }
     return html;
@@ -80,6 +94,10 @@ function renderSelect(id, options, selected) {
 }
 
 function renderUI(board) {
+    const levels = {
+        0: '0',
+        1: '1',
+    };
     const players = {
         human: 'Human',
         robot: 'Robot',
@@ -89,6 +107,7 @@ function renderUI(board) {
     html += '<form>';
     html += '<fieldset>';
     html += '<div><button type="button" id="new-game">New Game</button></div>';
+    html += '<div class="level menu">Level: ' + renderSelect('level', levels, board.level) + '</div>';
     html += '</fieldset>';
     html += '<fieldset>';
     html += '<div class="player menu">Black: ' + renderSelect('Black', players, board.players.Black) + '</div>';
