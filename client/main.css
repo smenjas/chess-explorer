@@ -71,6 +71,11 @@ button, select {
     white-space: nowrap;
 }
 
+.level.menu {
+    visibility: hidden;
+    text-align: left;
+}
+
 .player.menu {
     text-align: right;
 }
