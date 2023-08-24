@@ -642,18 +642,17 @@ export default class Board {
         localStorage.setItem('board', JSON.stringify(this));
     }
 
-    disambiguate(from, to) {
+    disambiguate(moved, from, to) {
         // See: https://en.wikipedia.org/wiki/Algebraic_notation_(chess)#Disambiguating_moves
         const origins = this.targets[to];
         if (origins.length < 2) {
             return '';
         }
-        const abbr = this.squares[to];
-        if (abbr === '') {
+        if (moved === '') {
             console.warn('Cannot disambiguate, no piece on', to);
             return '';
         }
-        const type = abbr[1];
+        const type = moved[1];
         if (type === 'P' || type === 'K') {
             return '';
         }
@@ -692,6 +691,7 @@ export default class Board {
     }
 
     move(from, to, hypothetical = false) {
+        const moved = this.squares[from];
         const valid = this.trackPiece(from, to);
         if (valid === false) {
             return false;
@@ -703,9 +703,9 @@ export default class Board {
             return true;
         }
         this.turn = this.getOpponent();
-        const disambiguator = this.disambiguate(from, to);
+        const disambiguator = this.disambiguate(moved, from, to);
         const tempo = {
-            abbr: this.squares[to],
+            abbr: moved,
             from: from,
             to: to,
             captured: captured,
