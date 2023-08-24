@@ -27,6 +27,7 @@ export default class Board {
         drawCount: 0,
         score: [],
         history: [],
+        index: 0,
         players: {Black: 'human', White: 'human'},
         level: 1,
     };
@@ -131,23 +132,43 @@ export default class Board {
         }
     }
 
+    static fixShortTempo(tempo) {
+        if (tempo.length !== 7) {
+            return tempo;
+        }
+        return [
+            tempo[0], // piece abbreviation
+            tempo[1], // from
+            tempo[2], // to
+            tempo[3], // captured
+            tempo[6], // disambiguator
+            tempo[4], // check
+            false, // draw
+            tempo[5], // mate
+        ];
+    }
+
+    static fixTempo(tempo) {
+        if (Array.isArray(tempo) === false) {
+            return tempo;
+        }
+        tempo = Board.fixShortTempo(tempo);
+        return {
+            abbr: tempo[0],
+            from: tempo[1],
+            to: tempo[2],
+            captured: tempo[3],
+            disambiguator: tempo[4],
+            check: tempo[5],
+            draw: tempo[6],
+            mate: tempo[7],
+        };
+    }
+
     fixScore() {
         // This is for backward compatibility with the previous score format.
-        for (let i = 0; i < this.score.length; i++) {
-            const tempo = this.score[i];
-            if (tempo.length === 8) {
-                continue;
-            }
-            this.score[i] = [
-                tempo[0], // piece abbreviation
-                tempo[1], // from
-                tempo[2], // to
-                tempo[3], // captured
-                tempo[6], // disambiguator
-                tempo[4], // check
-                false, // draw
-                tempo[5], // mate
-            ];
+        for (const i in this.score) {
+            this.score[i] = Board.fixTempo(this.score[i]);
         }
     }
 
@@ -186,7 +207,7 @@ export default class Board {
         }
         if (this.check === true) {
             this.mate = true;
-            this.score[this.score.length - 1][7] = true;
+            this.score[this.index].mate = true;
             for (const square in this.origins) {
                 this.origins[square] = [];
             }
@@ -194,7 +215,7 @@ export default class Board {
         }
         // Stalemate: cannot move, but not in check
         this.draw = 'stalemate';
-        this.score[this.score.length - 1][6] = true;
+        this.score[this.index].draw = true;
     }
 
     validateMove(from, to) {
@@ -376,7 +397,7 @@ export default class Board {
         const king = this.kings[this.turn];
         this.check = king in this.risks;
         if (this.check) {
-            this.score[this.score.length - 1][5] = true;
+            this.score[this.index].check = true;
         }
     }
 
@@ -683,12 +704,21 @@ export default class Board {
         }
         this.turn = this.getOpponent();
         const disambiguator = this.disambiguate(from, to);
-        const score = [this.squares[to], from, to, captured, disambiguator, false, false, false];
-        this.score.push(score);
+        const tempo = {
+            abbr: this.squares[to],
+            from: from,
+            to: to,
+            captured: captured,
+            disambiguator: disambiguator,
+            check: false,
+            draw: false,
+            mate: false,
+        };
+        this.index = this.score.push(tempo) - 1;
         const hash = this.encode();
         this.history.push(hash);
         if (this.robotPresent()) {
-            const notation = Score.notateMove(...score);
+            const notation = Score.notateMove(tempo);
             console.log(hash, notation);
         }
         this.countRepetitions();
@@ -1077,7 +1107,7 @@ export default class Board {
         }
         if (count === 5) {
             this.draw = 'fivefold repetition';
-            this.score[this.score.length - 1][6] = true;
+            this.score[this.index].draw = true;
         }
     }
 
@@ -1102,7 +1132,7 @@ export default class Board {
         }
         if (deadPosition === true) {
             this.draw = 'insufficient material';
-            this.score[this.score.length - 1][6] = true;
+            this.score[this.index].draw = true;
         }
     }
 
@@ -1119,7 +1149,7 @@ export default class Board {
         this.drawCount += 1;
         if (this.drawCount === 75) {
             this.draw = 'the 75-move rule';
-            this.score[this.score.length - 1][6] = true;
+            this.score[this.index].draw = true;
         }
     }
 }
