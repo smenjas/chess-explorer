@@ -160,6 +160,7 @@ async function updatePage(board) {
     if (board.players[board.turn] === 'robot') {
         await new Promise(resolve => setTimeout(resolve, 1));
         const refresh = board.play();
+        board.save();
         if (refresh === true) {
             updatePage(board);
         }
