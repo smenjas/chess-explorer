@@ -26,7 +26,8 @@ export default class Score {
         }
     }
 
-    static notateMove(abbr, from, to, captured, disambiguator, check, draw, mate) {
+    static notateMove(tempo) {
+        const { abbr, from, to, captured, disambiguator, check, draw, mate } = tempo;
         // See: https://en.wikipedia.org/wiki/Algebraic_notation_(chess)
         if (abbr === '') {
             return '';
@@ -84,12 +85,12 @@ export default class Score {
     static notate(score) {
         let notations = [];
         for (let i = 0; i < score.length; i++) {
-            const move = score[i];
+            const tempo = score[i];
             const n = Math.floor(i / 2);
             if (!(n in notations)) {
                 notations[n] = [];
             }
-            notations[n].push(Score.notateMove(...move));
+            notations[n].push(Score.notateMove(tempo));
         }
         return notations;
     }
