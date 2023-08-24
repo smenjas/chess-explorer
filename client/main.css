@@ -19,10 +19,10 @@ a:visited {
 }
 
 h1 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     margin: 0.75rem 0;
-    width: 20rem;
-    height: 4.5rem;
+    width: 18rem;
+    height: 3.5rem;
     text-align: center;
 }
 
@@ -36,7 +36,7 @@ h1 {
 }
 
 #score {
-    height: calc(100vh - 11.25rem);
+    height: calc(100vh - 9.75rem);
     margin: 0;
     overflow: auto;
 }
@@ -46,7 +46,7 @@ h1 {
 }
 
 #ui {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     text-align: center;
 }
 
@@ -64,7 +64,7 @@ fieldset {
 }
 
 button, select {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
 }
 
 .menu {
@@ -158,6 +158,22 @@ td.selected:hover {
 
     body {
         margin: 0;
+    }
+}
+
+@media only screen and (1 < aspect-ratio <= 4/3) {
+    h1 {
+        font-size: 1.3rem;
+        height: 3.0rem;
+        width: 14rem;
+    }
+
+    #score {
+        height: calc(100vh - 8.5rem);
+    }
+
+    #ui, button, select {
+        font-size: 1.0rem;
     }
 }
 
