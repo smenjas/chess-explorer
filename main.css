@@ -161,6 +161,22 @@ td.selected:hover {
     }
 }
 
+@media only screen and (1 < aspect-ratio <= 4/3) {
+    h1 {
+        font-size: 1.3rem;
+        height: 3.0rem;
+        width: 14rem;
+    }
+
+    #score {
+        height: calc(100vh - 8.5rem);
+    }
+
+    #ui, button, select {
+        font-size: 1.0rem;
+    }
+}
+
 @media only screen and (prefers-color-scheme: dark) {
     body {
         background: black;
