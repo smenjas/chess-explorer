@@ -2,42 +2,43 @@ import Board from './board.js';
 import Piece from './piece.js';
 
 function addEventHandlers(board) {
-    if (board.players[board.turn] !== 'robot') {
-        const squares = document.querySelectorAll('.chess-board td.can-move');
-        for (const square of squares) {
-            square.addEventListener('click', handleSelection);
-        }
+    if (board.players[board.turn] === 'robot') {
+        return;
     }
+    const squares = document.querySelectorAll('.chess-board td.can-move');
+    for (const square of squares) {
+        square.addEventListener('click', handleSelection);
+    }
+}
 
-    function handleLevel(event) {
+function addFormHandlers(board) {
+    document.getElementById('new-game').addEventListener('click', () => {
+        board = new Board(Board.fresh);
+        for (const color of ['Black', 'White']) {
+            document.getElementById(color).value = board.players[color];
+        }
+        document.getElementById('level').value = board.level;
+        toggleLevel(board.players);
+        updatePage(board);
+    });
+
+    document.getElementById('level').addEventListener('change', () => {
         const menu = event.target;
         board.level = menu[menu.selectedIndex].value;
         updatePage(board);
-    }
+    });
 
     function handlePlayer(event) {
         const menu = event.target;
         const color = menu.id;
         const player = menu[menu.selectedIndex].value;
         board.players[color] = player;
+        toggleLevel(board.players);
         updatePage(board);
-        document.querySelector('.level.menu').style.visibility =
-            (board.players.Black === 'robot' || board.players.White === 'robot') ?
-                'visible' : 'hidden';
     }
 
-    const level = document.getElementById('level');
-    if (level) {
-        level.addEventListener('change', handleLevel);
-    }
-    const blackPlayer = document.getElementById('Black');
-    if (blackPlayer) {
-        blackPlayer.addEventListener('change', handlePlayer);
-    }
-    const whitePlayer = document.getElementById('White');
-    if (whitePlayer) {
-        whitePlayer.addEventListener('change', handlePlayer);
-    }
+    document.getElementById('Black').addEventListener('change', handlePlayer);
+    document.getElementById('White').addEventListener('change', handlePlayer);
 }
 
 function addMoves(squares) {
@@ -63,17 +64,8 @@ function renderPage(board) {
     html += '</div>';
     html += '</div>';
     document.body.insertAdjacentHTML('beforeend', html);
-    const newGameButton = document.getElementById('new-game');
-    if (newGameButton) {
-        newGameButton.addEventListener('click', () => {
-            board = new Board(Board.fresh);
-            for (const color of ['Black', 'White']) {
-                document.getElementById(color).value = board.players[color];
-            }
-            document.getElementById('level').value = board.level;
-            updatePage(board);
-        });
-    }
+    addFormHandlers(board);
+    toggleLevel(board.players);
     updatePage(board);
 }
 
@@ -160,6 +152,12 @@ function selectPiece(square) {
         square.classList.add('selected');
         highlightMoves(square.id);
     }
+}
+
+function toggleLevel(players) {
+    document.querySelector('.level.menu').style.visibility =
+        (players.Black === 'robot' || players.White === 'robot') ?
+            'visible' : 'hidden';
 }
 
 async function updatePage(board) {
