@@ -27,6 +27,8 @@ export default class Board {
         drawCount: 0,
         score: [],
         history: [],
+        players: {Black: 'human', White: 'human'},
+        level: 1,
     };
     static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
     static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -38,6 +40,11 @@ export default class Board {
         for (const key in board) {
             this[key] = structuredClone(board[key]);
         }
+        for (const key in Board.fresh) {
+            if ((key in board) === false) {
+                this[key] = Board.fresh[key];
+            }
+        }
         if (hypothetical === true) {
             return;
         }
@@ -46,14 +53,14 @@ export default class Board {
 
     describe() {
         if (this.mate) {
-            return `Checkmate: ${this.getOpponent().toLowerCase()} wins`;
+            return `Checkmate<br>${this.getOpponent()} wins`;
         }
         if (this.draw !== '') {
             return `Draw due to ${this.draw}`;
         }
         let html = `${this.turn}'s move`;
         if (this.check) {
-            html += ', check';
+            html += '<br>Check';
         }
         return html;
     }
@@ -676,11 +683,263 @@ export default class Board {
         }
         this.turn = this.getOpponent();
         const disambiguator = this.disambiguate(from, to);
-        this.score.push([this.squares[to], from, to, captured, disambiguator, false, false, false]);
-        this.history.push(this.encode());
+        const score = [this.squares[to], from, to, captured, disambiguator, false, false, false];
+        this.score.push(score);
+        const hash = this.encode();
+        this.history.push(hash);
+        if (this.robotPresent()) {
+            const notation = Score.notateMove(...score);
+            console.log(hash, notation);
+        }
         this.countRepetitions();
         this.detectDeadPosition();
         this.updateDrawCount(this.squares[to], captured);
+        return true;
+    }
+
+    robotPresent() {
+        return this.players.Black === 'robot' || this.players.White === 'robot';
+    }
+
+    chooseRandomMove() {
+        // What legal moves are there to choose from?
+        const choices = Object.keys(this.origins)
+            .filter(origin => this.origins[origin].length !== 0);
+        // Choose a piece randomly.
+        const fromIndex = Math.floor(Math.random() * choices.length);
+        const from = choices[fromIndex];
+        // Choose where to move randomly.
+        const moves = this.origins[from];
+        const toIndex = Math.floor(Math.random() * moves.length);
+        const to = moves[toIndex];
+        return [from, to];
+    }
+
+    rateOrigins() {
+        const ratings = {};
+        const origins = Object.keys(this.origins)
+            .filter(origin => this.origins[origin].length !== 0);
+        //const threatened = origins.filter(origin => origin in this.risks);
+        for (const origin of origins) {
+            const abbr = this.squares[origin];
+            ratings[origin] = (origin in this.risks) ? Piece.list[abbr].value : 0;
+        }
+        return ratings;
+    }
+
+    rateTargets() {
+        const ratings = {};
+        // Initialize ratings by how many pieces can move there.
+        // If more than one piece can move there, it's protected.
+        // TODO: Protected squares are a double edged sword: they also block development (e.g. f3).
+        Object.keys(this.targets)
+            .forEach(target => ratings[target] = this.targets[target].length);
+        for (const target in ratings) {
+            // Prioritize captures, by value.
+            const abbr = this.squares[target];
+            if (abbr !== '') {
+                ratings[target] += Piece.list[abbr].value;
+            }
+            // Decrement targets that are at risk.
+            if ((target in this.risks) === true) {
+                ratings[target] -= 1;
+            }
+        }
+        return ratings;
+    }
+
+    chooseByOrigin(fromRatings, toRatings) {
+        // What is the highest rating for origin squares?
+        let maxFromRating = -Infinity;
+        for (const target in fromRatings) {
+            if (fromRatings[target] > maxFromRating) {
+                maxFromRating = fromRatings[target];
+            }
+        }
+
+        if (maxFromRating === 0) {
+            return;
+        }
+
+        // Prioritize the most valuable piece(s) currently at risk.
+        const origins = {};
+        for (const origin in fromRatings) {
+            if (fromRatings[origin] === maxFromRating) {
+                origins[origin] = this.origins[origin];
+            }
+        }
+
+        // What is the highest rating for target squares?
+        let maxToRating = -Infinity;
+        const choiceRatings = {};
+        for (const origin in origins) {
+            const targets = this.origins[origin];
+            for (const target of targets) {
+                choiceRatings[target] = toRatings[target];
+                if (toRatings[target] > maxToRating) {
+                    maxToRating = toRatings[target];
+                }
+            }
+        }
+
+        // Find the highest rated target squares.
+        const bestTargets = [];
+        for (const target in choiceRatings) {
+            if (choiceRatings[target] === maxToRating) {
+                bestTargets.push(target);
+            }
+        }
+
+        const moves = [];
+        for (const target of bestTargets) {
+            for (const origin of this.targets[target]) {
+                if (origin in origins) {
+                    moves.push([origin, target]);
+                }
+            }
+        }
+
+        return moves;
+    }
+
+    chooseByTarget(toRatings) {
+        // What is the highest rating for target squares?
+        let maxToRating = -Infinity;
+        for (const target in toRatings) {
+            if (toRatings[target] > maxToRating) {
+                maxToRating = toRatings[target];
+            }
+        }
+        // Find the highest rated target squares.
+        const bestTargets = [];
+        for (const target in toRatings) {
+            if (toRatings[target] === maxToRating) {
+                bestTargets.push(target);
+            }
+        }
+        const moves = [];
+        for (const target of bestTargets) {
+            for (const origin of this.targets[target]) {
+                moves.push([origin, target]);
+            }
+        }
+        return moves;
+    }
+
+    chooseCarefulMove() {
+        // TODO: Take into account which pieces are already protected.
+        // TODO: Find risks after capturing.
+        // TODO: Deprioritize moves that open paths to check, e.g. d3, f3, d7, & f7.
+
+        // Choose mate if possible.
+        const allMoves = [];
+        for (const origin in this.origins) {
+            const targets = this.origins[origin];
+            for (const target of targets) {
+                allMoves.push([origin, target]);
+            }
+        }
+        const mates = this.evaluateMoves(allMoves, true);
+        if (mates.length !== 0) {
+            const index = Math.floor(Math.random() * mates.length);
+            return mates[index];
+        }
+
+        const fromRatings = this.rateOrigins();
+        const toRatings = this.rateTargets();
+
+        const moves = this.chooseByOrigin(fromRatings, toRatings) ?? this.chooseByTarget(toRatings);
+
+        // Find the best moves, by combining ratings, and considering piece losses.
+        let maxRating = -Infinity;
+        const ratings = {};
+        for (const move of moves) {
+            const [from, to] = move;
+            const abbr = this.squares[from];
+            // Decrement targets that are at risk, by piece value.
+            const key = from + to;
+            ratings[key] = fromRatings[from] + toRatings[to];
+            if ((to in this.risks) === true) {
+                ratings[key] -= Piece.list[abbr].value + 1;
+            }
+            // Prioritize moves that result in check.
+            if (this.evaluateMove(from, to) >= 2) {
+                ratings[key] += 1;
+            }
+            if (ratings[key] > maxRating) {
+                maxRating = ratings[key];
+            }
+        }
+
+        const betterMoves = [];
+        for (const key in ratings) {
+            if (ratings[key] === maxRating) {
+                betterMoves.push([key.substring(0, 2), key.substring(2)]);
+            }
+        }
+
+        const bestMoves = this.evaluateMoves(betterMoves);
+        const index = Math.floor(Math.random() * bestMoves.length);
+        return bestMoves[index];
+    }
+
+    chooseMove() {
+        switch (this.level) {
+        case 1:
+            return this.chooseCarefulMove();
+        default:
+            return this.chooseRandomMove();
+        }
+    }
+
+    evaluateMove(from, to) {
+        // Copy the board, then try a move to see if it achieves check or mate.
+        const board = new Board(this, true);
+        const valid = board.move(from, to, true);
+        if (valid === false) {
+            return 0;
+        }
+        board.turn = board.getOpponent();
+        board.analyze();
+        if (board.mate) {
+            return 3;
+        }
+        if (board.check) {
+            return 2;
+        }
+        return 1;
+    }
+
+    evaluateMoves(moves, mateOnly = false) {
+        let maxRating = -Infinity;
+        const ratings = {};
+        for (const move of moves) {
+            const [from, to] = move;
+            const key = from + to;
+            ratings[key] = this.evaluateMove(from, to);
+            if (ratings[key] > maxRating) {
+                maxRating = ratings[key];
+            }
+        }
+        if (mateOnly && maxRating < 3) {
+            return [];
+        }
+        const bestMoves = [];
+        for (const key in ratings) {
+            if (ratings[key] === maxRating) {
+                bestMoves.push([key.substring(0, 2), key.substring(2)]);
+            }
+        }
+        return bestMoves;
+    }
+
+    play() {
+        if (this.mate === true || this.draw !== '') {
+            return false;
+        }
+        const move = this.chooseMove();
+        this.move(...move);
+        this.save();
         return true;
     }
 

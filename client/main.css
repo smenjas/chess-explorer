@@ -20,7 +20,9 @@ a:visited {
 
 h1 {
     font-size: 1.75rem;
-    margin: 0.75rem;
+    margin: 0.75rem 0;
+    width: 20rem;
+    height: 4.5rem;
     text-align: center;
 }
 
@@ -34,7 +36,7 @@ h1 {
 }
 
 #score {
-    height: calc(100vh - 6.75rem);
+    height: calc(100vh - 11.25rem);
     margin: 0;
     overflow: auto;
 }
@@ -43,12 +45,39 @@ h1 {
     margin: 0;
 }
 
-#buttons {
+#ui {
+    font-size: 1.5rem;
     text-align: center;
 }
 
-button#new-game {
+form {
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+fieldset {
+    margin: 0.1rem;
+    padding: 0;
+    width: 50%;
+    border: none;
+}
+
+button, select {
     font-size: 1.5rem;
+}
+
+.menu {
+    white-space: nowrap;
+}
+
+.level.menu {
+    visibility: hidden;
+    text-align: left;
+}
+
+.player.menu {
+    text-align: right;
 }
 
 table {
