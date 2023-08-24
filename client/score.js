@@ -27,12 +27,12 @@ export default class Score {
     }
 
     static notateMove(tempo) {
-        const { abbr, from, to, captured, disambiguator, check, draw, mate } = tempo;
+        const { from, to, moved, captured, disambiguator, check, draw, mate } = tempo;
         // See: https://en.wikipedia.org/wiki/Algebraic_notation_(chess)
-        if (abbr === '') {
+        if (moved === '') {
             return '';
         }
-        const piece = Piece.list[abbr];
+        const piece = Piece.list[moved];
         let text = '';
         let castleNotation = '';
         switch (piece.type) {
