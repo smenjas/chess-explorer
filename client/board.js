@@ -683,12 +683,22 @@ export default class Board {
         }
         this.turn = this.getOpponent();
         const disambiguator = this.disambiguate(from, to);
-        this.score.push([this.squares[to], from, to, captured, disambiguator, false, false, false]);
-        this.history.push(this.encode());
+        const score = [this.squares[to], from, to, captured, disambiguator, false, false, false];
+        this.score.push(score);
+        const hash = this.encode();
+        this.history.push(hash);
+        if (this.robotPresent()) {
+            const notation = Score.notateMove(...score);
+            console.log(hash, notation);
+        }
         this.countRepetitions();
         this.detectDeadPosition();
         this.updateDrawCount(this.squares[to], captured);
         return true;
+    }
+
+    robotPresent() {
+        return this.players.Black === 'robot' || this.players.White === 'robot';
     }
 
     chooseRandomMove() {
