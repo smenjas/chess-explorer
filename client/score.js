@@ -67,7 +67,7 @@ export default class Score {
         }
         text += to;
         if (piece.type === 'Pawn' && (to[1] === '1' || to[1] === '8')) {
-            text += 'Q';
+            text += '=Q';
         }
         if (mate === true) {
             text += '#';

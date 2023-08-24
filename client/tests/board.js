@@ -52,7 +52,7 @@ tests['Pawn promotion notation works.'] = () => {
         return ['Pawn not promoted to queen'];
     }
     const notations = [
-        ['c1Q'],
+        ['c1=Q'],
     ];
     const test = [
         [[board.score], notations],
