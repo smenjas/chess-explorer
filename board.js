@@ -150,6 +150,10 @@ export default class Board {
 
     static fixTempo(tempo) {
         if (Array.isArray(tempo) === false) {
+            if ('moved' in tempo === false) {
+                tempo.moved = tempo.abbr;
+                delete tempo.abbr;
+            }
             return tempo;
         }
         tempo = Board.fixShortTempo(tempo);
@@ -705,9 +709,9 @@ export default class Board {
         this.turn = this.getOpponent();
         const disambiguator = this.disambiguate(moved, from, to);
         const tempo = {
-            abbr: moved,
             from: from,
             to: to,
+            moved: moved,
             captured: captured,
             disambiguator: disambiguator,
             check: false,
