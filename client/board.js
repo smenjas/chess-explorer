@@ -27,6 +27,7 @@ export default class Board {
         drawCount: 0,
         score: [],
         history: [],
+        index: 0,
         players: {Black: 'human', White: 'human'},
         level: 1,
     };
@@ -206,7 +207,7 @@ export default class Board {
         }
         if (this.check === true) {
             this.mate = true;
-            this.score[this.score.length - 1].mate = true;
+            this.score[this.index].mate = true;
             for (const square in this.origins) {
                 this.origins[square] = [];
             }
@@ -214,7 +215,7 @@ export default class Board {
         }
         // Stalemate: cannot move, but not in check
         this.draw = 'stalemate';
-        this.score[this.score.length - 1].draw = true;
+        this.score[this.index].draw = true;
     }
 
     validateMove(from, to) {
@@ -396,7 +397,7 @@ export default class Board {
         const king = this.kings[this.turn];
         this.check = king in this.risks;
         if (this.check) {
-            this.score[this.score.length - 1].check = true;
+            this.score[this.index].check = true;
         }
     }
 
@@ -713,7 +714,7 @@ export default class Board {
             draw: false,
             mate: false,
         };
-        this.score.push(tempo);
+        this.index = this.score.push(tempo) - 1;
         const hash = this.encode();
         this.history.push(hash);
         if (this.robotPresent()) {
@@ -1106,7 +1107,7 @@ export default class Board {
         }
         if (count === 5) {
             this.draw = 'fivefold repetition';
-            this.score[this.score.length - 1].draw = true;
+            this.score[this.index].draw = true;
         }
     }
 
@@ -1131,7 +1132,7 @@ export default class Board {
         }
         if (deadPosition === true) {
             this.draw = 'insufficient material';
-            this.score[this.score.length - 1].draw = true;
+            this.score[this.index].draw = true;
         }
     }
 
@@ -1148,7 +1149,7 @@ export default class Board {
         this.drawCount += 1;
         if (this.drawCount === 75) {
             this.draw = 'the 75-move rule';
-            this.score[this.score.length - 1].draw = true;
+            this.score[this.index].draw = true;
         }
     }
 }
