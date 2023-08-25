@@ -979,8 +979,7 @@ export default class Board {
             return false;
         }
         const move = this.chooseMove();
-        this.move(...move);
-        return true;
+        return this.move(...move);
     }
 
     testMove(from, to) {
