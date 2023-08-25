@@ -863,9 +863,7 @@ export default class Board {
             }
         }
 
-        const betterMoves = Board.findMoveRating(ratings, maxRating);
-
-        const bestMoves = this.evaluateMoves(betterMoves);
+        const bestMoves = Board.findMoveRating(ratings, maxRating);
         return Board.chooseRandomly(bestMoves);
     }
 
