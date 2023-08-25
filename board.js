@@ -41,6 +41,7 @@ export default class Board {
         for (const key in board) {
             this[key] = structuredClone(board[key]);
         }
+        this.fixFormat();
         for (const key in Board.fresh) {
             if ((key in this) === false) {
                 this[key] = Board.fresh[key];
@@ -177,7 +178,6 @@ export default class Board {
     }
 
     render() {
-        this.fixFormat();
         this.analyze();
         let html = '<table class="chess-board"><tbody>';
         for (const rank of Board.ranks.toReversed()) {
@@ -640,10 +640,14 @@ export default class Board {
     }
 
     save() {
-        this.origins = {};
-        this.targets = {};
-        this.risks = {};
-        localStorage.setItem('board', JSON.stringify(this));
+        if (typeof window === 'undefined') {
+            return;
+        }
+        const board = structuredClone(this);
+        board.origins = {};
+        board.targets = {};
+        board.risks = {};
+        localStorage.setItem('board', JSON.stringify(board));
     }
 
     disambiguate(moved, from, to) {
