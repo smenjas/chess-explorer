@@ -727,7 +727,7 @@ export default class Board {
         }
         this.countRepetitions();
         this.detectDeadPosition();
-        this.updateDrawCount(this.squares[to], captured);
+        this.updateDrawCount(moved, captured);
         return true;
     }
 
