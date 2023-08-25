@@ -137,7 +137,7 @@ export default class Board {
             return tempo;
         }
         return [
-            tempo[0], // piece abbreviation
+            tempo[0], // moved
             tempo[1], // from
             tempo[2], // to
             tempo[3], // captured
@@ -158,9 +158,9 @@ export default class Board {
         }
         tempo = Board.fixShortTempo(tempo);
         return {
-            abbr: tempo[0],
             from: tempo[1],
             to: tempo[2],
+            moved: tempo[0],
             captured: tempo[3],
             disambiguator: tempo[4],
             check: tempo[5],
