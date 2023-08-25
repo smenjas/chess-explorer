@@ -1143,14 +1143,13 @@ export default class Board {
     }
 
     updateDrawCount(moved, captured) {
-        if (this.draw !== '') {
-            return;
-        }
         if (captured !== '') {
             this.drawCount = 0;
+            return;
         }
         if (moved[1] === 'P') {
             this.drawCount = 0;
+            return;
         }
         this.drawCount += 1;
         if (this.drawCount === 75) {
