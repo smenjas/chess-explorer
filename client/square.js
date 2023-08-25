@@ -60,7 +60,13 @@ export default class Square {
         return String.fromCharCode(fileNumber + 96);
     }
 
+    static adjacent = {};
+
     static findAdjacent(file, rank) {
+        const square = file + rank;
+        if ((square in Square.adjacent) === true) {
+            return Square.adjacent[square];
+        }
         const squares = [];
         const min = (rank === 1) ? 1 : rank - 1;
         const max = (rank === 8) ? 8 : rank + 1;
@@ -82,6 +88,7 @@ export default class Square {
                 squares.push(fileUp + r);
             }
         }
+        Square.adjacent[square] = squares;
         return squares;
     }
 
