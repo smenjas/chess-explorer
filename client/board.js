@@ -718,16 +718,16 @@ export default class Board {
             mate: false,
         };
         this.remember(tempo);
-        this.countRepetitions();
-        this.detectDeadPosition();
-        this.updateDrawCount(moved, captured);
         return true;
     }
 
     remember(tempo) {
-        this.index = this.score.push(tempo) - 1;
         const hash = this.encode();
         this.history.push(hash);
+        // Must record hash before calling countRepetitions()!
+        this.detectDraw(tempo.moved, tempo.captured);
+        tempo.draw = this.draw !== '',
+        this.index = this.score.push(tempo) - 1;
         if (this.robotPresent() === false) {
             return;
         }
@@ -1104,6 +1104,9 @@ export default class Board {
     }
 
     countRepetitions() {
+        if (this.draw !== '') {
+            return;
+        }
         const lastHash = this.history[this.history.length - 1];
         let count = 0;
         for (const hash of this.history) {
@@ -1113,7 +1116,6 @@ export default class Board {
         }
         if (count === 5) {
             this.draw = 'fivefold repetition';
-            this.score[this.index].draw = true;
         }
     }
 
@@ -1138,8 +1140,13 @@ export default class Board {
         }
         if (deadPosition === true) {
             this.draw = 'insufficient material';
-            this.score[this.index].draw = true;
         }
+    }
+
+    detectDraw(moved, captured) {
+        this.detectDeadPosition();
+        this.countRepetitions();
+        this.updateDrawCount(moved, captured);
     }
 
     updateDrawCount(moved, captured) {
@@ -1154,7 +1161,6 @@ export default class Board {
         this.drawCount += 1;
         if (this.drawCount === 75) {
             this.draw = 'the 75-move rule';
-            this.score[this.index].draw = true;
         }
     }
 }
