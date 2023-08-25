@@ -1100,10 +1100,12 @@ export default class Board {
                 continue;
             }
             const piece = Piece.list[abbr];
-            if (!(piece.type in pieces[piece.color])) {
-                pieces[piece.color][piece.type] = 0;
+            if ((piece.type in pieces[piece.color]) === false) {
+                pieces[piece.color][piece.type] = 1;
             }
-            pieces[piece.color][piece.type] += 1;
+            else {
+                pieces[piece.color][piece.type] += 1;
+            }
         }
         return pieces;
     }
