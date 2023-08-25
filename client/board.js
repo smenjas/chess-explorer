@@ -141,7 +141,7 @@ export default class Board {
             tempo[0], // moved
             tempo[1], // from
             tempo[2], // to
-            tempo[3], // captured
+            tempo[3], // taken
             tempo[6], // disambiguator
             tempo[4], // check
             false, // draw
@@ -155,6 +155,10 @@ export default class Board {
                 tempo.moved = tempo.abbr;
                 delete tempo.abbr;
             }
+            if ('taken' in tempo === false) {
+                tempo.taken = tempo.captured;
+                delete tempo.captured;
+            }
             return tempo;
         }
         tempo = Board.fixShortTempo(tempo);
@@ -162,7 +166,7 @@ export default class Board {
             from: tempo[1],
             to: tempo[2],
             moved: tempo[0],
-            captured: tempo[3],
+            taken: tempo[3],
             disambiguator: tempo[4],
             check: tempo[5],
             draw: tempo[6],
@@ -683,7 +687,7 @@ export default class Board {
         }
     }
 
-    findCapturedPiece(from, to) {
+    findTakenPiece(from, to) {
         // Call this *before* the move.
         const moved = this.squares[from];
         const taken = this.squares[to];
@@ -703,7 +707,7 @@ export default class Board {
         if (valid === false) {
             return false;
         }
-        const captured = this.findCapturedPiece(from, to);
+        const taken = this.findTakenPiece(from, to);
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
         if (hypothetical === true) {
@@ -716,7 +720,7 @@ export default class Board {
             from: from,
             to: to,
             moved: moved,
-            captured: captured,
+            taken: taken,
             disambiguator: disambiguator,
             check: this.check,
             draw: false,
@@ -730,7 +734,7 @@ export default class Board {
         const hash = this.encode();
         this.history.push(hash);
         // Must record hash before calling countRepetitions()!
-        this.detectDraw(tempo.moved, tempo.captured);
+        this.detectDraw(tempo.moved, tempo.taken);
         tempo.draw = this.draw !== '',
         this.score.push(tempo);
         if (this.robotPresent() === false) {
@@ -1065,7 +1069,7 @@ export default class Board {
             this.squares[square] = '';
         }
         this.enPassant = '';
-        // When a pawn has just moved two squares, it may be captured en passant.
+        // When a pawn has just moved two squares, it may be taken en passant.
         if (Math.abs(toRank - fromRank) === 2) {
             const rank = (color === 'White') ? toRank - 1 : toRank + 1;
             const skip = toFile + rank;
@@ -1151,14 +1155,14 @@ export default class Board {
         }
     }
 
-    detectDraw(moved, captured) {
+    detectDraw(moved, taken) {
         this.detectDeadPosition();
         this.countRepetitions();
-        this.updateDrawCount(moved, captured);
+        this.updateDrawCount(moved, taken);
     }
 
-    updateDrawCount(moved, captured) {
-        if (captured !== '') {
+    updateDrawCount(moved, taken) {
+        if (taken !== '') {
             this.drawCount = 0;
             return;
         }
