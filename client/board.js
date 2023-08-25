@@ -707,28 +707,32 @@ export default class Board {
             return true;
         }
         this.turn = this.getOpponent();
-        const disambiguator = this.disambiguate(moved, from, to);
         const tempo = {
             from: from,
             to: to,
             moved: moved,
             captured: captured,
-            disambiguator: disambiguator,
+            disambiguator: this.disambiguate(moved, from, to),
             check: false,
             draw: false,
             mate: false,
         };
-        this.index = this.score.push(tempo) - 1;
-        const hash = this.encode();
-        this.history.push(hash);
-        if (this.robotPresent()) {
-            const notation = Score.notateMove(tempo);
-            console.log(hash, notation);
-        }
+        this.remember(tempo);
         this.countRepetitions();
         this.detectDeadPosition();
         this.updateDrawCount(moved, captured);
         return true;
+    }
+
+    remember(tempo) {
+        this.index = this.score.push(tempo) - 1;
+        const hash = this.encode();
+        this.history.push(hash);
+        if (this.robotPresent() === false) {
+            return;
+        }
+        const notation = Score.notateMove(tempo);
+        console.log(hash, notation);
     }
 
     robotPresent() {
