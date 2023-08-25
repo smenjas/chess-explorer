@@ -735,17 +735,17 @@ export default class Board {
         return this.players.Black === 'robot' || this.players.White === 'robot';
     }
 
+    static chooseRandomly(array) {
+        const index = Math.floor(Math.random() * array.length);
+        return array[index];
+    }
+
     chooseRandomMove() {
         // What legal moves are there to choose from?
         const choices = Object.keys(this.origins)
             .filter(origin => this.origins[origin].length !== 0);
-        // Choose a piece randomly.
-        const fromIndex = Math.floor(Math.random() * choices.length);
-        const from = choices[fromIndex];
-        // Choose where to move randomly.
-        const moves = this.origins[from];
-        const toIndex = Math.floor(Math.random() * moves.length);
-        const to = moves[toIndex];
+        const from = Board.chooseRandomly(choices);
+        const to = Board.chooseRandomly(this.origins[from]);
         return [from, to];
     }
 
@@ -875,8 +875,7 @@ export default class Board {
         }
         const mates = this.evaluateMoves(allMoves, true);
         if (mates.length !== 0) {
-            const index = Math.floor(Math.random() * mates.length);
-            return mates[index];
+            return Board.chooseRandomly(mates);
         }
 
         const fromRatings = this.rateOrigins();
@@ -913,8 +912,7 @@ export default class Board {
         }
 
         const bestMoves = this.evaluateMoves(betterMoves);
-        const index = Math.floor(Math.random() * bestMoves.length);
-        return bestMoves[index];
+        return Board.chooseRandomly(bestMoves);
     }
 
     chooseMove() {
