@@ -27,7 +27,6 @@ export default class Board {
         drawCount: 0,
         score: [],
         history: [],
-        index: 0,
         players: {Black: 'human', White: 'human'},
         level: 1,
     };
@@ -51,6 +50,7 @@ export default class Board {
             return;
         }
         this.history.push(this.encode());
+        this.analyze();
     }
 
     describe() {
@@ -178,7 +178,6 @@ export default class Board {
     }
 
     render() {
-        this.analyze();
         let html = '<table class="chess-board"><tbody>';
         for (const rank of Board.ranks.toReversed()) {
             let shade = (rank % 2 === 0) ? 'light' : 'dark';
@@ -211,7 +210,6 @@ export default class Board {
         }
         if (this.check === true) {
             this.mate = true;
-            this.score[this.index].mate = true;
             for (const square in this.origins) {
                 this.origins[square] = [];
             }
@@ -219,7 +217,6 @@ export default class Board {
         }
         // Stalemate: cannot move, but not in check
         this.draw = 'stalemate';
-        this.score[this.index].draw = true;
     }
 
     validateMove(from, to) {
@@ -400,9 +397,6 @@ export default class Board {
         this.risks = Board.findAllTargets(this.findAllMoves(true));
         const king = this.kings[this.turn];
         this.check = king in this.risks;
-        if (this.check) {
-            this.score[this.index].check = true;
-        }
     }
 
     addJump(moves, square, color, hypothetical = false) {
@@ -715,16 +709,18 @@ export default class Board {
         if (hypothetical === true) {
             return true;
         }
+        const disambiguator = this.disambiguate(moved, from, to);
         this.turn = this.getOpponent();
+        this.analyze();
         const tempo = {
             from: from,
             to: to,
             moved: moved,
             captured: captured,
-            disambiguator: this.disambiguate(moved, from, to),
-            check: false,
+            disambiguator: disambiguator,
+            check: this.check,
             draw: false,
-            mate: false,
+            mate: this.mate,
         };
         this.remember(tempo);
         return true;
@@ -736,7 +732,7 @@ export default class Board {
         // Must record hash before calling countRepetitions()!
         this.detectDraw(tempo.moved, tempo.captured);
         tempo.draw = this.draw !== '',
-        this.index = this.score.push(tempo) - 1;
+        this.score.push(tempo);
         if (this.robotPresent() === false) {
             return;
         }
@@ -987,7 +983,6 @@ export default class Board {
     }
 
     testMove(from, to) {
-        this.analyze();
         return this.move(from, to);
     }
 
@@ -1129,6 +1124,10 @@ export default class Board {
     }
 
     detectDeadPosition() {
+        if (this.draw !== '') {
+            // If stalemate has occurred, don't bother.
+            return;
+        }
         const { Black, White } = this.countPieces();
         const numBlack = Object.keys(Black).length;
         const numWhite = Object.keys(White).length;

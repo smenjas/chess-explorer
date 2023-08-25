@@ -26,7 +26,6 @@ tests['The Peruvian Immortal works.'] = () => {
     if (board.testMoves(moves) === false) {
         return ['Move failed'];
     }
-    board.analyze();
     if (board.mate !== true) {
         return ['Checkmate not recognized'];
     }

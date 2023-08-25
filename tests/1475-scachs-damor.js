@@ -33,7 +33,6 @@ tests['Scachs d\'amor works.'] = () => {
     if (board.testMoves(moves) === false) {
         return ['Move failed'];
     }
-    board.analyze();
     if (board.mate !== true) {
         return ['Checkmate not recognized'];
     }
