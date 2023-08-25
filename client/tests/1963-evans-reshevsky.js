@@ -65,7 +65,6 @@ tests['1963 Evans-Reshevsky works.'] = () => {
     if (board.testMoves(moves) === false) {
         return ['Move failed'];
     }
-    board.analyze();
     if (board.draw !== 'stalemate') {
         return ['Stalemate not recognized'];
     }

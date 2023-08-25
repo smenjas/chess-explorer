@@ -20,13 +20,13 @@ tests['The 75-move rule works.'] = () => {
     board.turn = 'Black';
     board.drawCount = 74;
     board.kings = {Black: 'h7', White: 'f5'};
+    board.analyze();
     if (board.testMoves([['b4', 'b5']]) === false) { // 121... Rb5+
         return ['Move failed'];
     }
     if (board.draw !== 'the 75-move rule') {
         return ['Draw not recognized'];
     }
-    board.analyze();
     const notations = [
         ['Rb5+ (=)'],
     ];
