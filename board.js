@@ -687,11 +687,16 @@ export default class Board {
 
     findCapturedPiece(from, to) {
         // Call this *before* the move.
-        const abbr = this.squares[from];
-        if (this.squares[to] === '' && abbr[1] === 'P' && (from[0] !== to[0])) {
+        const moved = this.squares[from];
+        const taken = this.squares[to];
+        if (taken !== '') {
+            return taken;
+        }
+        if (moved[1] === 'P' && (from[0] !== to[0])) {
+            // Handle en passant.
             return this.getOpponent()[0] + 'P';
         }
-        return this.squares[to];
+        return '';
     }
 
     move(from, to, hypothetical = false) {
