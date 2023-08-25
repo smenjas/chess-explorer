@@ -42,7 +42,7 @@ export default class Board {
             this[key] = structuredClone(board[key]);
         }
         for (const key in Board.fresh) {
-            if ((key in board) === false) {
+            if ((key in this) === false) {
                 this[key] = Board.fresh[key];
             }
         }
