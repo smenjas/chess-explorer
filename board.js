@@ -800,7 +800,8 @@ export default class Board {
         const ratings = {};
         // Initialize ratings by how many pieces can move there.
         // If more than one piece can move there, it's protected.
-        // TODO: Protected squares are a double edged sword: they also block development (e.g. f3).
+        // TODO: Protected squares are a double edged sword: they also block development (e.g. e3).
+        // TODO: Count pawn jumps.
         Object.keys(this.targets)
             .forEach(target => ratings[target] = this.targets[target].length);
         for (const target in ratings) {
@@ -897,8 +898,17 @@ export default class Board {
 
     chooseCarefulMove() {
         // TODO: Take into account which pieces are already protected.
+        // TODO: Prioritize protecting pieces.
         // TODO: Find risks after capturing.
         // TODO: Deprioritize moves that open paths to check, e.g. d3, f3, d7, & f7.
+        // TODO: Prioritize pawn promotion.
+        // TODO: Count how many unprotected pieces are at risk, before and after each move.
+        // TODO: Preemptively block check. The king moves out into the open too often.
+        // TODO: Castling rarely occurs.
+        // TODO: Assess check priority.
+        // TODO: Increment rating for squares adjacent to the king, or on a path.
+        // TODO: Encourage non-pawn development.
+        // TODO: Block paths to king.
 
         // Choose mate if possible.
         const allMoves = [];
@@ -961,6 +971,8 @@ export default class Board {
 
     evaluateMove(from, to) {
         // Copy the board, then try a move to see if it achieves check or mate.
+        // TODO: Count origin protectors.
+        // TODO: Decrement piece value for risky targets.
         const board = new Board(this, true);
         const valid = board.move(from, to);
         if (valid === false) {
