@@ -737,7 +737,7 @@ export default class Board {
             return;
         }
         const notation = Score.notateMove(tempo);
-        console.log(hash, notation);
+        console.log(hash, tempo.moved, tempo.from, tempo.to, notation);
     }
 
     robotPresent() {
