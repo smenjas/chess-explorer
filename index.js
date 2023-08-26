@@ -48,7 +48,7 @@ function addEventHandlers(board) {
             s.classList.remove('selected');
             highlightMoves(s.id, true);
         }
-        if (!alreadySelected) {
+        if (alreadySelected === false) {
             square.classList.add('selected');
             highlightMoves(square.id);
         }
@@ -142,10 +142,8 @@ function renderUI(board) {
     html += '</fieldset>';
     html += '</form>';
     html += '</section>';
-    if (board.score.length) {
-        html += '<h1 id="tempo"></h1>';
-        html += '<aside id="score"></aside>';
-    }
+    html += '<h1 id="tempo"></h1>';
+    html += '<aside id="score"></aside>';
     return html;
 }
 
@@ -157,14 +155,8 @@ function toggleLevel(players) {
 
 async function updatePage(board) {
     document.getElementById('board').innerHTML = board.render();
-    const tempo = document.getElementById('tempo');
-    if (tempo) {
-        tempo.innerHTML = board.describe();
-    }
-    const score = document.getElementById('score');
-    if (score) {
-        score.innerHTML = board.renderScore();
-    }
+    document.getElementById('tempo').innerHTML = board.describe();
+    document.getElementById('score').innerHTML = board.renderScore();
     if (board.players[board.turn] === 'robot') {
         await new Promise(resolve => setTimeout(resolve, 1));
         const refresh = board.play();
