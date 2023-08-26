@@ -32,6 +32,7 @@ export default class Board {
     };
     static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
     static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    static paths = {};
 
     constructor(board = null, hypothetical = false) {
         if (board === null) {
@@ -317,6 +318,10 @@ export default class Board {
         case 'Pawn':
             return [];
         }
+        const key = from + to;
+        if (key in Board.paths === true) {
+            return Board.paths[key];
+        }
         const [fromFile, fromRank] = Square.parse(from);
         const [toFile, toRank] = Square.parse(to);
         const squares = [];
@@ -326,6 +331,7 @@ export default class Board {
             for (let rank = minR; rank <= maxR; rank++) {
                 squares.push(fromFile + rank);
             }
+            Board.paths[key] = squares;
             return squares;
         }
         const fromF = Square.fileToNumber(fromFile);
@@ -337,6 +343,7 @@ export default class Board {
                 const file = Square.numberToFile(f);
                 squares.push(file + fromRank);
             }
+            Board.paths[key] = squares;
             return squares;
         }
         if ((fromFile < toFile && fromRank < toRank) || (fromFile > toFile && fromRank > toRank)) {
@@ -351,6 +358,7 @@ export default class Board {
                 squares.push(file + r);
             }
         }
+        Board.paths[key] = squares;
         return squares;
     }
 
