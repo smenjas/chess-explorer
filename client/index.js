@@ -5,6 +5,61 @@ function addEventHandlers(board) {
     if (board.players[board.turn] === 'robot') {
         return;
     }
+
+    function addMoves(squares) {
+        for (const square of squares) {
+            square.classList.add('possible');
+            square.addEventListener('click', handleMove);
+        }
+    }
+
+    function cancelMoves(squares) {
+        for (const square of squares) {
+            square.classList.remove('possible');
+            square.removeEventListener('click', handleMove);
+        }
+    }
+
+    function handleMove(event) {
+        const square = event.target;
+        const squares = document.querySelectorAll('.chess-board td.selected');
+        const selected = squares[0];
+        board.move(selected.id, square.id);
+        board.save();
+        selected.classList.remove('selected');
+        highlightMoves(selected.id, true);
+        updatePage(board);
+    }
+
+    function handleSelection(event) {
+        const square = event.target;
+        for (const className of event.target.classList) {
+            if (Piece.exists(className)) {
+                selectPiece(square);
+                break;
+            }
+        }
+    }
+
+    function highlightMoves(square, cancel = false) {
+        const squares = document.querySelectorAll(`.chess-board td.from-${square}`);
+        const toggleMoves = cancel ? cancelMoves : addMoves;
+        toggleMoves(squares);
+    }
+
+    function selectPiece(square) {
+        const alreadySelected = square.classList.contains('selected');
+        const squares = document.querySelectorAll('.chess-board td.selected');
+        for (const s of squares) {
+            s.classList.remove('selected');
+            highlightMoves(s.id, true);
+        }
+        if (!alreadySelected) {
+            square.classList.add('selected');
+            highlightMoves(square.id);
+        }
+    }
+
     const squares = document.querySelectorAll('.chess-board td.can-move');
     for (const square of squares) {
         square.addEventListener('click', handleSelection);
@@ -39,20 +94,6 @@ function addFormHandlers(board) {
 
     document.getElementById('Black').addEventListener('change', handlePlayer);
     document.getElementById('White').addEventListener('change', handlePlayer);
-}
-
-function addMoves(squares) {
-    for (const square of squares) {
-        square.classList.add('possible');
-        square.addEventListener('click', handleMove);
-    }
-}
-
-function cancelMoves(squares) {
-    for (const square of squares) {
-        square.classList.remove('possible');
-        square.removeEventListener('click', handleMove);
-    }
 }
 
 function renderPage(board) {
@@ -112,46 +153,6 @@ function renderUI(board) {
         html += '<aside id="score"></aside>';
     }
     return html;
-}
-
-function handleSelection(event) {
-    const square = event.target;
-    for (const className of event.target.classList) {
-        if (Piece.exists(className)) {
-            selectPiece(square);
-            break;
-        }
-    }
-}
-
-function handleMove(event) {
-    const square = event.target;
-    const squares = document.querySelectorAll('.chess-board td.selected');
-    const selected = squares[0];
-    board.move(selected.id, square.id);
-    board.save();
-    selected.classList.remove('selected');
-    highlightMoves(selected.id, true);
-    updatePage(board);
-}
-
-function highlightMoves(square, cancel = false) {
-    const squares = document.querySelectorAll(`.chess-board td.from-${square}`);
-    const toggleMoves = cancel ? cancelMoves : addMoves;
-    toggleMoves(squares);
-}
-
-function selectPiece(square) {
-    const alreadySelected = square.classList.contains('selected');
-    const squares = document.querySelectorAll('.chess-board td.selected');
-    for (const s of squares) {
-        s.classList.remove('selected');
-        highlightMoves(s.id, true);
-    }
-    if (!alreadySelected) {
-        square.classList.add('selected');
-        highlightMoves(square.id);
-    }
 }
 
 function toggleLevel(players) {
