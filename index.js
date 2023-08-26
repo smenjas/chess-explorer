@@ -1,5 +1,4 @@
 import Board from './board.js';
-import Piece from './piece.js';
 
 function addEventHandlers(board) {
     if (board.players[board.turn] === 'robot') {
@@ -33,12 +32,7 @@ function addEventHandlers(board) {
 
     function handleSelection(event) {
         const square = event.target;
-        for (const className of event.target.classList) {
-            if (Piece.exists(className)) {
-                selectPiece(square);
-                break;
-            }
-        }
+        selectPiece(square);
     }
 
     function highlightMoves(square, cancel = false) {
