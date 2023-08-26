@@ -27,7 +27,6 @@ export default class Board {
         drawCount: 0,
         score: [],
         history: [],
-        index: 0,
         players: {Black: 'human', White: 'human'},
         level: 1,
     };
@@ -41,6 +40,7 @@ export default class Board {
         for (const key in board) {
             this[key] = structuredClone(board[key]);
         }
+        this.fixFormat();
         for (const key in Board.fresh) {
             if ((key in this) === false) {
                 this[key] = Board.fresh[key];
@@ -50,6 +50,7 @@ export default class Board {
             return;
         }
         this.history.push(this.encode());
+        this.analyze();
     }
 
     describe() {
@@ -137,10 +138,10 @@ export default class Board {
             return tempo;
         }
         return [
-            tempo[0], // piece abbreviation
+            tempo[0], // moved
             tempo[1], // from
             tempo[2], // to
-            tempo[3], // captured
+            tempo[3], // taken
             tempo[6], // disambiguator
             tempo[4], // check
             false, // draw
@@ -154,14 +155,18 @@ export default class Board {
                 tempo.moved = tempo.abbr;
                 delete tempo.abbr;
             }
+            if ('taken' in tempo === false) {
+                tempo.taken = tempo.captured;
+                delete tempo.captured;
+            }
             return tempo;
         }
         tempo = Board.fixShortTempo(tempo);
         return {
-            abbr: tempo[0],
             from: tempo[1],
             to: tempo[2],
-            captured: tempo[3],
+            moved: tempo[0],
+            taken: tempo[3],
             disambiguator: tempo[4],
             check: tempo[5],
             draw: tempo[6],
@@ -177,8 +182,6 @@ export default class Board {
     }
 
     render() {
-        this.fixFormat();
-        this.analyze();
         let html = '<table class="chess-board"><tbody>';
         for (const rank of Board.ranks.toReversed()) {
             let shade = (rank % 2 === 0) ? 'light' : 'dark';
@@ -211,7 +214,6 @@ export default class Board {
         }
         if (this.check === true) {
             this.mate = true;
-            this.score[this.index].mate = true;
             for (const square in this.origins) {
                 this.origins[square] = [];
             }
@@ -219,7 +221,6 @@ export default class Board {
         }
         // Stalemate: cannot move, but not in check
         this.draw = 'stalemate';
-        this.score[this.index].draw = true;
     }
 
     validateMove(from, to) {
@@ -400,9 +401,6 @@ export default class Board {
         this.risks = Board.findAllTargets(this.findAllMoves(true));
         const king = this.kings[this.turn];
         this.check = king in this.risks;
-        if (this.check) {
-            this.score[this.index].check = true;
-        }
     }
 
     addJump(moves, square, color, hypothetical = false) {
@@ -640,10 +638,14 @@ export default class Board {
     }
 
     save() {
-        this.origins = {};
-        this.targets = {};
-        this.risks = {};
-        localStorage.setItem('board', JSON.stringify(this));
+        if (typeof window === 'undefined') {
+            return;
+        }
+        const board = structuredClone(this);
+        board.origins = {};
+        board.targets = {};
+        board.risks = {};
+        localStorage.setItem('board', JSON.stringify(board));
     }
 
     disambiguate(moved, from, to) {
@@ -685,13 +687,18 @@ export default class Board {
         }
     }
 
-    findCapturedPiece(from, to) {
+    findTakenPiece(from, to) {
         // Call this *before* the move.
-        const abbr = this.squares[from];
-        if (this.squares[to] === '' && abbr[1] === 'P' && (from[0] !== to[0])) {
+        const moved = this.squares[from];
+        const taken = this.squares[to];
+        if (taken !== '') {
+            return taken;
+        }
+        if (moved[1] === 'P' && (from[0] !== to[0])) {
+            // Handle en passant.
             return this.getOpponent()[0] + 'P';
         }
-        return this.squares[to];
+        return '';
     }
 
     move(from, to, hypothetical = false) {
@@ -700,39 +707,41 @@ export default class Board {
         if (valid === false) {
             return false;
         }
-        const captured = this.findCapturedPiece(from, to);
+        const taken = this.findTakenPiece(from, to);
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
         if (hypothetical === true) {
             return true;
         }
+        const disambiguator = this.disambiguate(moved, from, to);
         this.turn = this.getOpponent();
+        this.analyze();
         const tempo = {
             from: from,
             to: to,
             moved: moved,
-            captured: captured,
-            disambiguator: this.disambiguate(moved, from, to),
-            check: false,
+            taken: taken,
+            disambiguator: disambiguator,
+            check: this.check,
             draw: false,
-            mate: false,
+            mate: this.mate,
         };
         this.remember(tempo);
-        this.countRepetitions();
-        this.detectDeadPosition();
-        this.updateDrawCount(moved, captured);
         return true;
     }
 
     remember(tempo) {
-        this.index = this.score.push(tempo) - 1;
         const hash = this.encode();
         this.history.push(hash);
+        // Must record hash before calling countRepetitions()!
+        this.detectDraw(tempo.moved, tempo.taken);
+        tempo.draw = this.draw !== '',
+        this.score.push(tempo);
         if (this.robotPresent() === false) {
             return;
         }
         const notation = Score.notateMove(tempo);
-        console.log(hash, notation);
+        console.log(hash, tempo.moved, tempo.from, tempo.to, notation);
     }
 
     robotPresent() {
@@ -974,13 +983,10 @@ export default class Board {
             return false;
         }
         const move = this.chooseMove();
-        this.move(...move);
-        this.save();
-        return true;
+        return this.move(...move);
     }
 
     testMove(from, to) {
-        this.analyze();
         return this.move(from, to);
     }
 
@@ -1063,7 +1069,7 @@ export default class Board {
             this.squares[square] = '';
         }
         this.enPassant = '';
-        // When a pawn has just moved two squares, it may be captured en passant.
+        // When a pawn has just moved two squares, it may be taken en passant.
         if (Math.abs(toRank - fromRank) === 2) {
             const rank = (color === 'White') ? toRank - 1 : toRank + 1;
             const skip = toFile + rank;
@@ -1095,15 +1101,20 @@ export default class Board {
                 continue;
             }
             const piece = Piece.list[abbr];
-            if (!(piece.type in pieces[piece.color])) {
-                pieces[piece.color][piece.type] = 0;
+            if ((piece.type in pieces[piece.color]) === false) {
+                pieces[piece.color][piece.type] = 1;
             }
-            pieces[piece.color][piece.type] += 1;
+            else {
+                pieces[piece.color][piece.type] += 1;
+            }
         }
         return pieces;
     }
 
     countRepetitions() {
+        if (this.draw !== '') {
+            return;
+        }
         const lastHash = this.history[this.history.length - 1];
         let count = 0;
         for (const hash of this.history) {
@@ -1113,11 +1124,14 @@ export default class Board {
         }
         if (count === 5) {
             this.draw = 'fivefold repetition';
-            this.score[this.index].draw = true;
         }
     }
 
     detectDeadPosition() {
+        if (this.draw !== '') {
+            // If stalemate has occurred, don't bother.
+            return;
+        }
         const { Black, White } = this.countPieces();
         const numBlack = Object.keys(Black).length;
         const numWhite = Object.keys(White).length;
@@ -1138,24 +1152,27 @@ export default class Board {
         }
         if (deadPosition === true) {
             this.draw = 'insufficient material';
-            this.score[this.index].draw = true;
         }
     }
 
-    updateDrawCount(moved, captured) {
-        if (this.draw !== '') {
-            return;
-        }
-        if (captured !== '') {
+    detectDraw(moved, taken) {
+        this.detectDeadPosition();
+        this.countRepetitions();
+        this.updateDrawCount(moved, taken);
+    }
+
+    updateDrawCount(moved, taken) {
+        if (taken !== '') {
             this.drawCount = 0;
+            return;
         }
         if (moved[1] === 'P') {
             this.drawCount = 0;
+            return;
         }
         this.drawCount += 1;
         if (this.drawCount === 75) {
             this.draw = 'the 75-move rule';
-            this.score[this.index].draw = true;
         }
     }
 }

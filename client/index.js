@@ -158,8 +158,9 @@ async function updatePage(board) {
     document.getElementById('tempo').innerHTML = board.describe();
     document.getElementById('score').innerHTML = board.renderScore();
     if (board.players[board.turn] === 'robot') {
-        await new Promise(resolve => setTimeout(resolve, 1));
+        await new Promise(resolve => setTimeout(resolve, 0));
         const refresh = board.play();
+        board.save();
         if (refresh === true) {
             updatePage(board);
         }

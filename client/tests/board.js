@@ -45,14 +45,15 @@ tests['Pawn promotion notation works.'] = () => {
         a8: 'BR', b8: '', c8: '', d8: '', e8: 'BK', f8: '', g8: '', h8: 'BR',
     },
     board.turn = 'Black';
-    if (board.testMoves([['c2', 'c1']]) === false) { // ... c1Q
+    board.analyze();
+    if (board.testMove('c2', 'c1') === false) { // ... c1Q
         return ['Move failed'];
     }
     if (board.squares.c1 !== 'BQ') {
         return ['Pawn not promoted to queen'];
     }
     const notations = [
-        ['c1=Q'],
+        ['c1=Q+'],
     ];
     const test = [
         [[board.score], notations],

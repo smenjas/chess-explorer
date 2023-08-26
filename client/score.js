@@ -27,7 +27,7 @@ export default class Score {
     }
 
     static notateMove(tempo) {
-        const { from, to, moved, captured, disambiguator, check, draw, mate } = tempo;
+        const { from, to, moved, taken, disambiguator, check, draw, mate } = tempo;
         // See: https://en.wikipedia.org/wiki/Algebraic_notation_(chess)
         if (moved === '') {
             return '';
@@ -59,7 +59,7 @@ export default class Score {
         if (typeof disambiguator === 'string') {
             text += disambiguator;
         }
-        if (captured !== '') {
+        if (taken !== '') {
             if (piece.type === 'Pawn') {
                 text += from[0];
             }
