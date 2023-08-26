@@ -17,7 +17,7 @@ tests['A white pawn can capture a black pawn en passant.'] = () => {
     if (board.enPassant !== 'd6') {
         return ['En passant not recognized'];
     }
-    if (board.testMoves([['e5', 'd6']]) === false) { // 3. exd6
+    if (board.testMove('e5', 'd6') === false) { // 3. exd6
         return ['Move failed'];
     }
     if (board.squares['d5'] !== '') {
@@ -47,7 +47,7 @@ tests['A black pawn can capture a white pawn en passant.'] = () => {
     if (board.enPassant !== 'c3') {
         return ['En passant not recognized'];
     }
-    if (board.testMoves([['d4', 'c3']]) === false) { // 3... dxc3
+    if (board.testMove('d4', 'c3') === false) { // 3... dxc3
         return ['Move failed'];
     }
     if (board.squares['c4'] !== '') {
