@@ -297,6 +297,11 @@ export default class Board {
         this.targets = Board.findAllTargets(this.origins);
     }
 
+    filterOrigins() {
+        return Object.keys(this.origins)
+            .filter(origin => this.origins[origin].length !== 0);
+    }
+
     findPath(from, to) {
         const abbr = this.squares[from];
         if (abbr === '') {
@@ -759,18 +764,14 @@ export default class Board {
 
     chooseRandomMove() {
         // What legal moves are there to choose from?
-        const choices = Object.keys(this.origins)
-            .filter(origin => this.origins[origin].length !== 0);
-        const from = Board.chooseRandomly(choices);
+        const from = Board.chooseRandomly(this.filterOrigins());
         const to = Board.chooseRandomly(this.origins[from]);
         return [from, to];
     }
 
     rateOrigins() {
         const ratings = {};
-        const origins = Object.keys(this.origins)
-            .filter(origin => this.origins[origin].length !== 0);
-        //const threatened = origins.filter(origin => origin in this.risks);
+        const origins = this.filterOrigins();
         for (const origin of origins) {
             const abbr = this.squares[origin];
             ratings[origin] = (origin in this.risks) ? Piece.list[abbr].value : 0;
