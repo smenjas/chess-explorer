@@ -216,7 +216,7 @@ export default class Board {
             return !!this.filterOrigins().length;
         }
         // Calculate risks first, to avoid moving the king into danger.
-        this.findRisks();
+        this.check = this.findRisks();
         // Find all hypothetical moves, regardless of whether the king is in check.
         this.origins = this.findAllMoves();
         this.targets = Board.findAllTargets(this.origins);
@@ -257,8 +257,8 @@ export default class Board {
         if (valid === false) {
             return false;
         }
-        board.findRisks();
-        return !board.check;
+        const check = board.findRisks(true);
+        return !check;
     }
 
     validateMoves() {
@@ -437,7 +437,7 @@ export default class Board {
     findRisks() {
         this.risks = Board.findAllTargets(this.findAllMoves(true));
         const king = this.kings[this.turn];
-        this.check = king in this.risks;
+        return king in this.risks;
     }
 
     addJump(moves, square, color, hypothetical = false) {
