@@ -221,7 +221,7 @@ export default class Board {
             for (const square in this.origins) {
                 this.origins[square] = [];
             }
-            this.targets = Board.findAllTargets(this.origins);
+            this.targets = {};
         }
         // Stalemate: cannot move, but not in check
         this.draw = 'stalemate';
@@ -365,17 +365,17 @@ export default class Board {
         return from;
     }
 
-    static findAllTargets(from) {
-        const to = {};
-        for (const [square, moves] of Object.entries(from)) {
+    static findAllTargets(origins) {
+        const targets = {};
+        for (const [square, moves] of Object.entries(origins)) {
             for (const move of moves) {
-                if (!(move in to)) {
-                    to[move] = [];
+                if (!(move in targets)) {
+                    targets[move] = [];
                 }
-                to[move].push(square);
+                targets[move].push(square);
             }
         }
-        return to;
+        return targets;
     }
 
     findMoves(square, opponent = false) {
