@@ -747,14 +747,15 @@ export default class Board {
         const taken = this.findTakenPiece(from, to);
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
-        const hash = this.encode(true);
-        this.history.push(hash);
         if (hypothetical === true) {
+            this.history.push(this.encode(true));
             return true;
         }
         const disambiguator = this.disambiguate(moved, from, to);
         this.turn = this.getOpponent();
         // Must record hash before calling analyze() or countRepetitions()!
+        const hash = this.encode();
+        this.history.push(hash);
         this.analyze();
         this.detectDraw(moved, taken);
         const tempo = {
