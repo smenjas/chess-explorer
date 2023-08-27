@@ -19,6 +19,7 @@ tests['King against king recognized.'] = () => {
     },
     board.castle = {Black: [], White: []};
     board.kings = {Black: 'g8', White: 'g1'};
+    board.history.push(board.encode());
     board.analyze();
     const moves = [
         ['f1', 'f8'], ['g8', 'f8'], // Rxf8+ Kxf1 (=)
@@ -51,6 +52,7 @@ tests['King against king and bishop recognized.'] = () => {
         a8: '', b8: '', c8: '', d8: '', e8: 'BK', f8: '', g8: '', h8: '',
     },
     board.castle = {Black: [], White: []};
+    board.history.push(board.encode());
     board.analyze();
     const moves = [
         ['f1', 'b5'], // Bxb5+ (=)
@@ -83,6 +85,7 @@ tests['King against king and knight recognized.'] = () => {
         a8: '', b8: '', c8: '', d8: '', e8: 'BK', f8: '', g8: '', h8: '',
     },
     board.castle = {Black: [], White: []};
+    board.history.push(board.encode());
     board.analyze();
     const moves = [
         ['g1', 'e2'], // Nxe2 (=)

@@ -33,6 +33,7 @@ export default class Board {
     static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
     static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     static paths = {};
+    static cache = {};
 
     constructor(board = null, hypothetical = false) {
         if (board === null) {
@@ -72,12 +73,12 @@ export default class Board {
         return html;
     }
 
-    encode() {
+    encode(opponent = false) {
         // Hash the state of the board.
         let hash = Board.encodeSquares(this.squares);
         hash += Board.encodeEnPassant(this.enPassant);
         hash += Board.encodeCastleRights(this.castle);
-        hash += this.turn[0];
+        hash += opponent ? this.getOpponent()[0] : this.turn[0];
         return hash;
     }
 
@@ -204,7 +205,16 @@ export default class Board {
         return html;
     }
 
-    analyze() {
+    computeMoves() {
+        const hash = this.history[this.history.length - 1];
+        if (hash in Board.cache) {
+            this.risks = Board.cache[hash].risks;
+            this.origins = Board.cache[hash].origins;
+            this.targets = Board.cache[hash].targets;
+            const king = this.kings[this.turn];
+            this.check = king in this.risks;
+            return !!this.filterOrigins().length;
+        }
         // Calculate risks first, to avoid moving the king into danger.
         this.findRisks();
         // Find all hypothetical moves, regardless of whether the king is in check.
@@ -214,6 +224,16 @@ export default class Board {
         this.filterMoves();
         // Prevent moves that put or leave the king in check.
         const canMove = this.validateMoves();
+        Board.cache[hash] = {
+            risks: this.risks,
+            origins: this.origins,
+            targets: this.targets,
+        };
+        return canMove;
+    }
+
+    analyze() {
+        const canMove = this.computeMoves();
         if (canMove === true) {
             return;
         }
@@ -727,12 +747,16 @@ export default class Board {
         const taken = this.findTakenPiece(from, to);
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
+        const hash = this.encode(true);
+        this.history.push(hash);
         if (hypothetical === true) {
             return true;
         }
         const disambiguator = this.disambiguate(moved, from, to);
         this.turn = this.getOpponent();
+        // Must record hash before calling analyze() or countRepetitions()!
         this.analyze();
+        this.detectDraw(moved, taken);
         const tempo = {
             from: from,
             to: to,
@@ -740,25 +764,15 @@ export default class Board {
             taken: taken,
             disambiguator: disambiguator,
             check: this.check,
-            draw: false,
+            draw: this.draw !== '',
             mate: this.mate,
         };
-        this.remember(tempo);
-        return true;
-    }
-
-    remember(tempo) {
-        const hash = this.encode();
-        this.history.push(hash);
-        // Must record hash before calling countRepetitions()!
-        this.detectDraw(tempo.moved, tempo.taken);
-        tempo.draw = this.draw !== '',
         this.score.push(tempo);
-        if (this.robotPresent() === false) {
-            return;
+        if (this.robotPresent() === true) {
+            const notation = Score.notateMove(tempo);
+            console.log(hash, tempo.moved, tempo.from, tempo.to, notation);
         }
-        const notation = Score.notateMove(tempo);
-        console.log(hash, tempo.moved, tempo.from, tempo.to, notation);
+        return true;
     }
 
     robotPresent() {
