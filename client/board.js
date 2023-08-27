@@ -49,7 +49,11 @@ export default class Board {
         if (hypothetical === true) {
             return;
         }
-        this.history.push(this.encode());
+        const hash = this.encode();
+        if (hash !== this.history[this.history.length - 1]) {
+            // Don't save duplicate hashes when refreshing the page.
+            this.history.push(hash);
+        }
         this.analyze();
     }
 
