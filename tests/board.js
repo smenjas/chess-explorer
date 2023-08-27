@@ -46,7 +46,7 @@ tests['Pawn promotion notation works.'] = () => {
     },
     board.turn = 'Black';
     board.analyze();
-    if (board.testMove('c2', 'c1') === false) { // ... c1Q
+    if (board.move('c2', 'c1') === false) { // ... c1Q
         return ['Move failed'];
     }
     if (board.squares.c1 !== 'BQ') {
