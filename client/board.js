@@ -990,13 +990,9 @@ export default class Board {
         return this.move(...move);
     }
 
-    testMove(from, to) {
-        return this.move(from, to);
-    }
-
     testMoves(moves) {
         for (const move of moves) {
-            if (this.testMove(...move) === false) {
+            if (this.move(...move) === false) {
                 return false;
             }
         }
