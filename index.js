@@ -50,9 +50,9 @@ function addEventHandlers(board) {
         }
     }
 
-    const squares = document.querySelectorAll('.chess-board td.can-move');
-    for (const square of squares) {
-        square.addEventListener('click', event => selectPiece(event.target));
+    const origins = document.querySelectorAll('.chess-board td.can-move');
+    for (const origin of origins) {
+        origin.addEventListener('click', event => selectPiece(event.target));
     }
 }
 
