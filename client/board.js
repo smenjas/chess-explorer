@@ -786,33 +786,27 @@ export default class Board {
         return [from, to];
     }
 
-    rateOrigins() {
+    static rateSquares(squares, judge) {
         const ratings = {};
-        const origins = this.filterOrigins();
-        for (const origin of origins) {
-            ratings[origin] = (origin in this.risks) ?
-                Piece.value(this.squares[origin]) : 0;
-        }
+        squares.forEach(square => ratings[square] = judge(square));
         return ratings;
     }
 
+    rateOrigins() {
+        return Board.rateSquares(this.filterOrigins(), origin =>
+            origin in this.risks ? Piece.value(this.squares[origin]) : 0);
+    }
+
     rateTargets() {
-        const ratings = {};
         // Initialize ratings by how many pieces can move there.
         // If more than one piece can move there, it's protected.
         // TODO: Protected squares are a double edged sword: they also block development (e.g. e3).
         // TODO: Count pawn jumps.
-        Object.keys(this.targets)
-            .forEach(target => ratings[target] = this.targets[target].length);
-        for (const target in ratings) {
-            // Prioritize captures, by value.
-            ratings[target] += Piece.value(this.squares[target]);
-            // Decrement targets that are at risk.
-            if ((target in this.risks) === true) {
-                ratings[target] -= 1;
-            }
-        }
-        return ratings;
+        const targets = Object.keys(this.targets);
+        return Board.rateSquares(targets, target =>
+            this.targets[target].length
+            + Piece.value(this.squares[target])
+            - (target in this.risks ? 1 : 0));
     }
 
     chooseByOrigin(fromRatings, toRatings) {
