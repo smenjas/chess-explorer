@@ -830,7 +830,6 @@ export default class Board {
         // TODO: Prioritize protecting pieces.
         // TODO: Find risks after capturing.
         // TODO: Deprioritize moves that open paths to check, e.g. d3, f3, d7, & f7.
-        // TODO: Prioritize pawn promotion.
         // TODO: Count how many unprotected pieces are at risk, before and after each move.
         // TODO: Preemptively block check. The king moves out into the open too often.
         // TODO: Castling rarely occurs.
@@ -873,6 +872,10 @@ export default class Board {
         const [from, to] = move;
         const abbr = this.squares[from];
 
+        // Prioritize pawn promotion.
+        if ((abbr === 'WP' && to[1] === '8') || (abbr === 'BP' && to[1] === '1')) {
+            rating += 8;
+        }
         // Decrement targets that are at risk, by piece value.
         if (to in this.risks === true) {
             rating -= Piece.value(abbr);
