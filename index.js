@@ -170,5 +170,5 @@ async function updatePage(board) {
     addEventHandlers(board);
 }
 
-let board = new Board();
+const board = new Board();
 renderPage(board);
