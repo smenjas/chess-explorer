@@ -51,11 +51,6 @@ export default class Board {
         if (hypothetical === true) {
             return;
         }
-        const hash = this.encode();
-        if (hash !== this.history[this.history.length - 1]) {
-            // Don't save duplicate hashes when refreshing the page.
-            this.history.push(hash);
-        }
         this.analyze();
     }
 
@@ -73,12 +68,12 @@ export default class Board {
         return html;
     }
 
-    encode(opponent = false) {
+    encode() {
         // Hash the state of the board.
         let hash = Board.encodeSquares(this.squares);
         hash += Board.encodeEnPassant(this.enPassant);
         hash += Board.encodeCastleRights(this.castle);
-        hash += opponent ? this.getOpponent()[0] : this.turn[0];
+        hash += this.turn[0];
         return hash;
     }
 
@@ -206,7 +201,11 @@ export default class Board {
     }
 
     computeMoves() {
-        const hash = this.history[this.history.length - 1];
+        const hash = this.encode();
+        if (hash !== this.history[this.history.length - 1]) {
+            // Don't save duplicate hashes when refreshing the page.
+            this.history.push(hash);
+        }
         if (hash in Board.cache) {
             this.risks = Board.cache[hash].risks;
             this.origins = Board.cache[hash].origins;
@@ -748,14 +747,10 @@ export default class Board {
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
         if (hypothetical === true) {
-            this.history.push(this.encode(true));
             return true;
         }
         const disambiguator = this.disambiguate(moved, from, to);
         this.turn = this.getOpponent();
-        // Must record hash before calling analyze() or countRepetitions()!
-        const hash = this.encode();
-        this.history.push(hash);
         this.analyze();
         this.detectDraw(moved, taken);
         const tempo = {
@@ -770,6 +765,7 @@ export default class Board {
         };
         this.score.push(tempo);
         if (this.robotPresent() === true) {
+            const hash = this.history[this.history.length - 1];
             const notation = Score.notateMove(tempo);
             console.log(hash, tempo.moved, tempo.from, tempo.to, notation);
         }

@@ -20,7 +20,6 @@ tests['The 75-move rule works.'] = () => {
     board.turn = 'Black';
     board.drawCount = 74;
     board.kings = {Black: 'h7', White: 'f5'};
-    board.history.push(board.encode());
     board.analyze();
     if (board.move('b4', 'b5') === false) { // 121... Rb5+
         return ['Move failed'];
