@@ -793,6 +793,7 @@ export default class Board {
     }
 
     rateOrigins() {
+        // Prioritize the most valuable piece(s) currently at risk.
         return Board.rateSquares(this.filterOrigins(), origin =>
             origin in this.risks ? Piece.value(this.squares[origin]) : 0);
     }
@@ -806,84 +807,6 @@ export default class Board {
         return Board.rateSquares(targets, target =>
             this.targets[target].length
             + Piece.value(this.squares[target]));
-    }
-
-    chooseByOrigin(fromRatings, toRatings) {
-        // What is the highest rating for origin squares?
-        let maxFromRating = -Infinity;
-        for (const target in fromRatings) {
-            if (fromRatings[target] > maxFromRating) {
-                maxFromRating = fromRatings[target];
-            }
-        }
-
-        if (maxFromRating === 0) {
-            return;
-        }
-
-        // Prioritize the most valuable piece(s) currently at risk.
-        const origins = {};
-        for (const origin in fromRatings) {
-            if (fromRatings[origin] === maxFromRating) {
-                origins[origin] = this.origins[origin];
-            }
-        }
-
-        // What is the highest rating for target squares?
-        let maxToRating = -Infinity;
-        const choiceRatings = {};
-        for (const origin in origins) {
-            const targets = this.origins[origin];
-            for (const target of targets) {
-                choiceRatings[target] = toRatings[target];
-                if (toRatings[target] > maxToRating) {
-                    maxToRating = toRatings[target];
-                }
-            }
-        }
-
-        // Find the highest rated target squares.
-        const bestTargets = [];
-        for (const target in choiceRatings) {
-            if (choiceRatings[target] === maxToRating) {
-                bestTargets.push(target);
-            }
-        }
-
-        const moves = [];
-        for (const target of bestTargets) {
-            for (const origin of this.targets[target]) {
-                if (origin in origins) {
-                    moves.push([origin, target]);
-                }
-            }
-        }
-
-        return moves;
-    }
-
-    chooseByTarget(toRatings) {
-        // What is the highest rating for target squares?
-        let maxToRating = -Infinity;
-        for (const target in toRatings) {
-            if (toRatings[target] > maxToRating) {
-                maxToRating = toRatings[target];
-            }
-        }
-        // Find the highest rated target squares.
-        const bestTargets = [];
-        for (const target in toRatings) {
-            if (toRatings[target] === maxToRating) {
-                bestTargets.push(target);
-            }
-        }
-        const moves = [];
-        for (const target of bestTargets) {
-            for (const origin of this.targets[target]) {
-                moves.push([origin, target]);
-            }
-        }
-        return moves;
     }
 
     getAllMoves() {
@@ -912,16 +835,14 @@ export default class Board {
         // TODO: Block paths to king.
 
         // Choose mate if possible.
-        const allMoves = this.getAllMoves();
-        const mates = this.evaluateMoves(allMoves, true);
+        const moves = this.getAllMoves();
+        const mates = this.evaluateMoves(moves, true);
         if (mates.length !== 0) {
             return Board.chooseRandomly(mates);
         }
 
         const fromRatings = this.rateOrigins();
         const toRatings = this.rateTargets();
-
-        const moves = this.chooseByOrigin(fromRatings, toRatings) ?? this.chooseByTarget(toRatings);
 
         // Find the best moves, by combining ratings, and considering piece losses.
         let maxRating = -Infinity;
