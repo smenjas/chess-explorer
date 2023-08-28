@@ -18,4 +18,20 @@ tests['Piece.exists() works.'] = () => {
     return failures;
 };
 
+tests['Piece.value() works.'] = () => {
+    const pieces = {
+        BB: 3, BK: 10, BN: 3, BP: 1, BQ: 9, BR: 5,
+        WB: 3, WK: 10, WN: 3, WP: 1, WQ: 9, WR: 5,
+        '': 0,
+    };
+    const failures = [];
+    for (const piece in pieces) {
+        const result = Piece.value(piece);
+        if (Piece.value(piece) !== pieces[piece]) {
+            failures.push(`Piece.value('${piece}') returns: ${result}`);
+        }
+    }
+    return failures;
+};
+
 export default tests;
