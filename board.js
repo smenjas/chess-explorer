@@ -790,8 +790,8 @@ export default class Board {
         const ratings = {};
         const origins = this.filterOrigins();
         for (const origin of origins) {
-            const abbr = this.squares[origin];
-            ratings[origin] = (origin in this.risks) ? Piece.list[abbr].value : 0;
+            ratings[origin] = (origin in this.risks) ?
+                Piece.value(this.squares[origin]) : 0;
         }
         return ratings;
     }
@@ -806,10 +806,7 @@ export default class Board {
             .forEach(target => ratings[target] = this.targets[target].length);
         for (const target in ratings) {
             // Prioritize captures, by value.
-            const abbr = this.squares[target];
-            if (abbr !== '') {
-                ratings[target] += Piece.list[abbr].value;
-            }
+            ratings[target] += Piece.value(this.squares[target]);
             // Decrement targets that are at risk.
             if ((target in this.risks) === true) {
                 ratings[target] -= 1;
@@ -938,7 +935,7 @@ export default class Board {
             const key = from + to;
             ratings[key] = fromRatings[from] + toRatings[to];
             if ((to in this.risks) === true) {
-                ratings[key] -= Piece.list[abbr].value + 1;
+                ratings[key] -= Piece.value(abbr) + 1;
             }
             // Prioritize moves that result in check.
             if (this.evaluateMove(from, to) >= 2) {
