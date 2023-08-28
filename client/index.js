@@ -31,11 +31,6 @@ function addEventHandlers(board) {
         updatePage(board);
     }
 
-    function handleSelection(event) {
-        const square = event.target;
-        selectPiece(square);
-    }
-
     function highlightMoves(square, cancel = false) {
         const squares = document.querySelectorAll(`.chess-board td.from-${square}`);
         const toggleMoves = cancel ? cancelMoves : addMoves;
@@ -57,7 +52,7 @@ function addEventHandlers(board) {
 
     const squares = document.querySelectorAll('.chess-board td.can-move');
     for (const square of squares) {
-        square.addEventListener('click', handleSelection);
+        square.addEventListener('click', event => selectPiece(event.target));
     }
 }
 
