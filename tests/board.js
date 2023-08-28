@@ -45,7 +45,6 @@ tests['Pawn promotion notation works.'] = () => {
         a8: 'BR', b8: '', c8: '', d8: '', e8: 'BK', f8: '', g8: '', h8: 'BR',
     },
     board.turn = 'Black';
-    board.history.push(board.encode());
     board.analyze();
     if (board.move('c2', 'c1') === false) { // ... c1Q
         return ['Move failed'];
