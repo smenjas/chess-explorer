@@ -764,11 +764,6 @@ export default class Board {
             mate: this.mate,
         };
         this.score.push(tempo);
-        if (this.robotPresent() === true) {
-            const hash = this.history[this.history.length - 1];
-            const notation = Score.notateMove(tempo);
-            console.log(hash, tempo.moved, tempo.from, tempo.to, notation);
-        }
         return true;
     }
 
