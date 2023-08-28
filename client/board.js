@@ -32,6 +32,8 @@ export default class Board {
     };
     static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
     static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    static paths = {};
+    static cache = {};
 
     constructor(board = null, hypothetical = false) {
         if (board === null) {
@@ -49,7 +51,6 @@ export default class Board {
         if (hypothetical === true) {
             return;
         }
-        this.history.push(this.encode());
         this.analyze();
     }
 
@@ -199,9 +200,22 @@ export default class Board {
         return html;
     }
 
-    analyze() {
+    computeMoves() {
+        const hash = this.encode();
+        if (hash !== this.history[this.history.length - 1]) {
+            // Don't save duplicate hashes when refreshing the page.
+            this.history.push(hash);
+        }
+        if (hash in Board.cache) {
+            this.risks = Board.cache[hash].risks;
+            this.origins = Board.cache[hash].origins;
+            this.targets = Board.cache[hash].targets;
+            const king = this.kings[this.turn];
+            this.check = king in this.risks;
+            return !!this.filterOrigins().length;
+        }
         // Calculate risks first, to avoid moving the king into danger.
-        this.findRisks();
+        this.check = this.findRisks();
         // Find all hypothetical moves, regardless of whether the king is in check.
         this.origins = this.findAllMoves();
         this.targets = Board.findAllTargets(this.origins);
@@ -209,6 +223,16 @@ export default class Board {
         this.filterMoves();
         // Prevent moves that put or leave the king in check.
         const canMove = this.validateMoves();
+        Board.cache[hash] = {
+            risks: this.risks,
+            origins: this.origins,
+            targets: this.targets,
+        };
+        return canMove;
+    }
+
+    analyze() {
+        const canMove = this.computeMoves();
         if (canMove === true) {
             return;
         }
@@ -217,7 +241,7 @@ export default class Board {
             for (const square in this.origins) {
                 this.origins[square] = [];
             }
-            this.targets = Board.findAllTargets(this.origins);
+            this.targets = {};
         }
         // Stalemate: cannot move, but not in check
         this.draw = 'stalemate';
@@ -232,8 +256,8 @@ export default class Board {
         if (valid === false) {
             return false;
         }
-        board.findRisks();
-        return !board.check;
+        const check = board.findRisks(true);
+        return !check;
     }
 
     validateMoves() {
@@ -293,6 +317,11 @@ export default class Board {
         this.targets = Board.findAllTargets(this.origins);
     }
 
+    filterOrigins() {
+        return Object.keys(this.origins)
+            .filter(origin => this.origins[origin].length !== 0);
+    }
+
     findPath(from, to) {
         const abbr = this.squares[from];
         if (abbr === '') {
@@ -308,6 +337,10 @@ export default class Board {
         case 'Pawn':
             return [];
         }
+        const key = from + to;
+        if (key in Board.paths === true) {
+            return Board.paths[key];
+        }
         const [fromFile, fromRank] = Square.parse(from);
         const [toFile, toRank] = Square.parse(to);
         const squares = [];
@@ -317,6 +350,7 @@ export default class Board {
             for (let rank = minR; rank <= maxR; rank++) {
                 squares.push(fromFile + rank);
             }
+            Board.paths[key] = squares;
             return squares;
         }
         const fromF = Square.fileToNumber(fromFile);
@@ -328,6 +362,7 @@ export default class Board {
                 const file = Square.numberToFile(f);
                 squares.push(file + fromRank);
             }
+            Board.paths[key] = squares;
             return squares;
         }
         if ((fromFile < toFile && fromRank < toRank) || (fromFile > toFile && fromRank > toRank)) {
@@ -342,6 +377,7 @@ export default class Board {
                 squares.push(file + r);
             }
         }
+        Board.paths[key] = squares;
         return squares;
     }
 
@@ -356,17 +392,17 @@ export default class Board {
         return from;
     }
 
-    static findAllTargets(from) {
-        const to = {};
-        for (const [square, moves] of Object.entries(from)) {
+    static findAllTargets(origins) {
+        const targets = {};
+        for (const [square, moves] of Object.entries(origins)) {
             for (const move of moves) {
-                if (!(move in to)) {
-                    to[move] = [];
+                if (!(move in targets)) {
+                    targets[move] = [];
                 }
-                to[move].push(square);
+                targets[move].push(square);
             }
         }
-        return to;
+        return targets;
     }
 
     findMoves(square, opponent = false) {
@@ -400,7 +436,7 @@ export default class Board {
     findRisks() {
         this.risks = Board.findAllTargets(this.findAllMoves(true));
         const king = this.kings[this.turn];
-        this.check = king in this.risks;
+        return king in this.risks;
     }
 
     addJump(moves, square, color, hypothetical = false) {
@@ -716,6 +752,7 @@ export default class Board {
         const disambiguator = this.disambiguate(moved, from, to);
         this.turn = this.getOpponent();
         this.analyze();
+        this.detectDraw(moved, taken);
         const tempo = {
             from: from,
             to: to,
@@ -723,25 +760,16 @@ export default class Board {
             taken: taken,
             disambiguator: disambiguator,
             check: this.check,
-            draw: false,
+            draw: this.draw !== '',
             mate: this.mate,
         };
-        this.remember(tempo);
-        return true;
-    }
-
-    remember(tempo) {
-        const hash = this.encode();
-        this.history.push(hash);
-        // Must record hash before calling countRepetitions()!
-        this.detectDraw(tempo.moved, tempo.taken);
-        tempo.draw = this.draw !== '',
         this.score.push(tempo);
-        if (this.robotPresent() === false) {
-            return;
+        if (this.robotPresent() === true) {
+            const hash = this.history[this.history.length - 1];
+            const notation = Score.notateMove(tempo);
+            console.log(hash, tempo.moved, tempo.from, tempo.to, notation);
         }
-        const notation = Score.notateMove(tempo);
-        console.log(hash, tempo.moved, tempo.from, tempo.to, notation);
+        return true;
     }
 
     robotPresent() {
@@ -755,18 +783,14 @@ export default class Board {
 
     chooseRandomMove() {
         // What legal moves are there to choose from?
-        const choices = Object.keys(this.origins)
-            .filter(origin => this.origins[origin].length !== 0);
-        const from = Board.chooseRandomly(choices);
+        const from = Board.chooseRandomly(this.filterOrigins());
         const to = Board.chooseRandomly(this.origins[from]);
         return [from, to];
     }
 
     rateOrigins() {
         const ratings = {};
-        const origins = Object.keys(this.origins)
-            .filter(origin => this.origins[origin].length !== 0);
-        //const threatened = origins.filter(origin => origin in this.risks);
+        const origins = this.filterOrigins();
         for (const origin of origins) {
             const abbr = this.squares[origin];
             ratings[origin] = (origin in this.risks) ? Piece.list[abbr].value : 0;
@@ -940,12 +964,10 @@ export default class Board {
     evaluateMove(from, to) {
         // Copy the board, then try a move to see if it achieves check or mate.
         const board = new Board(this, true);
-        const valid = board.move(from, to, true);
+        const valid = board.move(from, to);
         if (valid === false) {
             return 0;
         }
-        board.turn = board.getOpponent();
-        board.analyze();
         if (board.mate) {
             return 3;
         }
@@ -986,13 +1008,9 @@ export default class Board {
         return this.move(...move);
     }
 
-    testMove(from, to) {
-        return this.move(from, to);
-    }
-
     testMoves(moves) {
         for (const move of moves) {
-            if (this.testMove(...move) === false) {
+            if (this.move(...move) === false) {
                 return false;
             }
         }
