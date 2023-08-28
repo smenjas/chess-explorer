@@ -921,6 +921,14 @@ export default class Board {
         else if (board.check === true) {
             rating += 1;
         }
+        // Prioritize restricting the opponent king's movement.
+        const king = board.kings[board.turn];
+        const squares = Square.findAdjacent(...Square.parse(king));
+        for (const square of squares) {
+            if (square in board.risks === true && square in this.targets === false) {
+                rating += 1;
+            }
+        }
         return rating;
     }
 
