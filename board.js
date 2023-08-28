@@ -964,12 +964,10 @@ export default class Board {
     evaluateMove(from, to) {
         // Copy the board, then try a move to see if it achieves check or mate.
         const board = new Board(this, true);
-        const valid = board.move(from, to, true);
+        const valid = board.move(from, to);
         if (valid === false) {
             return 0;
         }
-        board.turn = board.getOpponent();
-        board.analyze();
         if (board.mate) {
             return 3;
         }
