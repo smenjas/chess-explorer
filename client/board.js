@@ -940,12 +940,7 @@ export default class Board {
             }
         }
 
-        const betterMoves = [];
-        for (const key in ratings) {
-            if (ratings[key] === maxRating) {
-                betterMoves.push([key.substring(0, 2), key.substring(2)]);
-            }
-        }
+        const betterMoves = Board.findMoveRating(ratings, maxRating);
 
         const bestMoves = this.evaluateMoves(betterMoves);
         return Board.chooseRandomly(bestMoves);
@@ -992,13 +987,17 @@ export default class Board {
         if (mateOnly && maxRating < 3) {
             return [];
         }
-        const bestMoves = [];
+        return Board.findMoveRating(ratings, maxRating);
+    }
+
+    static findMoveRating(ratings, rating) {
+        const moves = [];
         for (const key in ratings) {
-            if (ratings[key] === maxRating) {
-                bestMoves.push([key.substring(0, 2), key.substring(2)]);
+            if (ratings[key] === rating) {
+                moves.push([key.substring(0, 2), key.substring(2)]);
             }
         }
-        return bestMoves;
+        return moves;
     }
 
     play() {
