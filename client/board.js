@@ -805,8 +805,7 @@ export default class Board {
         const targets = Object.keys(this.targets);
         return Board.rateSquares(targets, target =>
             this.targets[target].length
-            + Piece.value(this.squares[target])
-            - (target in this.risks ? 1 : 0));
+            + Piece.value(this.squares[target]));
     }
 
     chooseByOrigin(fromRatings, toRatings) {
@@ -934,7 +933,7 @@ export default class Board {
             const key = from + to;
             ratings[key] = fromRatings[from] + toRatings[to];
             if ((to in this.risks) === true) {
-                ratings[key] -= Piece.value(abbr) + 1;
+                ratings[key] -= Piece.value(abbr);
             }
             // Prioritize moves that result in check.
             if (this.evaluateMove(from, to) >= 2) {
