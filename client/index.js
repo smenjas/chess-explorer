@@ -99,7 +99,7 @@ function logMove(board) {
     const hash = board.history[board.history.length - 1];
     const tempo = board.score[board.score.length - 1];
     const notation = Score.notateMove(tempo);
-    console.log(hash, tempo.moved, tempo.from, tempo.to, notation);
+    console.log(hash, tempo.moved, tempo.from, tempo.to, notation, tempo.taken);
 }
 
 function renderPage(board) {
