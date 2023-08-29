@@ -922,13 +922,13 @@ export default class Board {
         if (valid === false) {
             return 0;
         }
-        if (canWin === false) {
-            return board.draw === '' ? 1 : 3;
-        }
-        if (board.mate) {
+        if (board.mate === true) {
             return 3;
         }
-        if (board.check) {
+        if (board.draw !== '') {
+            return canWin === true ? 1 : 3;
+        }
+        if (board.check === true) {
             return 2;
         }
         return 1;
