@@ -898,7 +898,22 @@ export default class Board {
         }
     }
 
-    evaluateMove(from, to) {
+    canWin() {
+        const pieceCounts = this.countPieces();
+        const mine = pieceCounts[this.turn];
+        const numPieces = Object.keys(mine).length;
+        if (numPieces === 1) {
+            return false;
+        }
+        else if (numPieces === 2) {
+            if ('Bishop' in mine === true || 'Knight' in mine === true) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    evaluateMove(from, to, canWin = true) {
         // Copy the board, then try a move to see if it achieves check or mate.
         // TODO: Count origin protectors.
         // TODO: Decrement piece value for risky targets.
@@ -906,6 +921,9 @@ export default class Board {
         const valid = board.move(from, to);
         if (valid === false) {
             return 0;
+        }
+        if (canWin === false) {
+            return board.draw === '' ? 1 : 3;
         }
         if (board.mate) {
             return 3;
@@ -917,12 +935,13 @@ export default class Board {
     }
 
     evaluateMoves(moves, mateOnly = false) {
+        const canWin = this.canWin();
         let maxRating = -Infinity;
         const ratings = {};
         for (const move of moves) {
             const [from, to] = move;
             const key = from + to;
-            ratings[key] = this.evaluateMove(from, to);
+            ratings[key] = this.evaluateMove(from, to, canWin);
             if (ratings[key] > maxRating) {
                 maxRating = ratings[key];
             }
