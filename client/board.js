@@ -887,6 +887,17 @@ export default class Board {
         return moves;
     }
 
+    getAllMoves() {
+        const moves = [];
+        for (const origin in this.origins) {
+            const targets = this.origins[origin];
+            for (const target of targets) {
+                moves.push([origin, target]);
+            }
+        }
+        return moves;
+    }
+
     chooseCarefulMove() {
         // TODO: Take into account which pieces are already protected.
         // TODO: Prioritize protecting pieces.
@@ -902,13 +913,7 @@ export default class Board {
         // TODO: Block paths to king.
 
         // Choose mate if possible.
-        const allMoves = [];
-        for (const origin in this.origins) {
-            const targets = this.origins[origin];
-            for (const target of targets) {
-                allMoves.push([origin, target]);
-            }
-        }
+        const allMoves = this.getAllMoves();
         const mates = this.evaluateMoves(allMoves, true);
         if (mates.length !== 0) {
             return Board.chooseRandomly(mates);
