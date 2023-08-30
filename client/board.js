@@ -845,23 +845,19 @@ export default class Board {
             return moves[0];
         }
 
-        // Choose mate if possible.
-        const mates = this.evaluateMoves(moves, true);
-        if (mates.length !== 0) {
-            return Board.chooseRandomly(mates);
-        }
-
         const fromRatings = this.rateOrigins();
         const toRatings = this.rateTargets();
 
         // Find the best moves, by combining ratings, and considering piece losses.
         let maxRating = -Infinity;
         const ratings = {};
+        const canWin = this.canWin();
         for (const move of moves) {
             const [from, to] = move;
             const key = from + to;
             ratings[key] = fromRatings[from] + toRatings[to];
             ratings[key] += this.rateMove(move);
+            ratings[key] += this.emulateMove(from, to, canWin);
             if (ratings[key] > maxRating) {
                 maxRating = ratings[key];
             }
@@ -881,10 +877,6 @@ export default class Board {
         // Decrement targets that are at risk, by piece value.
         if (to in this.risks === true) {
             rating -= Piece.value(abbr);
-        }
-        // Prioritize moves that result in check.
-        if (this.evaluateMove(from, to) >= 2) {
-            rating += 1;
         }
         return rating;
     }
@@ -913,43 +905,25 @@ export default class Board {
         return true;
     }
 
-    evaluateMove(from, to, canWin = true) {
+    emulateMove(from, to, canWin = true) {
         // Copy the board, then try a move to see if it achieves check or mate.
-        // TODO: Count origin protectors.
-        // TODO: Decrement piece value for risky targets.
+        // TODO: Decrement moves from protected squares.
         const board = new Board(this, true);
         const valid = board.move(from, to);
         if (valid === false) {
             return 0;
         }
+        let rating = 0;
         if (board.mate === true) {
-            return 3;
+            rating += 100;
         }
         if (board.draw !== '') {
-            return canWin === true ? 1 : 3;
+            rating += canWin === true ? -1 : 100;
         }
-        if (board.check === true) {
-            return 2;
+        else if (board.check === true) {
+            rating += 1;
         }
-        return 1;
-    }
-
-    evaluateMoves(moves, mateOnly = false) {
-        const canWin = this.canWin();
-        let maxRating = -Infinity;
-        const ratings = {};
-        for (const move of moves) {
-            const [from, to] = move;
-            const key = from + to;
-            ratings[key] = this.evaluateMove(from, to, canWin);
-            if (ratings[key] > maxRating) {
-                maxRating = ratings[key];
-            }
-        }
-        if (mateOnly && maxRating < 3) {
-            return [];
-        }
-        return Board.findMoveRating(ratings, maxRating);
+        return rating;
     }
 
     static findMoveRating(ratings, rating) {
