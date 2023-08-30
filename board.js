@@ -841,8 +841,12 @@ export default class Board {
         // TODO: Encourage non-pawn development.
         // TODO: Block paths to king.
 
-        // Choose mate if possible.
         const moves = this.getAllMoves();
+        if (moves.length === 1) {
+            return moves[0];
+        }
+
+        // Choose mate if possible.
         const mates = this.evaluateMoves(moves, true);
         if (mates.length !== 0) {
             return Board.chooseRandomly(mates);
