@@ -873,10 +873,6 @@ export default class Board {
         if ((abbr === 'WP' && to[1] === '8') || (abbr === 'BP' && to[1] === '1')) {
             rating += 8;
         }
-        // Decrement targets that are at risk, by piece value.
-        if (to in this.risks === true) {
-            rating -= Piece.value(abbr);
-        }
         return rating;
     }
 
@@ -933,6 +929,13 @@ export default class Board {
         if (from in board.risks) {
             const protectors = board.risks[from];
             rating -= protectors.length;
+        }
+        // Next, consider the effect of the move on our own pieces.
+        board.turn = this.turn;
+        board.analyze();
+        // Is this a risky move?
+        if (to in board.risks === true) {
+            rating -= Piece.value(board.squares[to], to);
         }
         return rating;
     }
