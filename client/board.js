@@ -860,17 +860,9 @@ export default class Board {
         const ratings = {};
         for (const move of moves) {
             const [from, to] = move;
-            const abbr = this.squares[from];
-            // Decrement targets that are at risk, by piece value.
             const key = from + to;
             ratings[key] = fromRatings[from] + toRatings[to];
-            if ((to in this.risks) === true) {
-                ratings[key] -= Piece.value(abbr);
-            }
-            // Prioritize moves that result in check.
-            if (this.evaluateMove(from, to) >= 2) {
-                ratings[key] += 1;
-            }
+            ratings[key] += this.rateMove(move);
             if (ratings[key] > maxRating) {
                 maxRating = ratings[key];
             }
@@ -880,6 +872,22 @@ export default class Board {
 
         const bestMoves = this.evaluateMoves(betterMoves);
         return Board.chooseRandomly(bestMoves);
+    }
+
+    rateMove(move) {
+        let rating = 0;
+        const [from, to] = move;
+        const abbr = this.squares[from];
+
+        // Decrement targets that are at risk, by piece value.
+        if (to in this.risks === true) {
+            rating -= Piece.value(abbr);
+        }
+        // Prioritize moves that result in check.
+        if (this.evaluateMove(from, to) >= 2) {
+            rating += 1;
+        }
+        return rating;
     }
 
     chooseMove() {
