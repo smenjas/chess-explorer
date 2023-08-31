@@ -45,4 +45,11 @@ export default class Piece {
         const piece = Piece.list[abbr];
         return `${piece.color} ${piece.type}`;
     }
+
+    static value(abbr) {
+        if (Piece.exists(abbr) === false) {
+            return 0;
+        }
+        return Piece.list[abbr].value;
+    }
 }
