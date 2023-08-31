@@ -850,6 +850,7 @@ export default class Board {
         const toRatings = this.rateTargets();
 
         const theirAdjacents = this.findKingAdjacent(true);
+        const trapped = this.countTrapped(this);
 
         this.countPawnProtection(fromRatings, toRatings);
 
@@ -862,7 +863,7 @@ export default class Board {
             const key = from + to;
             ratings[key] = fromRatings[from] + toRatings[to];
             ratings[key] += this.rateMove(move);
-            ratings[key] += this.emulateMove(from, to, theirAdjacents, canWin);
+            ratings[key] += this.emulateMove(from, to, theirAdjacents, trapped, canWin);
             if (ratings[key] > maxRating) {
                 maxRating = ratings[key];
             }
@@ -908,13 +909,14 @@ export default class Board {
         return true;
     }
 
-    emulateMove(from, to, adjacents, canWin = true) {
+    emulateMove(from, to, adjacents, trapped, canWin = true) {
         // Copy the board, then try a move to see if it achieves check or mate.
         const board = new Board(this, true);
         const valid = board.move(from, to);
         if (valid === false) {
             return 0;
         }
+        // First, consider the effect of the move on the opponent.
         let rating = 0;
         if (board.mate === true) {
             rating += 100;
@@ -947,6 +949,8 @@ export default class Board {
         if (to in board.risks === true) {
             rating -= Piece.value(board.squares[to]);
         }
+        // Has the number of trapped pieces changed?
+        rating += trapped - board.countTrapped();
         return rating;
     }
 
@@ -1136,6 +1140,24 @@ export default class Board {
         if (count === 5) {
             this.draw = 'fivefold repetition';
         }
+    }
+
+    countTrapped() {
+        let trapped = 0;
+        const turn = this.turn[0];
+        for (const square in this.squares) {
+            const abbr = this.squares[square];
+            if (abbr === '') {
+                continue;
+            }
+            if (abbr[0] !== turn) {
+                continue;
+            }
+            if (this.origins[square].length === 0) {
+                trapped += 1;
+            }
+        }
+        return trapped;
     }
 
     detectDeadPosition() {
