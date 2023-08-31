@@ -242,6 +242,7 @@ export default class Board {
                 this.origins[square] = [];
             }
             this.targets = {};
+            return;
         }
         // Stalemate: cannot move, but not in check
         this.draw = 'stalemate';
