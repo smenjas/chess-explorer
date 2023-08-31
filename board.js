@@ -48,7 +48,7 @@ export default class Board {
                 this[key] = Board.fresh[key];
             }
         }
-        if (hypothetical === true) {
+        if (board === null || hypothetical === true) {
             return;
         }
         this.analyze();
@@ -678,11 +678,7 @@ export default class Board {
         if (typeof window === 'undefined') {
             return;
         }
-        const board = structuredClone(this);
-        board.origins = {};
-        board.targets = {};
-        board.risks = {};
-        localStorage.setItem('board', JSON.stringify(board));
+        localStorage.setItem('board', JSON.stringify(this));
     }
 
     disambiguate(moved, from, to) {
