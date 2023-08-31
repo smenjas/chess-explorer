@@ -826,9 +826,6 @@ export default class Board {
     }
 
     chooseCarefulMove() {
-        // TODO: Take into account which pieces are already protected.
-        // TODO: Prioritize protecting pieces.
-        // TODO: Find risks after capturing.
         // TODO: Deprioritize moves that open paths to check, e.g. d3, f3, d7, & f7.
         // TODO: Count how many unprotected pieces are at risk, before and after each move.
         // TODO: Preemptively block check. The king moves out into the open too often.
@@ -909,7 +906,6 @@ export default class Board {
 
     emulateMove(from, to, canWin = true) {
         // Copy the board, then try a move to see if it achieves check or mate.
-        // TODO: Decrement moves from protected squares.
         const board = new Board(this, true);
         const valid = board.move(from, to);
         if (valid === false) {
@@ -932,6 +928,11 @@ export default class Board {
             if (square in board.risks === true && square in this.targets === false) {
                 rating += 1;
             }
+        }
+        // Is the origin protected?
+        if (from in board.risks) {
+            const protectors = board.risks[from];
+            rating -= protectors.length;
         }
         return rating;
     }
