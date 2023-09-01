@@ -526,6 +526,12 @@ export default class Board {
         return [rookFile + rank, skipFile + rank];
     }
 
+    findKingAdjacent(theirs = false) {
+        const color = theirs === true ? this.getOpponent() : this.turn;
+        const king = this.kings[color];
+        return Square.findAdjacent(...Square.parse(king));
+    }
+
     findKingMoves(file, rank, color) {
         // Kings can move one square in any direction.
         const adjacentSquares = Square.findAdjacent(file, rank);
@@ -843,6 +849,8 @@ export default class Board {
         const fromRatings = this.rateOrigins();
         const toRatings = this.rateTargets();
 
+        const theirAdjacents = this.findKingAdjacent(true);
+
         this.countPawnProtection(fromRatings, toRatings);
 
         // Find the best moves, by combining ratings, and considering piece losses.
@@ -854,7 +862,7 @@ export default class Board {
             const key = from + to;
             ratings[key] = fromRatings[from] + toRatings[to];
             ratings[key] += this.rateMove(move);
-            ratings[key] += this.emulateMove(from, to, canWin);
+            ratings[key] += this.emulateMove(from, to, theirAdjacents, canWin);
             if (ratings[key] > maxRating) {
                 maxRating = ratings[key];
             }
@@ -900,7 +908,7 @@ export default class Board {
         return true;
     }
 
-    emulateMove(from, to, canWin = true) {
+    emulateMove(from, to, adjacents, canWin = true) {
         // Copy the board, then try a move to see if it achieves check or mate.
         const board = new Board(this, true);
         const valid = board.move(from, to);
@@ -918,10 +926,8 @@ export default class Board {
             rating += 1;
         }
         // Prioritize restricting the opponent king's movement.
-        const king = board.kings[board.turn];
-        const squares = Square.findAdjacent(...Square.parse(king));
-        for (const square of squares) {
-            if (square in board.risks === true && square in this.targets === false) {
+        for (const adjacent of adjacents) {
+            if (adjacent in board.risks === true && adjacent in this.targets === false) {
                 rating += 1;
             }
         }
