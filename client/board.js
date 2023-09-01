@@ -767,6 +767,16 @@ export default class Board {
         return true;
     }
 
+    logMove() {
+        if (this.robotPresent() === false) {
+            return;
+        }
+        const hash = this.history[this.history.length - 1];
+        const tempo = this.score[this.score.length - 1];
+        const notation = Score.notateMove(tempo);
+        console.log(hash, tempo.moved, tempo.from, tempo.to, notation, tempo.taken);
+    }
+
     robotPresent() {
         return this.players.Black === 'robot' || this.players.White === 'robot';
     }
