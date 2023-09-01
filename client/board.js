@@ -48,7 +48,7 @@ export default class Board {
                 this[key] = Board.fresh[key];
             }
         }
-        if (hypothetical === true) {
+        if (board === null || hypothetical === true) {
             return;
         }
         this.analyze();
@@ -242,6 +242,7 @@ export default class Board {
                 this.origins[square] = [];
             }
             this.targets = {};
+            return;
         }
         // Stalemate: cannot move, but not in check
         this.draw = 'stalemate';
@@ -677,11 +678,7 @@ export default class Board {
         if (typeof window === 'undefined') {
             return;
         }
-        const board = structuredClone(this);
-        board.origins = {};
-        board.targets = {};
-        board.risks = {};
-        localStorage.setItem('board', JSON.stringify(board));
+        localStorage.setItem('board', JSON.stringify(this));
     }
 
     disambiguate(moved, from, to) {
@@ -767,6 +764,16 @@ export default class Board {
         return true;
     }
 
+    logMove() {
+        if (this.robotPresent() === false) {
+            return;
+        }
+        const hash = this.history[this.history.length - 1];
+        const tempo = this.score[this.score.length - 1];
+        const notation = Score.notateMove(tempo);
+        console.log(hash, tempo.moved, tempo.from, tempo.to, notation, tempo.taken);
+    }
+
     robotPresent() {
         return this.players.Black === 'robot' || this.players.White === 'robot';
     }
@@ -799,22 +806,20 @@ export default class Board {
     }
 
     rateTargets() {
-        // Initialize ratings by how many pieces can move there.
+        // Initialize ratings by how many extra pieces can capture that square,
+        // plus the opponent piece's value (if any) in the event of capture.
         // If more than one piece can move there, it's protected.
         // TODO: Protected squares are a double edged sword: they also block development (e.g. e3).
-        // TODO: Count pawn jumps.
         const targets = Object.keys(this.targets);
-        return Board.rateSquares(targets, target =>
-            this.targets[target].length
-            + Piece.value(this.squares[target]));
+        return Board.rateSquares(targets, to =>
+            this.countProtectors(to) + Piece.value(this.squares[to]));
     }
 
     getAllMoves() {
         const moves = [];
-        for (const origin in this.origins) {
-            const targets = this.origins[origin];
-            for (const target of targets) {
-                moves.push([origin, target]);
+        for (const to in this.targets) {
+            for (const from of this.targets[to]) {
+                moves.push([from, to]);
             }
         }
         return moves;
@@ -825,7 +830,6 @@ export default class Board {
         // TODO: Prioritize protecting pieces.
         // TODO: Find risks after capturing.
         // TODO: Deprioritize moves that open paths to check, e.g. d3, f3, d7, & f7.
-        // TODO: Prioritize pawn promotion.
         // TODO: Count how many unprotected pieces are at risk, before and after each move.
         // TODO: Preemptively block check. The king moves out into the open too often.
         // TODO: Castling rarely occurs.
@@ -834,41 +838,49 @@ export default class Board {
         // TODO: Encourage non-pawn development.
         // TODO: Block paths to king.
 
-        // Choose mate if possible.
         const moves = this.getAllMoves();
-        const mates = this.evaluateMoves(moves, true);
-        if (mates.length !== 0) {
-            return Board.chooseRandomly(mates);
+        if (moves.length === 1) {
+            return moves[0];
         }
 
         const fromRatings = this.rateOrigins();
         const toRatings = this.rateTargets();
 
+        this.countPawnProtection(fromRatings, toRatings);
+
         // Find the best moves, by combining ratings, and considering piece losses.
         let maxRating = -Infinity;
         const ratings = {};
+        const canWin = this.canWin();
         for (const move of moves) {
             const [from, to] = move;
-            const abbr = this.squares[from];
-            // Decrement targets that are at risk, by piece value.
             const key = from + to;
             ratings[key] = fromRatings[from] + toRatings[to];
-            if ((to in this.risks) === true) {
-                ratings[key] -= Piece.value(abbr);
-            }
-            // Prioritize moves that result in check.
-            if (this.evaluateMove(from, to) >= 2) {
-                ratings[key] += 1;
-            }
+            ratings[key] += this.rateMove(move);
+            ratings[key] += this.emulateMove(from, to, canWin);
             if (ratings[key] > maxRating) {
                 maxRating = ratings[key];
             }
         }
 
-        const betterMoves = Board.findMoveRating(ratings, maxRating);
-
-        const bestMoves = this.evaluateMoves(betterMoves);
+        const bestMoves = Board.findMoveRating(ratings, maxRating);
         return Board.chooseRandomly(bestMoves);
+    }
+
+    rateMove(move) {
+        let rating = 0;
+        const [from, to] = move;
+        const abbr = this.squares[from];
+
+        // Prioritize pawn promotion.
+        if ((abbr === 'WP' && to[1] === '8') || (abbr === 'BP' && to[1] === '1')) {
+            rating += 8;
+        }
+        // Decrement targets that are at risk, by piece value.
+        if (to in this.risks === true) {
+            rating -= Piece.value(abbr);
+        }
+        return rating;
     }
 
     chooseMove() {
@@ -880,39 +892,48 @@ export default class Board {
         }
     }
 
-    evaluateMove(from, to) {
+    canWin() {
+        const pieceCounts = this.countPieces();
+        const mine = pieceCounts[this.turn];
+        const numPieces = Object.keys(mine).length;
+        if (numPieces === 1) {
+            return false;
+        }
+        else if (numPieces === 2) {
+            if ('Bishop' in mine === true || 'Knight' in mine === true) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    emulateMove(from, to, canWin = true) {
         // Copy the board, then try a move to see if it achieves check or mate.
-        // TODO: Count origin protectors.
-        // TODO: Decrement piece value for risky targets.
+        // TODO: Decrement moves from protected squares.
         const board = new Board(this, true);
         const valid = board.move(from, to);
         if (valid === false) {
             return 0;
         }
-        if (board.mate) {
-            return 3;
+        let rating = 0;
+        if (board.mate === true) {
+            rating += 100;
         }
-        if (board.check) {
-            return 2;
+        if (board.draw !== '') {
+            rating += canWin === true ? -1 : 100;
         }
-        return 1;
-    }
-
-    evaluateMoves(moves, mateOnly = false) {
-        let maxRating = -Infinity;
-        const ratings = {};
-        for (const move of moves) {
-            const [from, to] = move;
-            const key = from + to;
-            ratings[key] = this.evaluateMove(from, to);
-            if (ratings[key] > maxRating) {
-                maxRating = ratings[key];
+        else if (board.check === true) {
+            rating += 1;
+        }
+        // Prioritize restricting the opponent king's movement.
+        const king = board.kings[board.turn];
+        const squares = Square.findAdjacent(...Square.parse(king));
+        for (const square of squares) {
+            if (square in board.risks === true && square in this.targets === false) {
+                rating += 1;
             }
         }
-        if (mateOnly && maxRating < 3) {
-            return [];
-        }
-        return Board.findMoveRating(ratings, maxRating);
+        return rating;
     }
 
     static findMoveRating(ratings, rating) {
@@ -1036,6 +1057,23 @@ export default class Board {
         this.castle[color].splice(index, 1);
     }
 
+    countPawnProtection(fromRatings, toRatings) {
+        // Increment targets protected by pawns.
+        for (const from in fromRatings) {
+            const abbr = this.squares[from];
+            if (abbr[1] !== 'P') {
+                continue;
+            }
+            const [file, rank] = Square.parse(from);
+            const jumps = this.findPawnJumps(file, rank, this.turn, true);
+            for (const jump of jumps) {
+                if (jump in toRatings) {
+                    toRatings[jump] += 1;
+                }
+            }
+        }
+    }
+
     countPieces() {
         const pieces = {Black: {}, White: {}};
         for (const square in this.squares) {
@@ -1052,6 +1090,20 @@ export default class Board {
             }
         }
         return pieces;
+    }
+
+    countProtectors(to) {
+        // This does not count targets protected by pawns.
+        let count = 0;
+        const origins = this.targets[to];
+        for (const from of origins) {
+            const abbr = this.squares[from];
+            if (abbr[1] !== 'P') {
+                count += 1;
+                continue;
+            }
+        }
+        return count;
     }
 
     countRepetitions() {

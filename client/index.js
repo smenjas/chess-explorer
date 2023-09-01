@@ -1,5 +1,4 @@
 import Board from './board.js';
-import Score from './score.js';
 
 function addEventHandlers(board) {
     if (board.players[board.turn] === 'robot') {
@@ -28,7 +27,7 @@ function addEventHandlers(board) {
         board.save();
         selected.classList.remove('selected');
         highlightMoves(selected.id, true);
-        logMove(board);
+        board.logMove();
         updatePage(board);
     }
 
@@ -90,16 +89,6 @@ function addFormHandlers(board) {
 
     document.getElementById('Black').addEventListener('change', handlePlayer);
     document.getElementById('White').addEventListener('change', handlePlayer);
-}
-
-function logMove(board) {
-    if (board.robotPresent() === false) {
-        return;
-    }
-    const hash = board.history[board.history.length - 1];
-    const tempo = board.score[board.score.length - 1];
-    const notation = Score.notateMove(tempo);
-    console.log(hash, tempo.moved, tempo.from, tempo.to, notation, tempo.taken);
 }
 
 function renderPage(board) {
@@ -174,7 +163,7 @@ async function updatePage(board) {
         const refresh = board.play();
         board.save();
         if (refresh === true) {
-            logMove(board);
+            board.logMove();
             updatePage(board);
         }
         return;
