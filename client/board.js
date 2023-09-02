@@ -947,10 +947,9 @@ export default class Board {
         board.findRisks();
 
         // Is the target protected?
-        if (to in board.risks === true) {
-            const protectorCount = board.risks[to].length;
-            this.logRating(from, to, protectorCount, 'Target protected');
-            rating += protectorCount;
+        if (board.isProtected(to, from) === true) {
+            this.logRating(from, to, 1, 'Target protected');
+            rating += 1;
         }
 
         // 3. Consider the opponent's perspective, after the move.
@@ -961,14 +960,9 @@ export default class Board {
         }
 
         // Is the origin protected?
-        if (from in board.risks) {
-            const protectors = board.risks[from];
-            const protectorCount = protectors.length;
-            if (this.squares[from][1] !== 'P') {
-                protectorCount -= 1;
-            }
-            this.logRating(from, to, -protectorCount, 'Origin protected');
-            rating -= protectorCount;
+        if (board.isProtected(from, to) === true) {
+            this.logRating(from, to, -1, 'Origin protected');
+            rating -= 1;
         }
 
         // Does this result in checkmate, a draw, or check?
@@ -1026,6 +1020,20 @@ export default class Board {
         rating += trappedChange;
 
         return rating;
+    }
+
+    isProtected(square, ignore) {
+        if (square in this.risks === false) {
+            return false;
+        }
+        const protectors = this.risks[square];
+        for (const protector of protectors) {
+            if (protector === ignore) {
+                continue;
+            }
+            return true;
+        }
+        return false;
     }
 
     restrictKing(to, risks, adjacents) {
