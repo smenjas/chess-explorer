@@ -948,6 +948,7 @@ export default class Board {
         if (valid === false) {
             return 0;
         }
+
         // First, consider the effect of the move on the opponent.
         let rating = 0;
         if (board.mate === true) {
@@ -963,6 +964,7 @@ export default class Board {
             this.logRating(from, to, 1, 'Check');
             rating += 1;
         }
+
         // Prioritize restricting the opponent king's movement.
         let kingThreat = 0;
         for (const adjacent of adjacents) {
@@ -972,6 +974,7 @@ export default class Board {
         }
         this.logRating(from, to, kingThreat, `${this.getOpponent()} king restricted`);
         rating += kingThreat;
+
         // Is the origin protected?
         if (from in board.risks) {
             const protectors = board.risks[from];
@@ -982,19 +985,41 @@ export default class Board {
             this.logRating(from, to, -protectorCount, 'Origin protected');
             rating -= protectorCount;
         }
+
+        // Does this move threaten any pieces?
+        for (const risk in board.risks) {
+            const atRisk = board.squares[risk];
+            if (atRisk === '') {
+                continue;
+            }
+            if (atRisk[1] === 'K') {
+                // Rate check separately.
+                continue;
+            }
+            const threats = board.risks[risk];
+            if (threats.includes(to)) {
+                const value = Piece.value(atRisk);
+                this.logRating(from, to, value, `Threatens ${atRisk}`);
+                rating += value;
+            }
+        }
+
         // Next, consider the effect of the move on our own pieces.
         board.turn = this.turn;
         board.analyze();
+
         // Is this a risky move?
         if (to in board.risks === true) {
             const value = Piece.value(board.squares[to]);
             this.logRating(from, to, -value, 'Risky');
             rating -= value;
         }
+
         // Has the number of trapped pieces changed?
         const trappedChange = trapped - board.countTrapped();
         this.logRating(from, to, trappedChange, 'Piece(s) can move');
         rating += trappedChange;
+
         return rating;
     }
 
