@@ -823,8 +823,8 @@ export default class Board {
 
     getAllMoves() {
         const moves = [];
-        for (const to in this.targets) {
-            for (const from of this.targets[to]) {
+        for (const from in this.origins) {
+            for (const to of this.origins[from]) {
                 moves.push([from, to]);
             }
         }
