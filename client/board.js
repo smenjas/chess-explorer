@@ -966,12 +966,7 @@ export default class Board {
         }
 
         // Prioritize restricting the opponent king's movement.
-        let kingThreat = 0;
-        for (const adjacent of adjacents) {
-            if (adjacent in board.risks === true && adjacent in this.targets === false) {
-                kingThreat += 1;
-            }
-        }
+        const kingThreat = this.restrictKing(to, board.risks, adjacents);
         this.logRating(from, to, kingThreat, `${this.getOpponent()} king restricted`);
         rating += kingThreat;
 
@@ -1020,6 +1015,22 @@ export default class Board {
         this.logRating(from, to, trappedChange, 'Piece(s) can move');
         rating += trappedChange;
 
+        return rating;
+    }
+
+    restrictKing(to, risks, adjacents) {
+        let rating = 0;
+        for (const adjacent of adjacents) {
+            if (adjacent in risks === false) {
+                // Not threatened by the proposed move.
+                continue;
+            }
+            if (adjacent in this.targets === true) {
+                // Already threatened.
+                continue;
+            }
+            rating += 1;
+        }
         return rating;
     }
 
