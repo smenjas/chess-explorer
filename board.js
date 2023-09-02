@@ -919,7 +919,7 @@ export default class Board {
         if (board.mate === true) {
             rating += 100;
         }
-        if (board.draw !== '') {
+        else if (board.draw !== '') {
             rating += canWin === true ? -1 : 100;
         }
         else if (board.check === true) {
