@@ -817,8 +817,7 @@ export default class Board {
         // If more than one piece can move there, it's protected.
         // TODO: Protected squares are a double edged sword: they also block development (e.g. e3).
         const targets = Object.keys(this.targets);
-        return Board.rateSquares(targets, to =>
-            this.countProtectors(to) + Piece.value(this.squares[to]));
+        return Board.rateSquares(targets, to => Piece.value(this.squares[to]));
     }
 
     getAllMoves() {
@@ -866,8 +865,6 @@ export default class Board {
         const theirAdjacents = this.findKingAdjacent(true);
         const trapped = this.countTrapped(this);
 
-        this.countPawnProtection(fromRatings, toRatings);
-
         // Find the best moves, by combining ratings, and considering piece losses.
         let maxRating = -Infinity;
         const ratings = {};
@@ -883,9 +880,7 @@ export default class Board {
             this.logRating(from, to, fromRatings[from], 'At risk');
             const capture = this.squares[to];
             const captureValue = Piece.value(capture);
-            const protectors = toRatings[to] - captureValue;
             this.logRating(from, to, captureValue, `Takes ${capture}`);
-            this.logRating(from, to, protectors, 'Target protected');
 
             ratings[key] += this.rateMove(move);
             ratings[key] += this.emulateMove(from, to, theirAdjacents, trapped, canWin);
@@ -947,7 +942,19 @@ export default class Board {
         // 1. Copy the board.
         const board = new Board(this, true);
 
-        // 2. Consider the opponent's perspective, after the move.
+        // 2. Consider the opponent's perspective, before the move.
+        board.turn = board.getOpponent();
+        board.findRisks();
+
+        // Is the target protected?
+        if (to in board.risks === true) {
+            const protectorCount = board.risks[to].length;
+            this.logRating(from, to, protectorCount, 'Target protected');
+            rating += protectorCount;
+        }
+
+        // 3. Consider the opponent's perspective, after the move.
+        board.turn = this.turn;
         const valid = board.move(from, to);
         if (valid === false) {
             return 0;
@@ -1002,7 +1009,7 @@ export default class Board {
             }
         }
 
-        // 3. Consider our perspective, after the move.
+        // 4. Consider our perspective, after the move.
         board.turn = this.turn;
         board.analyze();
 
@@ -1166,23 +1173,6 @@ export default class Board {
         this.castle[color].splice(index, 1);
     }
 
-    countPawnProtection(fromRatings, toRatings) {
-        // Increment targets protected by pawns.
-        for (const from in fromRatings) {
-            const abbr = this.squares[from];
-            if (abbr[1] !== 'P') {
-                continue;
-            }
-            const [file, rank] = Square.parse(from);
-            const jumps = this.findPawnJumps(file, rank, this.turn, true);
-            for (const jump of jumps) {
-                if (jump in toRatings) {
-                    toRatings[jump] += 1;
-                }
-            }
-        }
-    }
-
     countPieces() {
         const pieces = {Black: {}, White: {}};
         for (const square in this.squares) {
@@ -1199,22 +1189,6 @@ export default class Board {
             }
         }
         return pieces;
-    }
-
-    countProtectors(to) {
-        // This does not count targets protected by pawns.
-        let count = 0;
-        const origins = this.targets[to];
-        for (const from of origins) {
-            const abbr = this.squares[from];
-            if (abbr[1] === 'P') {
-                count += 1;
-            }
-        }
-        if (count === 0) {
-            return 0;
-        }
-        return count - 1;
     }
 
     countRepetitions() {
