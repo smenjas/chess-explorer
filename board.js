@@ -934,7 +934,11 @@ export default class Board {
         // Is the origin protected?
         if (from in board.risks) {
             const protectors = board.risks[from];
-            rating -= protectors.length;
+            const protectorCount = protectors.length;
+            if (this.squares[from][1] !== 'P') {
+                protectorCount -= 1;
+            }
+            rating -= protectorCount;
         }
         // Next, consider the effect of the move on our own pieces.
         board.turn = this.turn;
@@ -1108,12 +1112,14 @@ export default class Board {
         const origins = this.targets[to];
         for (const from of origins) {
             const abbr = this.squares[from];
-            if (abbr[1] !== 'P') {
+            if (abbr[1] === 'P') {
                 count += 1;
-                continue;
             }
         }
-        return count;
+        if (count === 0) {
+            return 0;
+        }
+        return count - 1;
     }
 
     countRepetitions() {
