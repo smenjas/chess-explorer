@@ -1019,8 +1019,16 @@ export default class Board {
     }
 
     restrictKing(to, risks, adjacents) {
+        if (adjacents.includes(to) === true && to in risks === false) {
+            // Don't move next to the king unless protected.
+            return 0;
+        }
         let rating = 0;
         for (const adjacent of adjacents) {
+            if (this.squares[adjacent] !== '') {
+                // Occupied.
+                continue;
+            }
             if (adjacent in risks === false) {
                 // Not threatened by the proposed move.
                 continue;
