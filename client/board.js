@@ -942,15 +942,29 @@ export default class Board {
     }
 
     emulateMove(from, to, adjacents, trapped, canWin = true) {
-        // Copy the board, then try a move to see if it achieves check or mate.
+        let rating = 0;
+
+        // 1. Copy the board.
         const board = new Board(this, true);
+
+        // 2. Consider the opponent's perspective, after the move.
         const valid = board.move(from, to);
         if (valid === false) {
             return 0;
         }
 
-        // First, consider the effect of the move on the opponent.
-        let rating = 0;
+        // Is the origin protected?
+        if (from in board.risks) {
+            const protectors = board.risks[from];
+            const protectorCount = protectors.length;
+            if (this.squares[from][1] !== 'P') {
+                protectorCount -= 1;
+            }
+            this.logRating(from, to, -protectorCount, 'Origin protected');
+            rating -= protectorCount;
+        }
+
+        // Does this result in checkmate, a draw, or check?
         if (board.mate === true) {
             this.logRating(from, to, 100, 'Checkmate');
             rating += 100;
@@ -970,17 +984,6 @@ export default class Board {
         this.logRating(from, to, kingThreat, `${this.getOpponent()} king restricted`);
         rating += kingThreat;
 
-        // Is the origin protected?
-        if (from in board.risks) {
-            const protectors = board.risks[from];
-            const protectorCount = protectors.length;
-            if (this.squares[from][1] !== 'P') {
-                protectorCount -= 1;
-            }
-            this.logRating(from, to, -protectorCount, 'Origin protected');
-            rating -= protectorCount;
-        }
-
         // Does this move threaten any pieces?
         for (const risk in board.risks) {
             const atRisk = board.squares[risk];
@@ -999,7 +1002,7 @@ export default class Board {
             }
         }
 
-        // Next, consider the effect of the move on our own pieces.
+        // 3. Consider our perspective, after the move.
         board.turn = this.turn;
         board.analyze();
 
