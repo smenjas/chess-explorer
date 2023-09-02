@@ -941,7 +941,7 @@ export default class Board {
         board.analyze();
         // Is this a risky move?
         if (to in board.risks === true) {
-            rating -= Piece.value(board.squares[to], to);
+            rating -= Piece.value(board.squares[to]);
         }
         return rating;
     }
