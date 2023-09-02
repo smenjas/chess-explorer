@@ -817,18 +817,26 @@ export default class Board {
         // If more than one piece can move there, it's protected.
         // TODO: Protected squares are a double edged sword: they also block development (e.g. e3).
         const targets = Object.keys(this.targets);
-        return Board.rateSquares(targets, to =>
-            this.countProtectors(to) + Piece.value(this.squares[to]));
+        return Board.rateSquares(targets, to => Piece.value(this.squares[to]));
     }
 
     getAllMoves() {
         const moves = [];
-        for (const to in this.targets) {
-            for (const from of this.targets[to]) {
+        for (const from in this.origins) {
+            for (const to of this.origins[from]) {
                 moves.push([from, to]);
             }
         }
         return moves;
+    }
+
+    logRating(from, to, rating, description) {
+        if (rating === 0 && description !== 'Final rating') {
+            return;
+        }
+        const sign = rating < 0 ? '' : '+';
+        const abbr = this.squares[from];
+        console.log(abbr, from, to, `${sign}${rating}`, description);
     }
 
     chooseCarefulMove() {
@@ -841,8 +849,13 @@ export default class Board {
         // TODO: Encourage non-pawn development.
         // TODO: Block paths to king.
 
+        const turnCount = Math.ceil(this.history.length / 2);
+        const outerGroup = `${this.turn} ${turnCount}`;
+        console.groupCollapsed(outerGroup);
+
         const moves = this.getAllMoves();
         if (moves.length === 1) {
+            console.groupEnd(outerGroup);
             return moves[0];
         }
 
@@ -850,8 +863,7 @@ export default class Board {
         const toRatings = this.rateTargets();
 
         const theirAdjacents = this.findKingAdjacent(true);
-
-        this.countPawnProtection(fromRatings, toRatings);
+        const trapped = this.countTrapped(this);
 
         // Find the best moves, by combining ratings, and considering piece losses.
         let maxRating = -Infinity;
@@ -861,14 +873,29 @@ export default class Board {
             const [from, to] = move;
             const key = from + to;
             ratings[key] = fromRatings[from] + toRatings[to];
+
+            const moved = this.squares[from];
+            const innerGroup = `${moved} ${from} ${to}`;
+            console.groupCollapsed(innerGroup);
+            this.logRating(from, to, fromRatings[from], 'At risk');
+            const capture = this.squares[to];
+            const captureValue = Piece.value(capture);
+            this.logRating(from, to, captureValue, `Takes ${capture}`);
+
             ratings[key] += this.rateMove(move);
-            ratings[key] += this.emulateMove(from, to, theirAdjacents, canWin);
+            ratings[key] += this.emulateMove(from, to, theirAdjacents, trapped, canWin);
+
+            this.logRating(from, to, ratings[key], 'Final rating');
+            console.groupEnd(innerGroup);
+
             if (ratings[key] > maxRating) {
                 maxRating = ratings[key];
             }
         }
 
         const bestMoves = Board.findMoveRating(ratings, maxRating);
+        console.log(maxRating, ratings, bestMoves);
+        console.groupEnd(outerGroup);
         return Board.chooseRandomly(bestMoves);
     }
 
@@ -879,6 +906,7 @@ export default class Board {
 
         // Prioritize pawn promotion.
         if ((abbr === 'WP' && to[1] === '8') || (abbr === 'BP' && to[1] === '1')) {
+            this.logRating(from, to, 8, 'Prioritizing pawn promotion');
             rating += 8;
         }
         return rating;
@@ -908,40 +936,126 @@ export default class Board {
         return true;
     }
 
-    emulateMove(from, to, adjacents, canWin = true) {
-        // Copy the board, then try a move to see if it achieves check or mate.
+    emulateMove(from, to, adjacents, trapped, canWin = true) {
+        let rating = 0;
+
+        // 1. Copy the board.
         const board = new Board(this, true);
+
+        // 2. Consider the opponent's perspective, before the move.
+        board.turn = board.getOpponent();
+        board.findRisks();
+
+        // Is the target protected?
+        if (board.isProtected(to, from) === true) {
+            this.logRating(from, to, 1, 'Target protected');
+            rating += 1;
+        }
+
+        // 3. Consider the opponent's perspective, after the move.
+        board.turn = this.turn;
         const valid = board.move(from, to);
         if (valid === false) {
             return 0;
         }
-        let rating = 0;
+
+        // Is the origin protected?
+        if (board.isProtected(from, to) === true) {
+            this.logRating(from, to, -1, 'Origin protected');
+            rating -= 1;
+        }
+
+        // Does this result in checkmate, a draw, or check?
         if (board.mate === true) {
+            this.logRating(from, to, 100, 'Checkmate');
             rating += 100;
         }
-        if (board.draw !== '') {
-            rating += canWin === true ? -1 : 100;
+        else if (board.draw !== '') {
+            const drawValue = canWin === true ? -1 : 100;
+            this.logRating(from, to, drawValue, 'Draw');
+            rating += drawValue;
         }
         else if (board.check === true) {
+            this.logRating(from, to, 1, 'Check');
             rating += 1;
         }
+
         // Prioritize restricting the opponent king's movement.
-        for (const adjacent of adjacents) {
-            if (adjacent in board.risks === true && adjacent in this.targets === false) {
-                rating += 1;
+        const kingThreat = this.restrictKing(to, board.risks, adjacents);
+        this.logRating(from, to, kingThreat, `${this.getOpponent()} king restricted`);
+        rating += kingThreat;
+
+        // Does this move threaten any pieces?
+        for (const risk in board.risks) {
+            const atRisk = board.squares[risk];
+            if (atRisk === '') {
+                continue;
+            }
+            if (atRisk[1] === 'K') {
+                // Rate check separately.
+                continue;
+            }
+            const threats = board.risks[risk];
+            if (threats.includes(to)) {
+                const value = Piece.value(atRisk);
+                this.logRating(from, to, value, `Threatens ${atRisk}`);
+                rating += value;
             }
         }
-        // Is the origin protected?
-        if (from in board.risks) {
-            const protectors = board.risks[from];
-            rating -= protectors.length;
-        }
-        // Next, consider the effect of the move on our own pieces.
+
+        // 4. Consider our perspective, after the move.
         board.turn = this.turn;
         board.analyze();
+
         // Is this a risky move?
         if (to in board.risks === true) {
-            rating -= Piece.value(board.squares[to], to);
+            const value = Piece.value(board.squares[to]);
+            this.logRating(from, to, -value, 'Risky');
+            rating -= value;
+        }
+
+        // Has the number of trapped pieces changed?
+        const trappedChange = trapped - board.countTrapped();
+        this.logRating(from, to, trappedChange, 'Piece(s) can move');
+        rating += trappedChange;
+
+        return rating;
+    }
+
+    isProtected(square, ignore) {
+        if (square in this.risks === false) {
+            return false;
+        }
+        const protectors = this.risks[square];
+        for (const protector of protectors) {
+            if (protector === ignore) {
+                continue;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    restrictKing(to, risks, adjacents) {
+        if (adjacents.includes(to) === true && to in risks === false) {
+            // Don't move next to the king unless protected.
+            return 0;
+        }
+        let rating = 0;
+        for (const adjacent of adjacents) {
+            if (this.squares[adjacent] !== '') {
+                // Occupied.
+                continue;
+            }
+            if (adjacent in risks === false) {
+                // Not threatened by the proposed move.
+                continue;
+            }
+            if (adjacent in this.targets === true) {
+                // Already threatened.
+                continue;
+            }
+            rating += 1;
         }
         return rating;
     }
@@ -1067,23 +1181,6 @@ export default class Board {
         this.castle[color].splice(index, 1);
     }
 
-    countPawnProtection(fromRatings, toRatings) {
-        // Increment targets protected by pawns.
-        for (const from in fromRatings) {
-            const abbr = this.squares[from];
-            if (abbr[1] !== 'P') {
-                continue;
-            }
-            const [file, rank] = Square.parse(from);
-            const jumps = this.findPawnJumps(file, rank, this.turn, true);
-            for (const jump of jumps) {
-                if (jump in toRatings) {
-                    toRatings[jump] += 1;
-                }
-            }
-        }
-    }
-
     countPieces() {
         const pieces = {Black: {}, White: {}};
         for (const square in this.squares) {
@@ -1102,20 +1199,6 @@ export default class Board {
         return pieces;
     }
 
-    countProtectors(to) {
-        // This does not count targets protected by pawns.
-        let count = 0;
-        const origins = this.targets[to];
-        for (const from of origins) {
-            const abbr = this.squares[from];
-            if (abbr[1] !== 'P') {
-                count += 1;
-                continue;
-            }
-        }
-        return count;
-    }
-
     countRepetitions() {
         if (this.draw !== '') {
             return;
@@ -1130,6 +1213,24 @@ export default class Board {
         if (count === 5) {
             this.draw = 'fivefold repetition';
         }
+    }
+
+    countTrapped() {
+        let trapped = 0;
+        const turn = this.turn[0];
+        for (const square in this.squares) {
+            const abbr = this.squares[square];
+            if (abbr === '') {
+                continue;
+            }
+            if (abbr[0] !== turn) {
+                continue;
+            }
+            if (this.origins[square].length === 0) {
+                trapped += 1;
+            }
+        }
+        return trapped;
     }
 
     detectDeadPosition() {
