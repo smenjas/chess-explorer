@@ -831,6 +831,15 @@ export default class Board {
         return moves;
     }
 
+    logRating(from, to, rating, description) {
+        if (rating === 0 && description !== 'Final rating') {
+            return;
+        }
+        const sign = rating < 0 ? '' : '+';
+        const abbr = this.squares[from];
+        console.log(abbr, from, to, `${sign}${rating}`, description);
+    }
+
     chooseCarefulMove() {
         // TODO: Deprioritize moves that open paths to check, e.g. d3, f3, d7, & f7.
         // TODO: Count how many unprotected pieces are at risk, before and after each move.
@@ -841,8 +850,13 @@ export default class Board {
         // TODO: Encourage non-pawn development.
         // TODO: Block paths to king.
 
+        const turnCount = Math.ceil(this.history.length / 2);
+        const outerGroup = `${this.turn} ${turnCount}`;
+        console.groupCollapsed(outerGroup);
+
         const moves = this.getAllMoves();
         if (moves.length === 1) {
+            console.groupEnd(outerGroup);
             return moves[0];
         }
 
@@ -862,14 +876,31 @@ export default class Board {
             const [from, to] = move;
             const key = from + to;
             ratings[key] = fromRatings[from] + toRatings[to];
+
+            const moved = this.squares[from];
+            const innerGroup = `${moved} ${from} ${to}`;
+            console.groupCollapsed(innerGroup);
+            this.logRating(from, to, fromRatings[from], 'At risk');
+            const capture = this.squares[to];
+            const captureValue = Piece.value(capture);
+            const protectors = toRatings[to] - captureValue;
+            this.logRating(from, to, captureValue, `Takes ${capture}`);
+            this.logRating(from, to, protectors, 'Target protected');
+
             ratings[key] += this.rateMove(move);
             ratings[key] += this.emulateMove(from, to, theirAdjacents, trapped, canWin);
+
+            this.logRating(from, to, ratings[key], 'Final rating');
+            console.groupEnd(innerGroup);
+
             if (ratings[key] > maxRating) {
                 maxRating = ratings[key];
             }
         }
 
         const bestMoves = Board.findMoveRating(ratings, maxRating);
+        console.log(maxRating, ratings, bestMoves);
+        console.groupEnd(outerGroup);
         return Board.chooseRandomly(bestMoves);
     }
 
@@ -880,6 +911,7 @@ export default class Board {
 
         // Prioritize pawn promotion.
         if ((abbr === 'WP' && to[1] === '8') || (abbr === 'BP' && to[1] === '1')) {
+            this.logRating(from, to, 8, 'Prioritizing pawn promotion');
             rating += 8;
         }
         return rating;
@@ -919,20 +951,27 @@ export default class Board {
         // First, consider the effect of the move on the opponent.
         let rating = 0;
         if (board.mate === true) {
+            this.logRating(from, to, 100, 'Checkmate');
             rating += 100;
         }
         else if (board.draw !== '') {
-            rating += canWin === true ? -1 : 100;
+            const drawValue = canWin === true ? -1 : 100;
+            this.logRating(from, to, drawValue, 'Draw');
+            rating += drawValue;
         }
         else if (board.check === true) {
+            this.logRating(from, to, 1, 'Check');
             rating += 1;
         }
         // Prioritize restricting the opponent king's movement.
+        let kingThreat = 0;
         for (const adjacent of adjacents) {
             if (adjacent in board.risks === true && adjacent in this.targets === false) {
-                rating += 1;
+                kingThreat += 1;
             }
         }
+        this.logRating(from, to, kingThreat, `${this.getOpponent()} king restricted`);
+        rating += kingThreat;
         // Is the origin protected?
         if (from in board.risks) {
             const protectors = board.risks[from];
@@ -940,6 +979,7 @@ export default class Board {
             if (this.squares[from][1] !== 'P') {
                 protectorCount -= 1;
             }
+            this.logRating(from, to, -protectorCount, 'Origin protected');
             rating -= protectorCount;
         }
         // Next, consider the effect of the move on our own pieces.
@@ -947,10 +987,14 @@ export default class Board {
         board.analyze();
         // Is this a risky move?
         if (to in board.risks === true) {
-            rating -= Piece.value(board.squares[to]);
+            const value = Piece.value(board.squares[to]);
+            this.logRating(from, to, -value, 'Risky');
+            rating -= value;
         }
         // Has the number of trapped pieces changed?
-        rating += trapped - board.countTrapped();
+        const trappedChange = trapped - board.countTrapped();
+        this.logRating(from, to, trappedChange, 'Piece(s) can move');
+        rating += trappedChange;
         return rating;
     }
 
