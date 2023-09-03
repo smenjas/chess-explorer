@@ -183,6 +183,7 @@ export default class Board {
     }
 
     render() {
+        const tempo = this.score[this.score.length - 1];
         let html = '<table class="chess-board"><tbody>';
         for (const rank of Board.ranks.toReversed()) {
             let shade = (rank % 2 === 0) ? 'light' : 'dark';
@@ -191,7 +192,10 @@ export default class Board {
                 const square = file + rank;
                 const piece = this.squares[square];
                 const moves = this.origins[square];
-                html += Square.render(square, shade, piece, !!moves.length, this.targets[square]);
+                const canMove = !!moves.length;
+                const moved = tempo && (square === tempo.from || square === tempo.to);
+                const incoming = this.targets[square];
+                html += Square.render(square, shade, piece, canMove, moved, incoming);
                 shade = (shade === 'light') ? 'dark' : 'light';
             }
             html += '</tr>';

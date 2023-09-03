@@ -1,14 +1,17 @@
 import Piece from './piece.js';
 
 export default class Square {
-    static render(square, shade, piece, canMove, squares) {
+    static render(square, shade, piece, canMove, moved, incoming) {
         const symbol = Piece.render(piece);
         const classes = [piece, shade];
         if (canMove === true) {
             classes.push('can-move');
         }
-        if (Array.isArray(squares) === true) {
-            for (const square of squares) {
+        if (moved === true) {
+            classes.push('moved');
+        }
+        if (Array.isArray(incoming) === true) {
+            for (const square of incoming) {
                 classes.push(`from-${square}`);
             }
         }
