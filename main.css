@@ -116,6 +116,7 @@ td:hover .coord {
     display: block;
 }
 
+td.light.moved .coord,
 td.dark .coord {
     color: lightyellow;
 }
@@ -148,6 +149,16 @@ td.dark.possible {
 td.selected,
 td.selected:hover {
     border-color: black !important;
+}
+
+td.dark.moved {
+    background-color: pink;
+    border-color: pink;
+}
+
+td.light.moved {
+    background-color: lightpink;
+    border-color: lightpink;
 }
 
 @media only screen and (width <= 480px) {
