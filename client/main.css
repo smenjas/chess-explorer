@@ -116,13 +116,16 @@ td:hover .coord {
     display: block;
 }
 
-td.light.moved .coord,
 td.dark .coord {
     color: lightyellow;
 }
 
 td.light .coord {
     color: darkseagreen;
+}
+
+td.light.moved .coord {
+    color: lightyellow;
 }
 
 td.dark {
