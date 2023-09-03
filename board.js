@@ -975,8 +975,8 @@ export default class Board {
             rating += 100;
         }
         else if (board.draw !== '') {
-            const drawValue = canWin === true ? -1 : 100;
-            this.logRating(from, to, drawValue, 'Draw');
+            const drawValue = canWin === true ? -100 : 100;
+            this.logRating(from, to, drawValue, `Draw due to ${board.draw}`);
             rating += drawValue;
         }
         else if (board.check === true) {
