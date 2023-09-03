@@ -138,12 +138,12 @@ td.light {
 td.can-move:hover,
 td.possible {
     cursor: pointer;
-    border-color: #909090;
+    border-color: #909090 !important;
 }
 
 td.dark.can-move:hover,
 td.dark.possible {
-    border-color: #808080;
+    border-color: #808080 !important;
 }
 
 td.selected,
