@@ -24,9 +24,9 @@ export default class Board {
         check: false,
         mate: false,
         draw: '',
-        drawCount: 0,
-        score: [],
-        history: [],
+        drawCount: 0, // Tempo/ply count since a capture or pawn move
+        score: [], // Algebraic notation info
+        history: [], // Abbreviated board states, to count repeated positions
         players: {Black: 'human', White: 'human'},
         level: 1,
     };
@@ -1297,7 +1297,8 @@ export default class Board {
             return;
         }
         this.drawCount += 1;
-        if (this.drawCount === 75) {
+        // This counts each tempo/ply, and there are two tempos per move.
+        if (this.drawCount === 150) {
             this.draw = 'the 75-move rule';
         }
     }
