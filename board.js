@@ -870,7 +870,7 @@ export default class Board {
         const toRatings = this.rateTargets();
 
         const theirAdjacents = this.findKingAdjacent(true);
-        const trapped = this.countTrapped(this);
+        const trapped = this.countTrapped();
 
         // Find the best moves, by combining ratings, and considering piece losses.
         let maxRating = -Infinity;
