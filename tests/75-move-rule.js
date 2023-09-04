@@ -18,7 +18,7 @@ tests['The 75-move rule works.'] = () => {
         a8: '', b8: '', c8: '', d8: '', e8: '', f8: '', g8: '', h8: '',
     },
     board.turn = 'Black';
-    board.drawCount = 74;
+    board.drawCount = 149;
     board.kings = {Black: 'h7', White: 'f5'};
     board.analyze();
     if (board.move('b4', 'b5') === false) { // 121... Rb5+
