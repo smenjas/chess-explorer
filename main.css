@@ -155,13 +155,13 @@ td.selected:hover {
 }
 
 td.dark.moved {
-    background-color: pink;
-    border-color: pink;
+    background-color: lightpink;
+    border-color: lightpink;
 }
 
 td.light.moved {
-    background-color: lightpink;
-    border-color: lightpink;
+    background-color: pink;
+    border-color: pink;
 }
 
 @media only screen and (width <= 480px) {
