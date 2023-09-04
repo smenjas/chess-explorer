@@ -533,7 +533,9 @@ export default class Board {
     findKingAdjacent(theirs = false) {
         const color = theirs === true ? this.getOpponent() : this.turn;
         const king = this.kings[color];
-        return Square.findAdjacent(...Square.parse(king));
+        const squares = Square.findAdjacent(...Square.parse(king));
+        console.log(color, 'king is on', king, 'next to:', squares);
+        return squares;
     }
 
     findKingMoves(file, rank, color) {
@@ -816,10 +818,8 @@ export default class Board {
     }
 
     rateTargets() {
-        // Initialize ratings by how many extra pieces can capture that square,
-        // plus the opponent piece's value (if any) in the event of capture.
-        // If more than one piece can move there, it's protected.
-        // TODO: Protected squares are a double edged sword: they also block development (e.g. e3).
+        // Initialize ratings by the opponent piece's value (if any) in the
+        // event of capture.
         const targets = Object.keys(this.targets);
         return Board.rateSquares(targets, to => Piece.value(this.squares[to]));
     }
@@ -834,13 +834,13 @@ export default class Board {
         return moves;
     }
 
-    logRating(from, to, rating, description) {
+    logRating(from, to, rating, description, ...rest) {
         if (rating === 0 && description !== 'Final rating') {
             return;
         }
         const sign = rating < 0 ? '' : '+';
         const abbr = this.squares[from];
-        console.log(abbr, from, to, `${sign}${rating}`, description);
+        console.log(abbr, from, to, `${sign}${rating}`, description, ...rest);
     }
 
     chooseCarefulMove() {
@@ -859,6 +859,9 @@ export default class Board {
 
         const moves = this.getAllMoves();
         if (moves.length === 1) {
+            const [from, to] = moves[0];
+            const abbr = this.squares[from];
+            console.log(abbr, from, to, '+0', 'Only move');
             console.groupEnd(outerGroup);
             return moves[0];
         }
@@ -898,9 +901,17 @@ export default class Board {
         }
 
         const bestMoves = Board.findMoveRating(ratings, maxRating);
-        console.log(maxRating, ratings, bestMoves);
+        console.log('Max rating:', maxRating, 'All ratings:', ratings);
         console.groupEnd(outerGroup);
-        return Board.chooseRandomly(bestMoves);
+        if (bestMoves.length === 1) {
+            const [from, to] = bestMoves[0];
+            this.logRating(from, to, ratings[from + to], 'Best move');
+            return bestMoves[0];
+        }
+        const move = Board.chooseRandomly(bestMoves);
+        const [from, to] = move;
+        this.logRating(from, to, ratings[from + to], 'Chose randomly from:', bestMoves);
+        return move;
     }
 
     rateMove(move) {
@@ -930,10 +941,16 @@ export default class Board {
         const mine = pieceCounts[this.turn];
         const numPieces = Object.keys(mine).length;
         if (numPieces === 1) {
+            console.log(this.turn, 'cannot win with just a king.', mine);
             return false;
         }
-        else if (numPieces === 2) {
-            if ('Bishop' in mine === true || 'Knight' in mine === true) {
+        if (numPieces === 2) {
+            if ('Bishop' in mine === true) {
+                console.log(this.turn, 'cannot win with just a king and a bishop.', mine);
+                return false;
+            }
+            if ('Knight' in mine === true) {
+                console.log(this.turn, 'cannot win with just a king and a knight.', mine);
                 return false;
             }
         }
@@ -1001,9 +1018,8 @@ export default class Board {
             }
             const threats = board.risks[risk];
             if (threats.includes(to)) {
-                const value = Piece.value(atRisk);
-                this.logRating(from, to, value, `Threatens ${atRisk}`);
-                rating += value;
+                this.logRating(from, to, 1, `Threatens ${atRisk}`);
+                rating += 1;
             }
         }
 
