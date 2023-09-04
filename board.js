@@ -1018,9 +1018,8 @@ export default class Board {
             }
             const threats = board.risks[risk];
             if (threats.includes(to)) {
-                const value = Piece.value(atRisk);
-                this.logRating(from, to, value, `Threatens ${atRisk}`);
-                rating += value;
+                this.logRating(from, to, 1, `Threatens ${atRisk}`);
+                rating += 1;
             }
         }
 
