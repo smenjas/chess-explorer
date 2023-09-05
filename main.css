@@ -56,6 +56,7 @@ h1 {
     font-size: 2.0rem;
     height: 2.25rem;
     margin: 0;
+    vertical-align: bottom;
 }
 
 form {
@@ -109,6 +110,7 @@ td {
     width: var(--square);
     text-align: center;
     padding: 0;
+    vertical-align: bottom;
 }
 
 td .coord {
