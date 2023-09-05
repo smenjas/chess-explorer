@@ -863,7 +863,7 @@ export default class Board {
         const moves = this.getAllMoves();
 
         const turnCount = Math.ceil(this.history.length / 2);
-        let outerGroup = this.turn + turnCount + ': ' + moves.length + ' move';
+        let outerGroup = `${this.turn} ${turnCount}: ${moves.length} move`;
 
         if (moves.length === 1) {
             console.groupCollapsed(outerGroup);
