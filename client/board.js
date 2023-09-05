@@ -860,17 +860,21 @@ export default class Board {
         // TODO: Encourage non-pawn development.
         // TODO: Block paths to king.
 
-        const turnCount = Math.ceil(this.history.length / 2);
-        const outerGroup = `${this.turn} ${turnCount}`;
-        console.groupCollapsed(outerGroup);
-
         const moves = this.getAllMoves();
+
+        const turnCount = Math.ceil(this.history.length / 2);
+        let outerGroup = this.turn + turnCount + ': ' + moves.length + ' move';
+
         if (moves.length === 1) {
+            console.groupCollapsed(outerGroup);
             const [from, to] = moves[0];
             this.logRating(from, to, 0, 'Only move');
             console.groupEnd(outerGroup);
             return moves[0];
         }
+
+        outerGroup += 's';
+        console.groupCollapsed(outerGroup);
 
         const fromRatings = this.rateOrigins();
         const toRatings = this.rateTargets();
