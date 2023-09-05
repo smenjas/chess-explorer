@@ -34,6 +34,7 @@ export default class Board {
     static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     static paths = {};
     static cache = {};
+    static logs = [];
 
     constructor(board = null, hypothetical = false) {
         if (board === null) {
@@ -534,7 +535,7 @@ export default class Board {
         const color = theirs === true ? this.getOpponent() : this.turn;
         const king = this.kings[color];
         const squares = Square.findAdjacent(...Square.parse(king));
-        console.log(color, 'king is on', king, 'next to:', squares);
+        console.log(color, 'king is on', king, 'next to:', squares.join(', '));
         return squares;
     }
 
@@ -835,12 +836,18 @@ export default class Board {
     }
 
     logRating(from, to, rating, description, ...rest) {
-        if (rating === 0 && description !== 'Final rating') {
+        if (rating === 0 && description !== 'Only move') {
             return;
         }
         const sign = rating < 0 ? '' : '+';
         const abbr = this.squares[from];
         console.log(abbr, from, to, `${sign}${rating}`, description, ...rest);
+    }
+
+    logRatings(logs, group) {
+        console.groupCollapsed(group);
+        Board.logs.forEach(log => this.logRating(...log));
+        console.groupEnd(group);
     }
 
     chooseCarefulMove() {
@@ -860,8 +867,7 @@ export default class Board {
         const moves = this.getAllMoves();
         if (moves.length === 1) {
             const [from, to] = moves[0];
-            const abbr = this.squares[from];
-            console.log(abbr, from, to, '+0', 'Only move');
+            this.logRating(from, to, 0, 'Only move');
             console.groupEnd(outerGroup);
             return moves[0];
         }
@@ -881,19 +887,21 @@ export default class Board {
             const key = from + to;
             ratings[key] = fromRatings[from] + toRatings[to];
 
-            const moved = this.squares[from];
-            const innerGroup = `${moved} ${from} ${to}`;
-            console.groupCollapsed(innerGroup);
-            this.logRating(from, to, fromRatings[from], 'At risk');
+            Board.logs = [];
+            Board.logs.push([from, to, fromRatings[from], 'At risk']);
             const capture = this.squares[to];
             const captureValue = Piece.value(capture);
-            this.logRating(from, to, captureValue, `Takes ${capture}`);
+            Board.logs.push([from, to, captureValue, `Takes ${capture}`]);
 
             ratings[key] += this.rateMove(move);
             ratings[key] += this.emulateMove(from, to, theirAdjacents, trapped, canWin);
 
-            this.logRating(from, to, ratings[key], 'Final rating');
-            console.groupEnd(innerGroup);
+            let innerGroup = `${this.squares[from]} ${from} ${to}`;
+            if (ratings[key] !== 0) {
+                const sign = ratings[key] < 0 ? '' : '+';
+                innerGroup += ' ' + sign + ratings[key];
+            }
+            this.logRatings(Board.logs, innerGroup);
 
             if (ratings[key] > maxRating) {
                 maxRating = ratings[key];
@@ -901,16 +909,14 @@ export default class Board {
         }
 
         const bestMoves = Board.findMoveRating(ratings, maxRating);
-        console.log('Max rating:', maxRating, 'All ratings:', ratings);
-        console.groupEnd(outerGroup);
-        if (bestMoves.length === 1) {
-            const [from, to] = bestMoves[0];
-            this.logRating(from, to, ratings[from + to], 'Best move');
-            return bestMoves[0];
-        }
+
         const move = Board.chooseRandomly(bestMoves);
         const [from, to] = move;
-        this.logRating(from, to, ratings[from + to], 'Chose randomly from:', bestMoves);
+        const description = bestMoves.length === 1 ? 'Best move' :
+            'Chose randomly from: ' + bestMoves.join(' ').replaceAll(',', '');
+        this.logRating(from, to, ratings[from + to], description);
+        console.groupEnd(outerGroup);
+
         return move;
     }
 
@@ -921,7 +927,7 @@ export default class Board {
 
         // Prioritize pawn promotion.
         if ((abbr === 'WP' && to[1] === '8') || (abbr === 'BP' && to[1] === '1')) {
-            this.logRating(from, to, 8, 'Prioritizing pawn promotion');
+            Board.logs.push([from, to, 8, 'Prioritizing pawn promotion']);
             rating += 8;
         }
         return rating;
@@ -969,7 +975,7 @@ export default class Board {
 
         // Is the target protected?
         if (board.isProtected(to, from) === true) {
-            this.logRating(from, to, 1, 'Target protected');
+            Board.logs.push([from, to, 1, 'Target protected']);
             rating += 1;
         }
 
@@ -982,28 +988,28 @@ export default class Board {
 
         // Is the origin protected?
         if (board.isProtected(from, to) === true) {
-            this.logRating(from, to, -1, 'Origin protected');
+            Board.logs.push([from, to, -1, 'Origin protected']);
             rating -= 1;
         }
 
         // Does this result in checkmate, a draw, or check?
         if (board.mate === true) {
-            this.logRating(from, to, 100, 'Checkmate');
+            Board.logs.push([from, to, 100, 'Checkmate']);
             rating += 100;
         }
         else if (board.draw !== '') {
             const drawValue = canWin === true ? -100 : 100;
-            this.logRating(from, to, drawValue, `Draw due to ${board.draw}`);
+            Board.logs.push([from, to, drawValue, `Draw due to ${board.draw}`]);
             rating += drawValue;
         }
         else if (board.check === true) {
-            this.logRating(from, to, 1, 'Check');
+            Board.logs.push([from, to, 1, 'Check']);
             rating += 1;
         }
 
         // Prioritize restricting the opponent king's movement.
         const kingThreat = this.restrictKing(to, board.risks, adjacents);
-        this.logRating(from, to, kingThreat, `${this.getOpponent()} king restricted`);
+        Board.logs.push([from, to, kingThreat, `${this.getOpponent()} king restricted`]);
         rating += kingThreat;
 
         // Does this move threaten any pieces?
@@ -1018,7 +1024,7 @@ export default class Board {
             }
             const threats = board.risks[risk];
             if (threats.includes(to)) {
-                this.logRating(from, to, 1, `Threatens ${atRisk}`);
+                Board.logs.push([from, to, 1, `Threatens ${atRisk}`]);
                 rating += 1;
             }
         }
@@ -1030,13 +1036,13 @@ export default class Board {
         // Is this a risky move?
         if (to in board.risks === true) {
             const value = Piece.value(board.squares[to]);
-            this.logRating(from, to, -value, 'Risky');
+            Board.logs.push([from, to, -value, 'Risky']);
             rating -= value;
         }
 
         // Has the number of trapped pieces changed?
         const trappedChange = trapped - board.countTrapped();
-        this.logRating(from, to, trappedChange, 'Piece(s) can move');
+        Board.logs.push([from, to, trappedChange, 'Piece(s) can move']);
         rating += trappedChange;
 
         return rating;
