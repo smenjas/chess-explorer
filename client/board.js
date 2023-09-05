@@ -29,6 +29,7 @@ export default class Board {
         history: [], // Abbreviated board states, to count repeated positions
         players: {Black: 'human', White: 'human'},
         level: 1,
+        taken: {Black: [], White: []},
     };
     static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
     static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -202,6 +203,15 @@ export default class Board {
             html += '</tr>';
         }
         html += '</tr></tbody></table>';
+        return html;
+    }
+
+    renderTaken(color) {
+        let html = '';
+        for (const abbr of this.taken[color]) {
+            const symbol = Piece.render(abbr);
+            html += '<div>' + symbol + '</div>';
+        }
         return html;
     }
 
@@ -754,6 +764,7 @@ export default class Board {
             return false;
         }
         const taken = this.findTakenPiece(from, to);
+        this.trackTaken(taken);
         this.squares[to] = this.squares[from];
         this.squares[from] = '';
         if (hypothetical === true) {
@@ -1214,6 +1225,14 @@ export default class Board {
         const file = (fromFile === 'a') ? 'c' : 'g';
         const index = this.castle[color].indexOf(file + fromRank);
         this.castle[color].splice(index, 1);
+    }
+
+    trackTaken(taken) {
+        if (taken === '') {
+            return;
+        }
+        const color = taken[0] === 'B' ? 'Black' : 'White';
+        this.taken[color].push(taken);
     }
 
     countPieces() {
