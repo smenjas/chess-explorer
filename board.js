@@ -545,7 +545,7 @@ export default class Board {
         const color = theirs === true ? this.getOpponent() : this.turn;
         const king = this.kings[color];
         const squares = Square.findAdjacent(...Square.parse(king));
-        console.log(color, 'king is on', king, 'next to:', squares.join(', '));
+        Board.log(color, 'king is on', king, 'next to:', squares.join(', '));
         return squares;
     }
 
@@ -846,19 +846,40 @@ export default class Board {
         return moves;
     }
 
+    static log(...args) {
+        if (typeof window === 'undefined') {
+            return;
+        }
+        console.log(...args);
+    }
+
+    static groupCollapsed(name) {
+        if (typeof window === 'undefined') {
+            return;
+        }
+        console.groupCollapsed(name);
+    }
+
+    static groupEnd(name) {
+        if (typeof window === 'undefined') {
+            return;
+        }
+        console.groupEnd(name);
+    }
+
     logRating(from, to, rating, description, ...rest) {
         if (rating === 0 && description !== 'Only move') {
             return;
         }
         const sign = rating < 0 ? '' : '+';
         const abbr = this.squares[from];
-        console.log(abbr, from, to, `${sign}${rating}`, description, ...rest);
+        Board.log(abbr, from, to, `${sign}${rating}`, description, ...rest);
     }
 
     logRatings(logs, group) {
-        console.groupCollapsed(group);
+        Board.groupCollapsed(group);
         Board.logs.forEach(log => this.logRating(...log));
-        console.groupEnd(group);
+        Board.groupEnd(group);
     }
 
     chooseCarefulMove() {
@@ -877,15 +898,15 @@ export default class Board {
         let outerGroup = `${this.turn} ${turnCount}: ${moves.length} move`;
 
         if (moves.length === 1) {
-            console.groupCollapsed(outerGroup);
+            Board.groupCollapsed(outerGroup);
             const [from, to] = moves[0];
             this.logRating(from, to, 0, 'Only move');
-            console.groupEnd(outerGroup);
+            Board.groupEnd(outerGroup);
             return moves[0];
         }
 
         outerGroup += 's';
-        console.groupCollapsed(outerGroup);
+        Board.groupCollapsed(outerGroup);
 
         const fromRatings = this.rateOrigins();
         const toRatings = this.rateTargets();
@@ -929,13 +950,13 @@ export default class Board {
         }
 
         const bestMoves = Board.findMoveRating(ratings, maxRating);
-
         const move = Board.chooseRandomly(bestMoves);
+
         const [from, to] = move;
         const description = bestMoves.length === 1 ? 'Best move' :
             'Chose randomly from: ' + bestMoves.join(' ').replaceAll(',', '');
         this.logRating(from, to, ratings[from + to], description);
-        console.groupEnd(outerGroup);
+        Board.groupEnd(outerGroup);
 
         return move;
     }
@@ -967,16 +988,16 @@ export default class Board {
         const mine = pieceCounts[this.turn];
         const numPieces = Object.keys(mine).length;
         if (numPieces === 1) {
-            console.log(this.turn, 'cannot win with just a king.', mine);
+            Board.log(this.turn, 'cannot win with just a king.', mine);
             return false;
         }
         if (numPieces === 2) {
             if ('Bishop' in mine === true) {
-                console.log(this.turn, 'cannot win with just a king and a bishop.', mine);
+                Board.log(this.turn, 'cannot win with just a king and a bishop.', mine);
                 return false;
             }
             if ('Knight' in mine === true) {
-                console.log(this.turn, 'cannot win with just a king and a knight.', mine);
+                Board.log(this.turn, 'cannot win with just a king and a knight.', mine);
                 return false;
             }
         }
