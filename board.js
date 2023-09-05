@@ -900,10 +900,15 @@ export default class Board {
             ratings[key] += this.rateMove(move);
             ratings[key] += this.emulateMove(from, to, theirAdjacents, trapped, canWin);
 
-            let innerGroup = `${this.squares[from]} ${from} ${to}`;
+            const moved = this.squares[from];
+            let innerGroup = `${moved} ${from} ${to}`;
             if (ratings[key] !== 0) {
                 const sign = ratings[key] < 0 ? '' : '+';
                 innerGroup += ' ' + sign + ratings[key];
+            }
+            const taken = this.squares[to];
+            if (taken !== '') {
+                innerGroup += ' ' + taken;
             }
             this.logRatings(Board.logs, innerGroup);
 
