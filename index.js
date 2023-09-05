@@ -132,6 +132,8 @@ function renderUI(board) {
     };
     let html = '';
     html += '<section id="ui">';
+    html += '<div id="taken-black"></div>';
+    html += '<div id="taken-white"></div>';
     html += '<form>';
     html += '<fieldset>';
     html += '<div><button type="button" id="new-game">New Game</button></div>';
@@ -158,6 +160,8 @@ async function updatePage(board) {
     document.getElementById('board').innerHTML = board.render();
     document.getElementById('tempo').innerHTML = board.describe();
     document.getElementById('score').innerHTML = board.renderScore();
+    document.getElementById('taken-black').innerHTML = board.renderTaken('Black');
+    document.getElementById('taken-white').innerHTML = board.renderTaken('White');
     if (board.players[board.turn] === 'robot') {
         await new Promise(resolve => setTimeout(resolve, 0));
         const refresh = board.play();
