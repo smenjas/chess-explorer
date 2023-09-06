@@ -850,6 +850,9 @@ export default class Board {
         if (typeof window === 'undefined') {
             return;
         }
+        if (/Chrom/.test(navigator.userAgent) === false) {
+            return;
+        }
         console.log(...args);
     }
 
@@ -857,11 +860,17 @@ export default class Board {
         if (typeof window === 'undefined') {
             return;
         }
+        if (/Chrom/.test(navigator.userAgent) === false) {
+            return;
+        }
         console.groupCollapsed(name);
     }
 
     static groupEnd(name) {
         if (typeof window === 'undefined') {
+            return;
+        }
+        if (/Chrom/.test(navigator.userAgent) === false) {
             return;
         }
         console.groupEnd(name);
@@ -877,6 +886,9 @@ export default class Board {
     }
 
     logRatings(logs, group) {
+        if (/Chrom/.test(navigator.userAgent) === false) {
+            return;
+        }
         Board.groupCollapsed(group);
         Board.logs.forEach(log => this.logRating(...log));
         Board.groupEnd(group);
