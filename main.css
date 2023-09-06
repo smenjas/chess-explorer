@@ -213,6 +213,12 @@ td.light.moved {
     a:visited {
         color: #faf;
     }
+
+    #taken-black,
+    #taken-white {
+        background: darkseagreen;
+        color: black;
+    }
 }
 
 @media print {
