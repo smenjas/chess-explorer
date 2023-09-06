@@ -151,23 +151,28 @@ function toggleLevel(players) {
             'visible' : 'hidden';
 }
 
-async function updatePage(board) {
+function updatePage(board) {
     document.getElementById('board').innerHTML = board.render();
     document.getElementById('tempo').innerHTML = board.describe();
     document.getElementById('score').innerHTML = board.renderScore();
     document.getElementById('taken-black').innerHTML = board.renderTaken('Black');
     document.getElementById('taken-white').innerHTML = board.renderTaken('White');
-    if (board.players[board.turn] === 'robot') {
-        await new Promise(resolve => setTimeout(resolve, 0));
-        const refresh = board.play();
-        board.save();
-        if (refresh === true) {
-            board.logMove();
-            updatePage(board);
-        }
+    addEventHandlers(board);
+    playRobot(board);
+}
+
+async function playRobot(board) {
+    if (board.players[board.turn] !== 'robot') {
         return;
     }
-    addEventHandlers(board);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const refresh = board.play();
+    board.save();
+    if (refresh !== true) {
+        return;
+    }
+    board.logMove();
+    updatePage(board);
 }
 
 const board = new Board();
