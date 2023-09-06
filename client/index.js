@@ -31,11 +31,6 @@ function addEventHandlers(board) {
         updatePage(board);
     }
 
-    function handleSelection(event) {
-        const square = event.target;
-        selectPiece(square);
-    }
-
     function highlightMoves(square, cancel = false) {
         const squares = document.querySelectorAll(`.chess-board td.from-${square}`);
         const toggleMoves = cancel ? cancelMoves : addMoves;
@@ -55,9 +50,9 @@ function addEventHandlers(board) {
         }
     }
 
-    const squares = document.querySelectorAll('.chess-board td.can-move');
-    for (const square of squares) {
-        square.addEventListener('click', handleSelection);
+    const origins = document.querySelectorAll('.chess-board td.can-move');
+    for (const origin of origins) {
+        origin.addEventListener('click', event => selectPiece(event.target));
     }
 }
 
@@ -156,24 +151,29 @@ function toggleLevel(players) {
             'visible' : 'hidden';
 }
 
-async function updatePage(board) {
+function updatePage(board) {
     document.getElementById('board').innerHTML = board.render();
     document.getElementById('tempo').innerHTML = board.describe();
     document.getElementById('score').innerHTML = board.renderScore();
     document.getElementById('taken-black').innerHTML = board.renderTaken('Black');
     document.getElementById('taken-white').innerHTML = board.renderTaken('White');
-    if (board.players[board.turn] === 'robot') {
-        await new Promise(resolve => setTimeout(resolve, 0));
-        const refresh = board.play();
-        board.save();
-        if (refresh === true) {
-            board.logMove();
-            updatePage(board);
-        }
-        return;
-    }
     addEventHandlers(board);
+    playRobot(board);
 }
 
-let board = new Board();
+async function playRobot(board) {
+    if (board.players[board.turn] !== 'robot') {
+        return;
+    }
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const refresh = board.play();
+    board.save();
+    if (refresh !== true) {
+        return;
+    }
+    board.logMove();
+    updatePage(board);
+}
+
+const board = new Board();
 renderPage(board);
