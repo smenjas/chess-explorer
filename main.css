@@ -36,6 +36,7 @@ h1 {
 }
 
 #score {
+    display: flex;
     height: calc(100vh - 12.75rem);
     margin: 0;
     overflow: auto;

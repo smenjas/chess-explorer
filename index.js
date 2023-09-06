@@ -157,6 +157,7 @@ function updatePage(board) {
     document.getElementById('score').innerHTML = board.renderScore();
     document.getElementById('taken-black').innerHTML = board.renderTaken('Black');
     document.getElementById('taken-white').innerHTML = board.renderTaken('White');
+    scrollScore();
     addEventHandlers(board);
     playRobot(board);
 }
@@ -173,6 +174,14 @@ async function playRobot(board) {
     }
     board.logMove();
     updatePage(board);
+}
+
+function scrollScore() {
+    const score = document.getElementById('score');
+    console.log(score.scrollHeight, score.clientHeight);
+    const direction = score.scrollHeight > score.clientHeight ?
+        'column-reverse' : 'column';
+    score.style = 'flex-direction: ' + direction;
 }
 
 const board = new Board();
