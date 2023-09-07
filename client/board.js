@@ -1,3 +1,4 @@
+import Console from './console.js';
 import Piece from './piece.js';
 import Score from './score.js';
 import Square from './square.js';
@@ -545,7 +546,7 @@ export default class Board {
         const color = theirs === true ? this.getOpponent() : this.turn;
         const king = this.kings[color];
         const squares = Square.findAdjacent(...Square.parse(king));
-        Board.log(color, 'king is on', king, 'next to:', squares.join(', '));
+        Console.log(color, 'king is on', king, 'next to:', squares.join(', '));
         return squares;
     }
 
@@ -846,43 +847,13 @@ export default class Board {
         return moves;
     }
 
-    static log(...args) {
-        if (typeof window === 'undefined') {
-            return;
-        }
-        if (/Chrom/.test(navigator.userAgent) === false) {
-            return;
-        }
-        console.log(...args);
-    }
-
-    static groupCollapsed(name) {
-        if (typeof window === 'undefined') {
-            return;
-        }
-        if (/Chrom/.test(navigator.userAgent) === false) {
-            return;
-        }
-        console.groupCollapsed(name);
-    }
-
-    static groupEnd(name) {
-        if (typeof window === 'undefined') {
-            return;
-        }
-        if (/Chrom/.test(navigator.userAgent) === false) {
-            return;
-        }
-        console.groupEnd(name);
-    }
-
     logRating(from, to, rating, description, ...rest) {
         if (rating === 0 && description !== 'Only move') {
             return;
         }
         const sign = rating < 0 ? '' : '+';
         const abbr = this.squares[from];
-        Board.log(abbr, from, to, `${sign}${rating}`, description, ...rest);
+        Console.log(abbr, from, to, `${sign}${rating}`, description, ...rest);
     }
 
     logRatings(logs, group) {
@@ -890,9 +861,9 @@ export default class Board {
             /Chrom/.test(navigator.userAgent) === false) {
             return;
         }
-        Board.groupCollapsed(group);
+        Console.groupCollapsed(group);
         Board.logs.forEach(log => this.logRating(...log));
-        Board.groupEnd(group);
+        Console.groupEnd(group);
     }
 
     chooseCarefulMove() {
@@ -911,15 +882,15 @@ export default class Board {
         let outerGroup = `${this.turn} ${turnCount}: ${moves.length} move`;
 
         if (moves.length === 1) {
-            Board.groupCollapsed(outerGroup);
+            Console.groupCollapsed(outerGroup);
             const [from, to] = moves[0];
             this.logRating(from, to, 0, 'Only move');
-            Board.groupEnd(outerGroup);
+            Console.groupEnd(outerGroup);
             return moves[0];
         }
 
         outerGroup += 's';
-        Board.groupCollapsed(outerGroup);
+        Console.groupCollapsed(outerGroup);
 
         const fromRatings = this.rateOrigins();
         const toRatings = this.rateTargets();
@@ -969,7 +940,7 @@ export default class Board {
         const description = bestMoves.length === 1 ? 'Best move' :
             'Chose randomly from: ' + bestMoves.join(' ').replaceAll(',', '');
         this.logRating(from, to, ratings[from + to], description);
-        Board.groupEnd(outerGroup);
+        Console.groupEnd(outerGroup);
 
         return move;
     }
@@ -1001,16 +972,16 @@ export default class Board {
         const mine = pieceCounts[this.turn];
         const numPieces = Object.keys(mine).length;
         if (numPieces === 1) {
-            Board.log(this.turn, 'cannot win with just a king.', mine);
+            Console.log(this.turn, 'cannot win with just a king.', mine);
             return false;
         }
         if (numPieces === 2) {
             if ('Bishop' in mine === true) {
-                Board.log(this.turn, 'cannot win with just a king and a bishop.', mine);
+                Console.log(this.turn, 'cannot win with just a king and a bishop.', mine);
                 return false;
             }
             if ('Knight' in mine === true) {
-                Board.log(this.turn, 'cannot win with just a king and a knight.', mine);
+                Console.log(this.turn, 'cannot win with just a king and a knight.', mine);
                 return false;
             }
         }
