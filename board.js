@@ -886,7 +886,8 @@ export default class Board {
     }
 
     logRatings(logs, group) {
-        if (/Chrom/.test(navigator.userAgent) === false) {
+        if (typeof window !== 'undefined' &&
+            /Chrom/.test(navigator.userAgent) === false) {
             return;
         }
         Board.groupCollapsed(group);
