@@ -178,7 +178,6 @@ async function playRobot(board) {
 
 function scrollScore() {
     const score = document.getElementById('score');
-    console.log(score.scrollHeight, score.clientHeight);
     const direction = score.scrollHeight > score.clientHeight ?
         'column-reverse' : 'column';
     score.style = 'flex-direction: ' + direction;
