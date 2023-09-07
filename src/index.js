@@ -18,6 +18,7 @@ const server = http.createServer((request, response) => {
         break;
     case '/index.js':
     case '/board.js':
+    case '/console.js':
     case '/piece.js':
     case '/score.js':
     case '/square.js':
