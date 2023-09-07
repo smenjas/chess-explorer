@@ -1314,7 +1314,8 @@ export default class Board {
             if (abbr[0] !== turn) {
                 continue;
             }
-            if (this.origins[square].length === 0) {
+            if (square in this.origins === false ||
+                this.origins[square].length === 0) {
                 trapped += 1;
             }
         }
