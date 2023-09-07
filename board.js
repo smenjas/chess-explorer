@@ -50,7 +50,7 @@ export default class Board {
                 this[key] = Board.fresh[key];
             }
         }
-        if (board === null || hypothetical === true) {
+        if (hypothetical === true) {
             return;
         }
         this.analyze();
