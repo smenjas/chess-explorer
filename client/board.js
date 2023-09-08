@@ -1038,6 +1038,7 @@ export default class Board {
         rating += kingThreat;
 
         // Does this move threaten any pieces?
+        const threatLogs = [];
         for (const risk in board.risks) {
             const atRisk = board.squares[risk];
             if (atRisk === '') {
@@ -1049,8 +1050,7 @@ export default class Board {
             }
             const threats = board.risks[risk];
             if (threats.includes(to)) {
-                Board.logs.push([from, to, 1, `Threatens ${atRisk}`]);
-                rating += 1;
+                threatLogs.push([from, to, 1, `Threatens ${atRisk}`]);
             }
         }
 
@@ -1063,6 +1063,12 @@ export default class Board {
             const value = Piece.value(board.squares[to]);
             Board.logs.push([from, to, -value, 'Risky']);
             rating -= value;
+        }
+        else if (threatLogs.length !== 0) {
+            for (const threatLog of threatLogs) {
+                Board.logs.push(threatLog);
+                rating += 1;
+            }
         }
 
         // Has the number of trapped pieces changed?
