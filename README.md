@@ -45,5 +45,9 @@ Run automated tests with:
 ```sh
 npm run test
 ```
+Test the bot against itself with:
+```sh
+node client/play.js
+```
 
 [Pawn](https://icons8.com/icon/1009/pawn) icon by [Icons8](https://icons8.com)
