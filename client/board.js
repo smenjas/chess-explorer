@@ -31,6 +31,7 @@ export default class Board {
         players: {Black: 'human', White: 'human'},
         level: 1,
         taken: {Black: [], White: []},
+        rotate: false,
     };
     static ranks = [1, 2, 3, 4, 5, 6, 7, 8];
     static files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -186,12 +187,14 @@ export default class Board {
     }
 
     render() {
+        const files = this.rotate ? Board.files.toReversed() : Board.files;
+        const ranks = this.rotate ? Board.ranks : Board.ranks.toReversed();
         const tempo = this.score[this.score.length - 1];
         let html = '<table class="chess-board"><tbody>';
-        for (const rank of Board.ranks.toReversed()) {
+        for (const rank of ranks) {
             let shade = (rank % 2 === 0) ? 'light' : 'dark';
             html += `<tr class="rank-${rank}">`;
-            for (const file of Board.files) {
+            for (const file of files) {
                 const square = file + rank;
                 const piece = this.squares[square];
                 const moves = this.origins[square];
