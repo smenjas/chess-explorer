@@ -73,6 +73,11 @@ function addFormHandlers(board) {
         updatePage(board);
     });
 
+    document.getElementById('rotate').addEventListener('click', () => {
+        board.rotate = !board.rotate;
+        updatePage(board);
+    });
+
     function handlePlayer(event) {
         const menu = event.target;
         const color = menu.id;
@@ -127,6 +132,9 @@ function renderUI(board) {
     };
     let html = '';
     html += '<section id="ui">';
+    html += '<div id="controls">';
+    html += '<button type="button" id="rotate">Rotate</button>';
+    html += '</div>';
     html += '<div id="taken-black"></div>';
     html += '<div id="taken-white"></div>';
     html += '<form>';
