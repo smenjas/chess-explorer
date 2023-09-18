@@ -957,7 +957,24 @@ export default class Board {
             Board.logs.push([from, to, 8, 'Prioritizing pawn promotion']);
             rating += 8;
         }
+        rating += this.preserveCastle(from, to);
         return rating;
+    }
+
+    preserveCastle(from, to) {
+        if (this.castle[this.turn].length === 0) {
+            return 0;
+        }
+        const abbr = this.squares[from];
+        switch (abbr[1]) {
+        case 'R':
+            Board.logs.push([from, to, -1, 'Preserve castle rights']);
+            return -1;
+        case 'K':
+            Board.logs.push([from, to, -2, 'Preserve castle rights']);
+            return -2;
+        }
+        return 0;
     }
 
     chooseMove() {
