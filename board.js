@@ -957,11 +957,11 @@ export default class Board {
             Board.logs.push([from, to, 8, 'Prioritizing pawn promotion']);
             rating += 8;
         }
-        rating += this.preserveCastle(from, to);
+        rating += this.considerCastling(from, to);
         return rating;
     }
 
-    preserveCastle(from, to) {
+    considerCastling(from, to) {
         if (this.castle[this.turn].length === 0) {
             return 0;
         }
@@ -971,6 +971,10 @@ export default class Board {
             Board.logs.push([from, to, -1, 'Preserve castle rights']);
             return -1;
         case 'K':
+            if (to[0] === 'c' || to[0] === 'g') {
+                Board.logs.push([from, to, 1, 'Encourage castling']);
+                return +1;
+            }
             Board.logs.push([from, to, -2, 'Preserve castle rights']);
             return -2;
         }
