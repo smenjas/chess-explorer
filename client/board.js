@@ -916,7 +916,7 @@ export default class Board {
             const captureValue = Piece.value(capture);
             Board.logs.push([from, to, captureValue, `Takes ${capture}`]);
 
-            ratings[key] += this.rateMove(move);
+            ratings[key] += this.rateMove(from, to);
             ratings[key] += this.emulateMove(from, to, theirAdjacents, trapped, canWin);
 
             const moved = this.squares[from];
@@ -948,9 +948,8 @@ export default class Board {
         return move;
     }
 
-    rateMove(move) {
+    rateMove(from, to) {
         let rating = 0;
-        const [from, to] = move;
         const abbr = this.squares[from];
 
         // Prioritize pawn promotion.
