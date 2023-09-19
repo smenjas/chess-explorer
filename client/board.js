@@ -916,7 +916,7 @@ export default class Board {
             const captureValue = Piece.value(capture);
             Board.logs.push([from, to, captureValue, `Takes ${capture}`]);
 
-            ratings[key] += this.rateMove(move);
+            ratings[key] += this.rateMove(from, to);
             ratings[key] += this.emulateMove(from, to, theirAdjacents, trapped, canWin);
 
             const moved = this.squares[from];
@@ -948,9 +948,8 @@ export default class Board {
         return move;
     }
 
-    rateMove(move) {
+    rateMove(from, to) {
         let rating = 0;
-        const [from, to] = move;
         const abbr = this.squares[from];
 
         // Prioritize pawn promotion.
@@ -958,7 +957,28 @@ export default class Board {
             Board.logs.push([from, to, 8, 'Prioritizing pawn promotion']);
             rating += 8;
         }
+        rating += this.considerCastling(from, to);
         return rating;
+    }
+
+    considerCastling(from, to) {
+        if (this.castle[this.turn].length === 0) {
+            return 0;
+        }
+        const abbr = this.squares[from];
+        switch (abbr[1]) {
+        case 'R':
+            Board.logs.push([from, to, -1, 'Preserve castle rights']);
+            return -1;
+        case 'K':
+            if (to[0] === 'c' || to[0] === 'g') {
+                Board.logs.push([from, to, 1, 'Encourage castling']);
+                return +1;
+            }
+            Board.logs.push([from, to, -2, 'Preserve castle rights']);
+            return -2;
+        }
+        return 0;
     }
 
     chooseMove() {
