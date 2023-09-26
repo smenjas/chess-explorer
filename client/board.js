@@ -237,10 +237,11 @@ export default class Board {
     render() {
         const files = this.rotate ? Board.files.toReversed() : Board.files;
         const ranks = this.rotate ? Board.ranks : Board.ranks.toReversed();
+        const remainder = this.rotate ? 1 : 0;
         const tempo = this.score[this.score.length - 1];
         let html = '<table class="chess-board"><tbody>';
         for (const rank of ranks) {
-            let shade = (rank % 2 === 0) ? 'light' : 'dark';
+            let shade = (rank % 2 === remainder) ? 'light' : 'dark';
             html += `<tr class="rank-${rank}">`;
             for (const file of files) {
                 const square = file + rank;
