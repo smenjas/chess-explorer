@@ -1,9 +1,9 @@
-// Optimal concatenation: 3-5x faster than testing loose equality
+// Optimal comparison: 3-5x faster than testing loose equality
 function testFalsity(x) {
     return x === false;
 }
 
-// Subptimal concatenation: 3-5x slower than testing strict equality
+// Subptimal comparison: 3-5x slower than testing strict equality
 function testFalsiness(x) {
     return !x;
 }

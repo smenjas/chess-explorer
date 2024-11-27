@@ -15,17 +15,17 @@ function checkPieceLength(abbr) {
     return abbr.length === 2;
 }
 
-// Pessimal check for piece abbreviation validity: ~15x slower than compaing to the empty string
+// Pessimal check for piece abbreviation validity: ~15x slower than comparing to the empty string
 function checkPieceExists(abbr) {
     return Piece.exists(abbr);
 }
 
-// Pessimal check for piece abbreviation validity: ~15x slower than compaing to the empty string
+// Pessimal check for piece abbreviation validity: ~15x slower than comparing to the empty string
 function checkPieceInObject(abbr) {
     return abbr in Piece.list;
 }
 
-// Pessimal check for piece abbreviation validity: ~15x slower than compaing to the empty string
+// Pessimal check for piece abbreviation validity: ~15x slower than comparing to the empty string
 function checkPieceListHasOwn(abbr) {
     return Object.hasOwn(Piece.list, abbr);
 }

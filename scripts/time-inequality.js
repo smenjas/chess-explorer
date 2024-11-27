@@ -1,16 +1,16 @@
-// Optimal concatenation: >3x faster than using strict inequalities
+// Optimal comparison: >3x faster than using strict inequalities
 function testEquality(n) {
     return n === 1 || n === 8;
 }
 
-// Suboptimal concatenation: >3x slower than using strict equality, but
-// slightly slower than strict inequality
+// Suboptimal comparison: >3x slower than using strict equality, but slightly
+// slower than strict inequality
 function testInequality(n) {
     return n <= 1 || n >= 8;
 }
 
-// Suboptimal concatenation: >3x slower than using strict equality, but
-// slightly faster than non-strict inequality
+// Suboptimal comparison: >3x slower than using strict equality, but slightly
+// faster than non-strict inequality
 function testStrictInequality(n) {
     return n < 2 || n > 7;
 }
