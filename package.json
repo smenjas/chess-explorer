@@ -1,6 +1,6 @@
 {
   "name": "chess-explorer",
-  "version": "0.3.15",
+  "version": "0.3.16",
   "type": "module",
   "description": "Explore the game of chess.",
   "main": "index.js",
