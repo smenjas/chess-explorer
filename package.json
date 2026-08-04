@@ -30,5 +30,8 @@
     "nodemon": "^3.0.1",
     "stylelint": "^17.14.1",
     "stylelint-config-standard": "^40.0.0"
+  },
+  "allowScripts": {
+    "fsevents@2.3.3": true
   }
 }
